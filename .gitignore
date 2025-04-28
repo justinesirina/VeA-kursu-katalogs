@@ -1,0 +1,25 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Maven
+target/
+out/
+
+# Node.js nākotnes frontendam
+node_modules/
+build/
+
+# Sistēmas un pagaidu faili
+.DS_Store
+Thumbs.db
+*.log
+*.class
+
+# Sensitīvi konfigurācijas faili
+application.properties
+application.yml
+.env
+
+# Docker lokālie faili
+docker-compose.override.yml
