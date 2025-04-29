@@ -23,3 +23,5 @@ application.yml
 
 # Docker lokālie faili
 docker-compose.override.yml
+*.jar
+docker-data/

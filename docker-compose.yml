@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+
   postgres-db:
     image: postgres:15
     container_name: postgres-db
@@ -15,6 +16,27 @@ services:
     networks:
       - course_catalog_network
 
+  backend-app:
+    build:
+      context: ./backend
+    container_name: backend-app
+    depends_on:
+      - postgres-db
+    ports:
+      - "8080:8080"
+    networks:
+      - course_catalog_network
+
+# frontend-app:
+#   build:
+#     context: ./frontend
+#   container_name: frontend-app
+#   ports:
+#     - "3000:80"
+#   depends_on:
+#     - backend-app
+#   networks:
+#     - course_catalog_network
 volumes:
   postgres_data:
 
