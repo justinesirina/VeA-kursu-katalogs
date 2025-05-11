@@ -1,0 +1,15 @@
+### Izveido jaunu kursu
+POST http://localhost:8080/api/courses
+Content-Type: application/json
+
+{
+  "courseCode": "ITF123",
+  "titleLv": "Programmēšanas pamati",
+  "titleEn": "Introduction to Programming",
+  "slug": "programmesanas-pamati",
+  "credits": 4,
+  "archived": false,
+  "active": true
+}
+### Iegūst visus kursus
+GET http://localhost:8080/api/courses

@@ -20,7 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @ToString
 
-public class Course { 
+public class Course {
 
     /**
      * Universāli unikāls identifikators, ko ģenerē sistēma.
