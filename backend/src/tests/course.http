@@ -3,13 +3,38 @@ POST http://localhost:8080/api/courses
 Content-Type: application/json
 
 {
-  "courseCode": "ITF123",
-  "titleLv": "Programmēšanas pamati",
-  "titleEn": "Introduction to Programming",
-  "slug": "programmesanas-pamati",
+  "courseCode": "ITF124",
+  "titleLv": "Datu bāzes",
+  "titleEn": "Databases",
+  "slug": "DB",
   "credits": 4,
   "archived": false,
   "active": true
 }
 ### Iegūst visus kursus
 GET http://localhost:8080/api/courses
+
+### Iegūst vienu kursu pēc ID
+GET http://localhost:8080/api/courses/7d8a20a9-4c43-40fc-bc2e-a55eca38b4a9
+
+### Atjauno esošu kursu pēc ID
+PUT http://localhost:8080/api/courses/7d8a20a9-4c43-40fc-bc2e-a55eca38b4a9
+Content-Type: application/json
+
+{
+  "courseCode": "ITF123-NEW",
+  "titleLv": "Programmēšanas pamati (papildināts)",
+  "titleEn": "Intro to Programming - Updated",
+  "slug": "programmesana-updated",
+  "credits": 6,
+  "archived": false,
+  "active": true,
+  "deletedAt": null
+}
+
+### Mīkstā dzēšana (soft delete)
+DELETE http://localhost:8080/api/courses/7d8a20a9-4c43-40fc-bc2e-a55eca38b4a9
+
+### Iegūst tikai aktīvos (neizdzēstos) kursus
+GET http://localhost:8080/api/courses/filter/active
+

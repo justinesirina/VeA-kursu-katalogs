@@ -42,4 +42,8 @@ public interface ICourseService {
      * @throws Exception ja kurss nav atrasts
      */
     void deleteCourseById(UUID id) throws Exception;
+
+    List<Course> getAllActiveCourses();
+
+
 }

@@ -3,6 +3,7 @@ package lv.venta.coursecatalog.controller;
 import lv.venta.coursecatalog.model.Course;
 import lv.venta.coursecatalog.service.ICourseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,17 +35,13 @@ public class CourseController {
     }
 
     /**
-     * Atgriež vienu kursu pēc tā ID.
-     * @param id kursa UUID
-     * @return kurss vai kļūda
+     * Atgriež tikai aktīvos kursus (kas nav dzēsti).
+     *
+     * @return saraksts ar aktīvajiem kursiem
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getCourseById(@PathVariable String id) {
-        try {
-            return ResponseEntity.ok(courseService.getCourseById(UUID.fromString(id)));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    @GetMapping("/filter/active")
+    public List<Course> getAllActiveCourses() {
+        return courseService.getAllActiveCourses();
     }
 
     /**
@@ -73,17 +70,36 @@ public class CourseController {
     }
 
     /**
-     * Dzēš kursu pēc ID.
-     * @param id kursa ID
-     * @return atbildes statuss
+     * Veic kursa dzēšanu (mīksto dzēšanu) pēc ID.
+     *
+     * @param id kursa UUID
+     * @return 200 OK vai kļūda
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCourse(@PathVariable String id) {
+    public ResponseEntity<?> deleteCourse(@PathVariable UUID id) {
         try {
-            courseService.deleteCourseById(UUID.fromString(id));
-            return ResponseEntity.ok().build();
+            courseService.deleteCourseById(id);
+            return ResponseEntity.ok("Kurss veiksmīgi dzēsts");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Atgriež vienu kursu pēc tā ID.
+     * @param id kursa UUID
+     * @return kurss vai kļūda
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCourseById(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(courseService.getCourseById(UUID.fromString(id)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
+
+
 }

@@ -6,6 +6,7 @@ import lv.venta.coursecatalog.service.ICourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -71,13 +72,21 @@ public class CourseServiceImpl implements ICourseService {
     }
 
     /**
-     * Dzēš kursu no datubāzes pēc ID.
+     * Veic kursa mīksto dzēšanu (soft delete), atzīmējot to kā neaktīvu.
      * @param id kursa UUID
      * @throws Exception ja kurss nav atrasts
      */
     @Override
     public void deleteCourseById(UUID id) throws Exception {
-        Course course = getCourseById(id);
-        courseRepo.delete(course);
+        Course existing = getCourseById(id);
+        existing.setActive(false);
+        existing.setDeletedAt(LocalDateTime.now());
+        courseRepo.save(existing);
     }
+
+    @Override
+    public List<Course> getAllActiveCourses() {
+        return courseRepo.findAllByActiveTrueAndDeletedAtIsNull();
+    }
+
 }
