@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -90,4 +91,12 @@ public class Course {
      */
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    /**
+     * Visas šī studiju kursa versijas. Bidirekcionāla saite ar CourseVersion.
+     * Tiek ielādētas tikai pēc pieprasījuma (LAZY fetch).
+     */
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ToString.Exclude
+    private List<CourseVersion> courseVersions;
 }
