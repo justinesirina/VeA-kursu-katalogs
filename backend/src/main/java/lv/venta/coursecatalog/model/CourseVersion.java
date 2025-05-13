@@ -30,7 +30,7 @@ public class CourseVersion {
     /**
      * Atsauce uz pamata studiju kursu, kuram šī ir viena no versijām.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
@@ -43,7 +43,7 @@ public class CourseVersion {
     /**
      * Atsauce uz statusa entītiju, kas norāda versijas stāvokli – piemēram, "sagatavē" vai "apstiprināta".
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "status_id", nullable = false)
     private VersionStatus status;
 
@@ -64,15 +64,15 @@ public class CourseVersion {
     /**
      * Kurš lietotājs izveidoja šo versiju.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "created_by", nullable = true)
     private User createdBy;
 
     /**
      * Kurš pēdējoreiz atjaunoja šo versiju.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "updated_by")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "updated_by", nullable = true)
     private User updatedBy;
 
     @Column(name = "is_archived", nullable = false)
@@ -84,14 +84,14 @@ public class CourseVersion {
     /**
      * Atsauce uz akadēmisko gadu, kurā šī kursa versija ir spēkā.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "academic_year_id", nullable = false)
     private AcademicYear academicYear;
 
     /**
      * Atsauce uz semestri – rudens, pavasara u.c.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "semester_id", nullable = false)
     private Semester semester;
 

@@ -1,0 +1,247 @@
+### ============================
+### VERSION STATUSES
+### ============================
+### Izveido statusu "Sagatavē"
+POST http://localhost:8080/api/version-statuses
+Content-Type: application/json
+
+{
+  "name": "Sagatavē",
+  "description": "Versija tiek izstrādāta"
+}
+
+###
+
+### Izveido statusu "Apstiprināta"
+POST http://localhost:8080/api/version-statuses
+Content-Type: application/json
+
+{
+  "name": "Apstiprināta",
+  "description": "Versija apstiprināta ITF domē"
+}
+
+### Iegūst visus kursa versiju statusus
+GET http://localhost:8080/api/version-statuses
+Accept: application/json
+
+###
+
+### Atjauno statusa aprakstu (piemēram, id = 1)
+PUT http://localhost:8080/api/version-statuses/1
+Content-Type: application/json
+
+{
+  "name": "Izstrādē",
+  "description": "Versija joprojām tiek papildināta"
+}
+
+###
+
+### Dzēš statusu pēc ID
+DELETE http://localhost:8080/api/version-statuses/2
+
+---
+
+### ============================
+### ACADEMIC YEARS
+### ============================
+
+### Izveido akadēmisko gadu "2024/2025"
+POST http://localhost:8080/api/academic-years
+Content-Type: application/json
+
+{
+  "name": "2023/2024",
+  "startDate": "2023-09-01",
+  "endDate": "2024-06-30",
+  "active": false
+}
+
+### Iegūst visus akadēmiskos gadus
+GET http://localhost:8080/api/academic-years
+Accept: application/json
+
+###
+
+### Atjauno akadēmisko gadu (id = 1)
+PUT http://localhost:8080/api/academic-years/1
+Content-Type: application/json
+
+{
+  "name": "2024/2025",
+  "startDate": "2024-09-01",
+  "endDate": "2025-06-30",
+  "active": true
+}
+
+###
+
+### Dzēš akadēmisko gadu pēc ID
+DELETE http://localhost:8080/api/academic-years/3
+
+---
+
+### ============================
+### SEMESTERS
+### ============================
+
+### Izveido semestri "Rudens"
+POST http://localhost:8080/api/semesters
+Content-Type: application/json
+
+{
+  "name": "Rudens"
+}
+
+### Iegūst visus semestrus
+GET http://localhost:8080/api/semesters
+Accept: application/json
+
+###
+
+### Atjauno semestra nosaukumu (id = 1)
+PUT http://localhost:8080/api/semesters/1
+Content-Type: application/json
+
+{
+  "name": "Ziema"
+}
+
+###
+
+### Dzēš semestri pēc ID
+DELETE http://localhost:8080/api/semesters/1
+
+---
+
+### ============================
+### USER ROLES
+
+### Izveido lomu "Lecturer"
+POST http://localhost:8080/api/user-roles
+Content-Type: application/json
+
+{
+  "roleName": "Lecturer"
+}
+
+### Iegūst visas lietotāju lomas
+GET http://localhost:8080/api/user-roles
+Accept: application/json
+
+###
+
+### Atjauno lomas nosaukumu (id = 1)
+PUT http://localhost:8080/api/user-roles/1
+Content-Type: application/json
+
+{
+  "roleName": "Docētājs"
+}
+
+###
+
+### Dzēš lomu pēc ID
+DELETE http://localhost:8080/api/user-roles/2
+
+---
+
+### ============================
+### USERS
+### ============================
+
+### Izveido lietotāju "Anna Bērziņa"
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "Jānis",
+  "surname": "Bērziņš",
+  "email": "janis.berzins@venta.lv",
+  "role": {
+    "id": 1
+  },
+  "active": true
+}
+
+### Iegūst visus lietotājus
+GET http://localhost:8080/api/users
+Accept: application/json
+
+###
+
+### Atjauno lietotāja datus (id = 1)
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+
+{
+  "name": "Anna",
+  "surname": "Bērziņa-Ozola",
+  "email": "anna.berzina@venta.lv",
+  "role": {
+    "id": 1
+  },
+  "active": true,
+  "deletedAt": null
+}
+
+###
+
+### Dzēš lietotāju pēc ID
+DELETE http://localhost:8080/api/users/2
+
+---
+
+### ============================
+### COURSE VERSIONS
+### ============================
+
+### Izveidot jaunu kursa versiju (POST)
+POST http://localhost:8080/api/course-versions
+Content-Type: application/json
+
+{
+  "versionNumber": 2,
+  "slug": "java-v2",
+  "isArchived": false,
+  "isActive": false,
+  "approvalDate": "2025-05-11",
+  "decisionNumber": "Nr. 25-03",
+  "decisionReference": "ITF dome, 2025. gada 10. maijs",
+  "course": {
+    "id": "5a26d81f-210b-47d6-8ff0-0f113d219b7b"
+  },
+  "status": {
+    "id": 1
+  },
+  "academicYear": {
+    "id": 1
+  },
+  "semester": {
+    "id": 1
+  }
+}
+
+###
+
+### Iegūst visas kursa versijas
+GET http://localhost:8080/api/course-versions
+Accept: application/json
+
+###
+
+### Iegūst visas versijas konkrētam kursam
+GET http://localhost:8080/api/course-versions/by-course/5a26d81f-210b-47d6-8ff0-0f113d219b7b
+Accept: application/json
+
+###
+
+### Iegūst konkrētu kursa versiju pēc ID
+GET http://localhost:8080/api/course-versions/81cd8cd1-bd7b-4182-a2be-e00d22290692
+Accept: application/json
+
+###
+
+### Dzēš kursa versiju pēc ID
+DELETE http://localhost:8080/api/course-versions/81cd8cd1-bd7b-4182-a2be-e00d22290692

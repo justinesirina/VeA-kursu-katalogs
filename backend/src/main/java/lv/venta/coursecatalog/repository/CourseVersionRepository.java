@@ -2,6 +2,8 @@ package lv.venta.coursecatalog.repository;
 
 import lv.venta.coursecatalog.model.CourseVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,7 +20,8 @@ public interface CourseVersionRepository extends JpaRepository<CourseVersion, UU
      * Atrod visas versijas, kas saistītas ar konkrēto kursu.
      * Noder, ja vēlamies izgūt visas versijas pēc kursa ID.
      */
-    List<CourseVersion> findByCourseId(UUID courseId);
+    @Query("SELECT v FROM CourseVersion v WHERE v.course.id = :courseId")
+    List<CourseVersion> findByCourseId(@Param("courseId") UUID courseId);
 
     /**
      * Atrod tikai tās versijas, kas nav dzēstas (soft delete pieeja).

@@ -1,5 +1,7 @@
 package lv.venta.coursecatalog.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,6 +20,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
 public class User {
 
     @Id
@@ -42,8 +47,9 @@ public class User {
     /**
      * Lietotāja loma sistēmā (atsauce uz user_roles).
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
+    @JsonIgnoreProperties({"users"})
     private UserRole role;
 
     @CreationTimestamp
@@ -62,6 +68,7 @@ public class User {
     /**
      * Kursa versijas, ko šis lietotājs ir izveidojis.
      */
+    @JsonIgnore
     @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<CourseVersion> createdCourseVersions;
@@ -69,6 +76,7 @@ public class User {
     /**
      * Kursa versijas, ko šis lietotājs ir atjaunojis.
      */
+    @JsonIgnore
     @OneToMany(mappedBy = "updatedBy", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<CourseVersion> updatedCourseVersions;

@@ -3,22 +3,23 @@ POST http://localhost:8080/api/courses
 Content-Type: application/json
 
 {
-  "courseCode": "ITF124",
-  "titleLv": "Datu bāzes",
-  "titleEn": "Databases",
-  "slug": "DB",
+  "courseCode": "ITF120",
+  "titleLv": "Programmēšana Java",
+  "titleEn": "Java programming",
+  "slug": "java",
   "credits": 4,
   "archived": false,
   "active": true
 }
+
 ### Iegūst visus kursus
 GET http://localhost:8080/api/courses
 
 ### Iegūst vienu kursu pēc ID
-GET http://localhost:8080/api/courses/7d8a20a9-4c43-40fc-bc2e-a55eca38b4a9
+GET http://localhost:8080/api/courses/19936163-7e55-4f60-9506-3eb354f7273d
 
 ### Atjauno esošu kursu pēc ID
-PUT http://localhost:8080/api/courses/7d8a20a9-4c43-40fc-bc2e-a55eca38b4a9
+PUT http://localhost:8080/api/courses/19936163-7e55-4f60-9506-3eb354f7273d
 Content-Type: application/json
 
 {
@@ -33,7 +34,7 @@ Content-Type: application/json
 }
 
 ### Mīkstā dzēšana (soft delete)
-DELETE http://localhost:8080/api/courses/7d8a20a9-4c43-40fc-bc2e-a55eca38b4a9
+DELETE http://localhost:8080/api/courses/19936163-7e55-4f60-9506-3eb354f7273d
 
 ### Iegūst tikai aktīvos (neizdzēstos) kursus
 GET http://localhost:8080/api/courses/filter/active

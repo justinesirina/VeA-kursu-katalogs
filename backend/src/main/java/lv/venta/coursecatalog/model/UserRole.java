@@ -1,5 +1,6 @@
 package lv.venta.coursecatalog.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,7 +32,14 @@ public class UserRole {
     /**
      * Visi lietotāji, kuriem piešķirta šī loma.
      */
+    @JsonIgnore
     @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<User> users;
+
+    public String getRoleName() {
+        return roleName;
+    }
 }
+
+
