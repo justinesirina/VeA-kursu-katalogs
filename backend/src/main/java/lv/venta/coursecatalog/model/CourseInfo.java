@@ -1,9 +1,10 @@
 package lv.venta.coursecatalog.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+import lv.venta.coursecatalog.model.assessment.AssessmentForm;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
