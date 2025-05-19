@@ -2,8 +2,7 @@ package lv.venta.coursecatalog.model.courseinfo;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lv.venta.coursecatalog.model.CourseInfo;
-import lv.venta.coursecatalog.model.User;
+import lv.venta.coursecatalog.model.user.User;
 
 import java.time.LocalDateTime;
 

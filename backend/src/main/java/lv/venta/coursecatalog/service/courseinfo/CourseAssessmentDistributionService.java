@@ -1,11 +1,9 @@
 package lv.venta.coursecatalog.service.courseinfo;
 
-import lv.venta.coursecatalog.model.assessment.AssessmentComponent;
-import lv.venta.coursecatalog.model.assessment.CourseAssessmentDistribution;
-import lv.venta.coursecatalog.model.CourseInfo;
+import lv.venta.coursecatalog.model.courseinfo.CourseAssessmentDistribution;
 import lv.venta.coursecatalog.repository.courseinfo.AssessmentComponentRepository;
 import lv.venta.coursecatalog.repository.courseinfo.CourseAssessmentDistributionRepository;
-import lv.venta.coursecatalog.repository.CourseInfoRepository;
+import lv.venta.coursecatalog.repository.courseinfo.CourseInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

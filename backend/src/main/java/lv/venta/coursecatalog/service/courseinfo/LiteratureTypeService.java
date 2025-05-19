@@ -1,6 +1,6 @@
 package lv.venta.coursecatalog.service.courseinfo;
 
-import lv.venta.coursecatalog.model.literature.LiteratureType;
+import lv.venta.coursecatalog.model.courseinfo.LiteratureType;
 import lv.venta.coursecatalog.repository.courseinfo.LiteratureTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

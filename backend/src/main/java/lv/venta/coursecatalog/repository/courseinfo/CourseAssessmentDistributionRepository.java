@@ -1,6 +1,6 @@
 package lv.venta.coursecatalog.repository.courseinfo;
 
-import lv.venta.coursecatalog.model.assessment.CourseAssessmentDistribution;
+import lv.venta.coursecatalog.model.courseinfo.CourseAssessmentDistribution;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

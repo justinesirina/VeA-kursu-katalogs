@@ -1,6 +1,6 @@
 package lv.venta.coursecatalog.service.courseinfo;
 
-import lv.venta.coursecatalog.model.assessment.AssessmentComponent;
+import lv.venta.coursecatalog.model.courseinfo.AssessmentComponent;
 import lv.venta.coursecatalog.repository.courseinfo.AssessmentComponentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

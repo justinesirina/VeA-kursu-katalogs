@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import lv.venta.coursecatalog.model.Course;
-import lv.venta.coursecatalog.model.User;
+import lv.venta.coursecatalog.model.course.Course;
+import lv.venta.coursecatalog.model.user.User;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

@@ -2,8 +2,7 @@ package lv.venta.coursecatalog.model.courseinfo;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lv.venta.coursecatalog.model.Course;
-import lv.venta.coursecatalog.model.CourseInfo;
+import lv.venta.coursecatalog.model.course.Course;
 
 @Getter
 @Setter

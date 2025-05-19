@@ -1,6 +1,6 @@
 package lv.venta.coursecatalog.controller.courseinfo;
 
-import lv.venta.coursecatalog.model.assessment.CourseAssessmentDistribution;
+import lv.venta.coursecatalog.model.courseinfo.CourseAssessmentDistribution;
 import lv.venta.coursecatalog.service.courseinfo.CourseAssessmentDistributionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
