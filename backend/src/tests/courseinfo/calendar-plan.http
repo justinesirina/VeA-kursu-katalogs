@@ -1,0 +1,126 @@
+### SESSION TYPES
+
+### Iegūst visus sesiju veidus
+GET http://localhost:8080/api/session-types
+Accept: application/json
+
+###
+
+### Izveido jaunu sesiju veidu
+POST http://localhost:8080/api/session-types
+Content-Type: application/json
+
+{
+  "name": "Lekcija",
+  "description": "Teorētiska nodarbība"
+}
+
+###
+
+### Atjauno sesiju veidu
+PUT http://localhost:8080/api/session-types/1
+Content-Type: application/json
+
+{
+  "name": "Seminārs",
+  "description": "Diskusiju formāts"
+}
+
+###
+
+### Dzēš sesiju veidu
+DELETE http://localhost:8080/api/session-types/1
+
+###
+
+### CALENDAR TOPICS
+
+### Iegūst visas kalendāra tēmas
+GET http://localhost:8080/api/calendar-topics
+Accept: application/json
+
+###
+
+### Izveido tēmu kalendārā
+POST http://localhost:8080/api/calendar-topics
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "COURSE_INFO_UUID_HERE"
+  },
+  "courseContent": {
+    "id": 1
+  },
+  "sequenceNumber": 1,
+  "note": "Šī tēma jāmāca otrajā nedēļā",
+  "language": "lv"
+}
+
+###
+
+### Atjauno kalendāra tēmu
+PUT http://localhost:8080/api/calendar-topics/1
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "COURSE_INFO_UUID_HERE"
+  },
+  "courseContent": {
+    "id": 1
+  },
+  "sequenceNumber": 2,
+  "note": "Pārcelta uz 3. nedēļu",
+  "language": "lv"
+}
+
+###
+
+### Dzēš tēmu no kalendāra
+DELETE http://localhost:8080/api/calendar-topics/1
+
+###
+
+### CALENDAR SESSIONS
+
+### Iegūst visas nodarbības
+GET http://localhost:8080/api/calendar-sessions
+Accept: application/json
+
+###
+
+### Izveido nodarbību
+POST http://localhost:8080/api/calendar-sessions
+Content-Type: application/json
+
+{
+  "topic": {
+    "id": 1
+  },
+  "sessionType": {
+    "id": 1
+  },
+  "academicHours": 2
+}
+
+###
+
+### Atjauno nodarbību
+PUT http://localhost:8080/api/calendar-sessions/1
+Content-Type: application/json
+
+{
+  "topic": {
+    "id": 1
+  },
+  "sessionType": {
+    "id": 1
+  },
+  "academicHours": 3
+}
+
+###
+
+### Dzēš nodarbību
+DELETE http://localhost:8080/api/calendar-sessions/1

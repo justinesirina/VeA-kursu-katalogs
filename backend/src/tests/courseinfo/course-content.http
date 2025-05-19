@@ -1,0 +1,46 @@
+### Iegūst visas tēmas
+GET http://localhost:8080/api/course-content
+Accept: application/json
+
+###
+
+### Izveido tēmu
+POST http://localhost:8080/api/course-content
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "COURSE_INFO_UUID_HERE"
+  },
+  "sequenceNumber": 1,
+  "topicTitle": "Ievads datu struktūrās",
+  "topicDescription": "Šajā tēmā studenti iepazīstas ar pamata datu tipiem.",
+  "language": "lv"
+}
+
+###
+
+### Atjauno tēmu
+PUT http://localhost:8080/api/course-content/1
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "COURSE_INFO_UUID_HERE"
+  },
+  "sequenceNumber": 2,
+  "topicTitle": "Lineārās struktūras",
+  "topicDescription": "Tiks apskatīti masīvi, saraksti un rindu struktūras.",
+  "language": "lv"
+}
+
+###
+
+### Iegūst tēmu pēc ID
+GET http://localhost:8080/api/course-content/1
+Accept: application/json
+
+###
+
+### Dzēš tēmu
+DELETE http://localhost:8080/api/course-content/1
