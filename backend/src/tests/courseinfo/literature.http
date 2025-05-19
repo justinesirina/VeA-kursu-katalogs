@@ -1,0 +1,89 @@
+### GET all literature types
+GET http://localhost:8080/api/literature-types
+Accept: application/json
+
+###
+
+### GET literature type by ID
+GET http://localhost:8080/api/literature-types/1
+Accept: application/json
+
+###
+
+### CREATE new literature type
+POST http://localhost:8080/api/literature-types
+Content-Type: application/json
+
+{
+  "name": "Pamatliteratūra",
+  "description": "Galvenie mācību materiāli"
+}
+
+###
+
+### UPDATE literature type
+PUT http://localhost:8080/api/literature-types/1
+Content-Type: application/json
+
+{
+  "name": "Papildu literatūra",
+  "description": "Papildus izziņas avoti"
+}
+
+###
+
+### DELETE literature type
+DELETE http://localhost:8080/api/literature-types/1
+
+###
+
+### GET all literature sources
+GET http://localhost:8080/api/literature-sources
+Accept: application/json
+
+###
+
+### GET source by ID
+GET http://localhost:8080/api/literature-sources/1
+Accept: application/json
+
+###
+
+### CREATE literature source
+POST http://localhost:8080/api/literature-sources
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "COURSE_INFO_UUID_HERE"
+  },
+  "type": {
+    "id": 1
+  },
+  "citation": "Latvijas Universitāte. (2021). Datu analīze izglītībā.",
+  "url": "https://example.com/avots",
+  "language": "lv"
+}
+
+###
+
+### UPDATE source
+PUT http://localhost:8080/api/literature-sources/1
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "COURSE_INFO_UUID_HERE"
+  },
+  "type": {
+    "id": 1
+  },
+  "citation": "LU. (2022). Atjaunots avots.",
+  "url": "https://example.com/jauns",
+  "language": "lv"
+}
+
+###
+
+### DELETE source
+DELETE http://localhost:8080/api/literature-sources/1
