@@ -1,0 +1,66 @@
+### Iegūst visus CourseInfo ierakstus
+GET http://localhost:8080/api/course-info
+Accept: application/json
+
+###
+
+### Iegūst CourseInfo pēc ID
+GET http://localhost:8080/api/course-info/{{uuid}}
+Accept: application/json
+
+###
+
+### Izveido CourseInfo ierakstu
+POST http://localhost:8080/api/course-info
+Content-Type: application/json
+
+{
+  "course": {
+    "id": "COURSE_UUID_HERE"
+  },
+  "courseVersion": {
+    "id": "COURSE_VERSION_UUID_HERE"
+  },
+  "academicHoursTotal": 40,
+  "lectureHours": 16,
+  "practClassesHours": 8,
+  "independentWorkHours": 16,
+  "prerequisitesDescription": "Zināšanas informātikā",
+  "goal": "Iepazīstināt ar datu struktūrām",
+  "annotation": "Kurss par klasiskajām datu struktūrām",
+  "assessmentForm": {
+    "id": 1
+  },
+  "language": "lv"
+}
+
+###
+
+### Atjauno CourseInfo
+PUT http://localhost:8080/api/course-info/{{uuid}}
+Content-Type: application/json
+
+{
+  "course": {
+    "id": "COURSE_UUID_HERE"
+  },
+  "courseVersion": {
+    "id": "COURSE_VERSION_UUID_HERE"
+  },
+  "academicHoursTotal": 42,
+  "lectureHours": 20,
+  "practClassesHours": 6,
+  "independentWorkHours": 16,
+  "prerequisitesDescription": "Pamata zināšanas programmēšanā",
+  "goal": "Padziļināt izpratni par algoritmiem",
+  "annotation": "Kurss ar praktisku ievirzi",
+  "assessmentForm": {
+    "id": 1
+  },
+  "language": "lv"
+}
+
+###
+
+### Dzēš CourseInfo pēc ID
+DELETE http://localhost:8080/api/course-info/{{uuid}}
