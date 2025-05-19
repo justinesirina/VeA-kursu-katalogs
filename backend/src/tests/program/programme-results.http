@@ -1,0 +1,48 @@
+### Iegūt visus programmas rezultātus
+GET http://localhost:8080/api/programme-results
+Accept: application/json
+
+###
+
+### Iegūt programmas rezultātu pēc ID
+GET http://localhost:8080/api/programme-results/{{uuid}}
+Accept: application/json
+
+###
+
+### Izveidot jaunu programmas rezultātu
+POST http://localhost:8080/api/programme-results
+Content-Type: application/json
+
+{
+  "studyProgram": {
+    "id": 1
+  },
+  "category": {
+    "id": "b24ee2f0-b9c5-4cd2-a032-04ae11e6e9cd"
+  },
+  "language": "lv",
+  "learningOutcome": "Spēj izstrādāt vienkāršus algoritmus un programmēt tos izvēlētā valodā"
+}
+
+###
+
+### Atjaunināt esošu programmas rezultātu
+PUT http://localhost:8080/api/programme-results/{{uuid}}
+Content-Type: application/json
+
+{
+  "studyProgram": {
+    "id": 1
+  },
+  "category": {
+    "id": "b24ee2f0-b9c5-4cd2-a032-04ae11e6e9cd"
+  },
+  "language": "en",
+  "learningOutcome": "Able to develop simple algorithms and implement them in a selected programming language"
+}
+
+###
+
+### Dzēst programmas rezultātu pēc ID
+DELETE http://localhost:8080/api/programme-results/{{uuid}}

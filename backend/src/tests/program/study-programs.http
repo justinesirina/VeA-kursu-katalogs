@@ -1,0 +1,56 @@
+### Iegūt visas studiju programmas
+GET http://localhost:8080/api/study-programs
+Accept: application/json
+
+###
+
+### Iegūt studiju programmu pēc ID
+GET http://localhost:8080/api/study-programs/1
+Accept: application/json
+
+###
+
+### Izveidot jaunu studiju programmu
+POST http://localhost:8080/api/study-programs
+Content-Type: application/json
+
+{
+  "name": "Datorzinātnes",
+  "slug": "ITBs",
+  "faculty": {
+    "id": 1
+  },
+  "director": {
+    "id": 1
+  },
+  "goal": "Attīstīt teorētiskās un praktiskās zināšanas informācijas tehnoloģijās.",
+  "objectives": "Sagatavot speciālistus darbam IT nozarē.",
+  "isActive": true,
+  "isArchived": false
+}
+
+###
+
+### Atjaunināt esošu studiju programmu
+PUT http://localhost:8080/api/study-programs/1
+Content-Type: application/json
+
+{
+  "name": "Datorzinātnes (atjaunināts)",
+  "slug": "ITB-updated",
+  "faculty": {
+    "id": 1
+  },
+  "director": {
+    "id": 1
+  },
+  "goal": "Paplašināt zināšanas programmēšanā un algoritmu izstrādē.",
+  "objectives": "Sagatavot konkurētspējīgus programmētājus.",
+  "isActive": true,
+  "isArchived": false
+}
+
+###
+
+### Dzēst studiju programmu pēc ID
+DELETE http://localhost:8080/api/study-programs/1

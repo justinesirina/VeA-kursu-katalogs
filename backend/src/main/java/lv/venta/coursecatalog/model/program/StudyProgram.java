@@ -47,10 +47,10 @@ public class StudyProgram {
     private LocalDateTime updatedAt;
 
     @Column(name = "is_archived", nullable = false)
-    private boolean isArchived = false;
+    private boolean archived = false;
 
     @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
+    private boolean active = true;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

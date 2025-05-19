@@ -1,0 +1,36 @@
+### Iegūt visas fakultātes
+GET http://localhost:8080/api/faculties
+Accept: application/json
+
+###
+
+### Iegūt fakultāti pēc ID
+GET http://localhost:8080/api/faculties/1
+Accept: application/json
+
+###
+
+### Izveidot jaunu fakultāti
+POST http://localhost:8080/api/faculties
+Content-Type: application/json
+
+{
+  "name": "Informācijas tehnoloģiju fakultāte",
+  "slug": "itf"
+}
+
+###
+
+### Atjaunināt esošu fakultāti
+PUT http://localhost:8080/api/faculties/1
+Content-Type: application/json
+
+{
+  "name": "IT fakultāte",
+  "slug": "informacijas-tehnologijas"
+}
+
+###
+
+### Dzēst fakultāti pēc ID
+DELETE http://localhost:8080/api/faculties/1
