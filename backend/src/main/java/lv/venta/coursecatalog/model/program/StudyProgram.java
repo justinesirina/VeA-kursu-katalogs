@@ -1,0 +1,57 @@
+package lv.venta.coursecatalog.model.program;
+
+import jakarta.persistence.*;
+import lombok.*;
+import lv.venta.coursecatalog.model.user.User;
+import lv.venta.coursecatalog.model.support.Faculty;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "study_programs")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+public class StudyProgram {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(unique = true)
+    private String slug; // URL draudzīgs identifikators
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "faculty_id")
+    private Faculty faculty;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "director_id")
+    private User director;
+
+    @Column(columnDefinition = "TEXT")
+    private String goal; // Studiju programmas mērķis
+
+    @Column(columnDefinition = "TEXT")
+    private String objectives; // Studiju programmas uzdevumi
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "is_archived", nullable = false)
+    private boolean isArchived = false;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+}
