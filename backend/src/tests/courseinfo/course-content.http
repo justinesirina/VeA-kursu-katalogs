@@ -10,7 +10,7 @@ Content-Type: application/json
 
 {
   "courseInfo": {
-    "id": "COURSE_INFO_UUID_HERE"
+    "id": "6c13ef60-2f56-45be-b2ab-fcec4113b74e"
   },
   "sequenceNumber": 1,
   "topicTitle": "Ievads datu struktūrās",
@@ -26,7 +26,7 @@ Content-Type: application/json
 
 {
   "courseInfo": {
-    "id": "COURSE_INFO_UUID_HERE"
+    "id": "6c13ef60-2f56-45be-b2ab-fcec4113b74e"
   },
   "sequenceNumber": 2,
   "topicTitle": "Lineārās struktūras",

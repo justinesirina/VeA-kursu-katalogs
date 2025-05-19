@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class ResultsCategoryService {
@@ -19,7 +18,7 @@ public class ResultsCategoryService {
         return categoryRepo.findAll();
     }
 
-    public ResultsCategory getCategoryById(UUID id) {
+    public ResultsCategory getCategoryById(int id) {
         return categoryRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Nav atrasta kategorija ar id = " + id));
     }
@@ -30,14 +29,14 @@ public class ResultsCategoryService {
     }
 
     @Transactional
-    public ResultsCategory updateCategory(UUID id, ResultsCategory updated) {
+    public ResultsCategory updateCategory(int id, ResultsCategory updated) {
         ResultsCategory existing = getCategoryById(id);
         existing.setName(updated.getName());
         return categoryRepo.save(existing);
     }
 
     @Transactional
-    public void deleteCategoryById(UUID id) {
+    public void deleteCategoryById(int id) {
         if (!categoryRepo.existsById(id)) {
             throw new RuntimeException("Nav atrasta dzēšamā kategorija ar id = " + id);
         }

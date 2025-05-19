@@ -16,7 +16,7 @@ Content-Type: application/json
 
 {
   "courseResult": {
-    "id": "COURSE_RESULT_UUID_HERE"
+    "id": "4f03083d-a7b7-406c-b64b-c7af24a11eaf"
   },
   "component": {
     "id": 1
@@ -32,7 +32,7 @@ Content-Type: application/json
 
 {
   "courseResult": {
-    "id": "COURSE_RESULT_UUID_HERE"
+    "id": "ee01f58d-33e3-4942-92d2-74feaad3f692"
   },
   "component": {
     "id": 1

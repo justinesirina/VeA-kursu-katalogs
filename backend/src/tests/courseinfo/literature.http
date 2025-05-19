@@ -33,9 +33,11 @@ Content-Type: application/json
 ###
 
 ### DELETE literature type
-DELETE http://localhost:8080/api/literature-types/1
+DELETE http://localhost:8080/api/literature-types/2
 
 ###
+
+### LITERATURE SOURCES
 
 ### GET all literature sources
 GET http://localhost:8080/api/literature-sources
@@ -55,7 +57,7 @@ Content-Type: application/json
 
 {
   "courseInfo": {
-    "id": "COURSE_INFO_UUID_HERE"
+    "id": "6c13ef60-2f56-45be-b2ab-fcec4113b74e"
   },
   "type": {
     "id": 1
@@ -73,7 +75,7 @@ Content-Type: application/json
 
 {
   "courseInfo": {
-    "id": "COURSE_INFO_UUID_HERE"
+    "id": "6c13ef60-2f56-45be-b2ab-fcec4113b74e"
   },
   "type": {
     "id": 1

@@ -1,6 +1,7 @@
 package lv.venta.coursecatalog.model.literature;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -25,7 +26,7 @@ public class LiteratureSource {
     // Piesaistītais studiju kursa saturs (CourseInfo)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_info_id", nullable = false)
-    @JsonIgnore
+    @JsonIgnoreProperties({"literatureSources", "hibernateLazyInitializer", "handler"})
     private CourseInfo courseInfo;
 
     // Literatūras veids (piemēram, Pamatliteratūra)

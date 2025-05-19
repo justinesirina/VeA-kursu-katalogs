@@ -5,13 +5,13 @@ Accept: application/json
 ###
 
 ### Iegūst rezultātu pēc ID
-GET http://localhost:8080/api/course-results/{{uuid}}
+GET http://localhost:8080/api/course-results/1267f4dc-9360-44b0-90c3-9ee151753555
 Accept: application/json
 
 ###
 
 ### Iegūst visus rezultātus pēc kursa ID
-GET http://localhost:8080/api/course-results/by-course/{{courseUuid}}
+GET http://localhost:8080/api/course-results/by-course/ce8a26aa-79d3-42a1-8711-b8a47745eff3
 Accept: application/json
 
 ###
@@ -22,27 +22,27 @@ Content-Type: application/json
 
 {
   "course": {
-    "id": "COURSE_UUID_HERE"
+    "id": "0da561bd-8665-48c2-9a03-2befc1ad1386"
   },
   "category": {
-    "id": "CATEGORY_UUID_HERE"
+    "id": "1"
   },
   "language": "lv",
-  "learningOutcome": "Studējošais spēj pielietot algoritmus datu analīzē."
+  "learningOutcome": "Studējošais zina algoritmus datu analīzē."
 }
 
 ###
 
 ### Atjauno kursa rezultātu
-PUT http://localhost:8080/api/course-results/{{uuid}}
+PUT http://localhost:8080/api/course-results/1267f4dc-9360-44b0-90c3-9ee151753555
 Content-Type: application/json
 
 {
   "course": {
-    "id": "COURSE_UUID_HERE"
+    "id": "ce8a26aa-79d3-42a1-8711-b8a47745eff3"
   },
   "category": {
-    "id": "CATEGORY_UUID_HERE"
+    "id": "1"
   },
   "language": "lv",
   "learningOutcome": "Atjaunināts rezultāts ar uzlabotu formulējumu."
@@ -51,4 +51,4 @@ Content-Type: application/json
 ###
 
 ### Dzēš kursa rezultātu
-DELETE http://localhost:8080/api/course-results/{{uuid}}
+DELETE http://localhost:8080/api/course-results/1267f4dc-9360-44b0-90c3-9ee151753555

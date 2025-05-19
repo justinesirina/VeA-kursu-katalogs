@@ -1,6 +1,7 @@
 package lv.venta.coursecatalog.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.assessment.AssessmentForm;
@@ -24,15 +25,14 @@ public class CourseInfo {
     private UUID id;
 
     // Saite uz pamata kursu (Course)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
-    @JsonIgnore
     private Course course;
 
     // Saite uz konkrēto versiju (CourseVersion)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_version_id", nullable = false)
-    @JsonIgnore
     private CourseVersion courseVersion;
 
     // Kopējais akadēmisko stundu skaits (kontaktstundas)

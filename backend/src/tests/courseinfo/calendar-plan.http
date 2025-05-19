@@ -29,7 +29,7 @@ Content-Type: application/json
 ###
 
 ### Dzēš sesiju veidu
-DELETE http://localhost:8080/api/session-types/1
+DELETE http://localhost:8080/api/session-types/2
 
 ###
 
@@ -47,10 +47,10 @@ Content-Type: application/json
 
 {
   "courseInfo": {
-    "id": "COURSE_INFO_UUID_HERE"
+    "id": "6c13ef60-2f56-45be-b2ab-fcec4113b74e"
   },
   "courseContent": {
-    "id": 1
+    "id": 2
   },
   "sequenceNumber": 1,
   "note": "Šī tēma jāmāca otrajā nedēļā",
@@ -65,10 +65,10 @@ Content-Type: application/json
 
 {
   "courseInfo": {
-    "id": "COURSE_INFO_UUID_HERE"
+    "id": "6c13ef60-2f56-45be-b2ab-fcec4113b74e"
   },
   "courseContent": {
-    "id": 1
+    "id": 2
   },
   "sequenceNumber": 2,
   "note": "Pārcelta uz 3. nedēļu",
@@ -96,10 +96,10 @@ Content-Type: application/json
 
 {
   "topic": {
-    "id": 1
+    "id": 2
   },
   "sessionType": {
-    "id": 1
+    "id": 2
   },
   "academicHours": 2
 }
@@ -112,10 +112,10 @@ Content-Type: application/json
 
 {
   "topic": {
-    "id": 1
+    "id": 2
   },
   "sessionType": {
-    "id": 1
+    "id": 2
   },
   "academicHours": 3
 }

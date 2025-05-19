@@ -27,7 +27,7 @@ Content-Type: application/json
 ###
 
 ### DELETE activity
-DELETE http://localhost:8080/api/self-study-activities/1
+DELETE http://localhost:8080/api/self-study-activities/2
 
 ###
 
@@ -43,10 +43,10 @@ Content-Type: application/json
 
 {
   "courseInfo": {
-    "id": "COURSE_INFO_UUID_HERE"
+    "id": "6c13ef60-2f56-45be-b2ab-fcec4113b74e"
   },
   "activity": {
-    "id": 1
+    "id": 2
   },
   "percentage": 40
 }
@@ -59,10 +59,10 @@ Content-Type: application/json
 
 {
   "courseInfo": {
-    "id": "COURSE_INFO_UUID_HERE"
+    "id": "6c13ef60-2f56-45be-b2ab-fcec4113b74e"
   },
   "activity": {
-    "id": 1
+    "id": 2
   },
   "percentage": 60
 }

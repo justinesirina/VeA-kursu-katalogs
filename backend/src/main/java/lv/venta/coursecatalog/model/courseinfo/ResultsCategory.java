@@ -16,7 +16,8 @@ import java.util.UUID;
 public class ResultsCategory {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
     @NotBlank(message = "Kategorijas nosaukums nedrīkst būt tukšs")
     @Column(nullable = false, unique = true)

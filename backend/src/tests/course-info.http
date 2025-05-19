@@ -5,7 +5,7 @@ Accept: application/json
 ###
 
 ### Iegūst CourseInfo pēc ID
-GET http://localhost:8080/api/course-info/{{uuid}}
+GET http://localhost:8080/api/course-info/6aa43afd-9d47-46e8-8817-33de3faf22b2
 Accept: application/json
 
 ###
@@ -16,10 +16,10 @@ Content-Type: application/json
 
 {
   "course": {
-    "id": "COURSE_UUID_HERE"
+    "id": "0da561bd-8665-48c2-9a03-2befc1ad1386"
   },
   "courseVersion": {
-    "id": "COURSE_VERSION_UUID_HERE"
+    "id": "373efd9a-25bd-4807-b24e-6830183758e8"
   },
   "academicHoursTotal": 40,
   "lectureHours": 16,
@@ -37,15 +37,15 @@ Content-Type: application/json
 ###
 
 ### Atjauno CourseInfo
-PUT http://localhost:8080/api/course-info/{{uuid}}
+PUT http://localhost:8080/api/course-info/cfb8dc0a-0cac-4463-a38a-f6592b4afa10
 Content-Type: application/json
 
 {
   "course": {
-    "id": "COURSE_UUID_HERE"
+    "id": "ce8a26aa-79d3-42a1-8711-b8a47745eff3"
   },
   "courseVersion": {
-    "id": "COURSE_VERSION_UUID_HERE"
+    "id": "9a229dd1-6d56-42b4-a85b-e37c3fd33789"
   },
   "academicHoursTotal": 42,
   "lectureHours": 20,
@@ -63,4 +63,4 @@ Content-Type: application/json
 ###
 
 ### Dzēš CourseInfo pēc ID
-DELETE http://localhost:8080/api/course-info/{{uuid}}
+DELETE http://localhost:8080/api/course-info/cfb8dc0a-0cac-4463-a38a-f6592b4afa10

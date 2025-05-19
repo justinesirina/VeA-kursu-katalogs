@@ -23,7 +23,7 @@ public class ResultsCategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResultsCategory> getById(@PathVariable UUID id) {
+    public ResponseEntity<ResultsCategory> getById(@PathVariable int id) {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
@@ -33,13 +33,13 @@ public class ResultsCategoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResultsCategory> update(@PathVariable UUID id,
+    public ResponseEntity<ResultsCategory> update(@PathVariable int id,
                                                   @RequestBody ResultsCategory updated) {
         return ResponseEntity.ok(categoryService.updateCategory(id, updated));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable int id) {
         categoryService.deleteCategoryById(id);
         return ResponseEntity.noContent().build();
     }

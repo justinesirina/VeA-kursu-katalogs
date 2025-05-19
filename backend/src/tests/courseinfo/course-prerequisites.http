@@ -16,10 +16,10 @@ Content-Type: application/json
 
 {
   "courseInfo": {
-    "id": "COURSE_INFO_UUID_HERE"
+    "id": "6c13ef60-2f56-45be-b2ab-fcec4113b74e"
   },
   "requiredCourse": {
-    "id": "COURSE_UUID_HERE"
+    "id": "0fdbf7b1-47c2-45eb-8fcf-e8382e1c3831"
   },
   "type": "required"
 }
@@ -32,10 +32,10 @@ Content-Type: application/json
 
 {
   "courseInfo": {
-    "id": "COURSE_INFO_UUID_HERE"
+    "id": "6c13ef60-2f56-45be-b2ab-fcec4113b74e"
   },
   "requiredCourse": {
-    "id": "COURSE_UUID_HERE"
+    "id": "0fdbf7b1-47c2-45eb-8fcf-e8382e1c3831"
   },
   "type": "recommended"
 }

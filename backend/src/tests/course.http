@@ -12,6 +12,21 @@ Content-Type: application/json
   "active": true
 }
 
+### Izveido jaunu kursu
+POST http://localhost:8080/api/courses
+Content-Type: application/json
+
+{
+  "courseCode": "ITF122",
+  "titleLv": "Programmēšana",
+  "titleEn": "Programming",
+  "slug": "prog",
+  "credits": 6,
+  "archived": false,
+  "active": true
+}
+
+
 ### Iegūst visus kursus
 GET http://localhost:8080/api/courses
 

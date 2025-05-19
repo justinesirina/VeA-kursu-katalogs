@@ -9,19 +9,19 @@ POST http://localhost:8080/api/results-categories
 Content-Type: application/json
 
 {
-  "name": "Zināšanas"
+  "name": "Prasmes"
 }
 
 ###
 
 ### GET by ID
-GET http://localhost:8080/api/results-categories/00000000-0000-0000-0000-000000000001
+GET http://localhost:8080/api/results-categories/1
 Accept: application/json
 
 ###
 
 ### UPDATE category
-PUT http://localhost:8080/api/results-categories/00000000-0000-0000-0000-000000000001
+PUT http://localhost:8080/api/results-categories/1
 Content-Type: application/json
 
 {
@@ -31,4 +31,4 @@ Content-Type: application/json
 ###
 
 ### DELETE category
-DELETE http://localhost:8080/api/results-categories/00000000-0000-0000-0000-000000000001
+DELETE http://localhost:8080/api/results-categories/4
