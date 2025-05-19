@@ -1,0 +1,73 @@
+### GET all self-study activities
+GET http://localhost:8080/api/self-study-activities
+Accept: application/json
+
+###
+
+### CREATE activity
+POST http://localhost:8080/api/self-study-activities
+Content-Type: application/json
+
+{
+  "name": "Referāts",
+  "description": "Rakstisks analītisks darbs par konkrētu tēmu"
+}
+
+###
+
+### UPDATE activity
+PUT http://localhost:8080/api/self-study-activities/1
+Content-Type: application/json
+
+{
+  "name": "Projekts",
+  "description": "Komandas darbs reālā problēmu risināšanā"
+}
+
+###
+
+### DELETE activity
+DELETE http://localhost:8080/api/self-study-activities/1
+
+###
+
+### GET all self-study distributions
+GET http://localhost:8080/api/self-study-distribution
+Accept: application/json
+
+###
+
+### CREATE distribution
+POST http://localhost:8080/api/self-study-distribution
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "COURSE_INFO_UUID_HERE"
+  },
+  "activity": {
+    "id": 1
+  },
+  "percentage": 40
+}
+
+###
+
+### UPDATE distribution
+PUT http://localhost:8080/api/self-study-distribution/1
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "COURSE_INFO_UUID_HERE"
+  },
+  "activity": {
+    "id": 1
+  },
+  "percentage": 60
+}
+
+###
+
+### DELETE distribution
+DELETE http://localhost:8080/api/self-study-distribution/1
