@@ -1,0 +1,54 @@
+### Iegūst visus kursa rezultātus
+GET http://localhost:8080/api/course-results
+Accept: application/json
+
+###
+
+### Iegūst rezultātu pēc ID
+GET http://localhost:8080/api/course-results/{{uuid}}
+Accept: application/json
+
+###
+
+### Iegūst visus rezultātus pēc kursa ID
+GET http://localhost:8080/api/course-results/by-course/{{courseUuid}}
+Accept: application/json
+
+###
+
+### Izveido jaunu kursa rezultātu
+POST http://localhost:8080/api/course-results
+Content-Type: application/json
+
+{
+  "course": {
+    "id": "COURSE_UUID_HERE"
+  },
+  "category": {
+    "id": "CATEGORY_UUID_HERE"
+  },
+  "language": "lv",
+  "learningOutcome": "Studējošais spēj pielietot algoritmus datu analīzē."
+}
+
+###
+
+### Atjauno kursa rezultātu
+PUT http://localhost:8080/api/course-results/{{uuid}}
+Content-Type: application/json
+
+{
+  "course": {
+    "id": "COURSE_UUID_HERE"
+  },
+  "category": {
+    "id": "CATEGORY_UUID_HERE"
+  },
+  "language": "lv",
+  "learningOutcome": "Atjaunināts rezultāts ar uzlabotu formulējumu."
+}
+
+###
+
+### Dzēš kursa rezultātu
+DELETE http://localhost:8080/api/course-results/{{uuid}}

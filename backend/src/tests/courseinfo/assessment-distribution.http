@@ -1,0 +1,46 @@
+### Iegūst visus vērtēšanas sadalījumus
+GET http://localhost:8080/api/assessment-distribution
+Accept: application/json
+
+###
+
+### Iegūst sadalījumu pēc ID
+GET http://localhost:8080/api/assessment-distribution/1
+Accept: application/json
+
+###
+
+### Izveido jaunu sadalījumu
+POST http://localhost:8080/api/assessment-distribution
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "1"
+  },
+  "component": {
+    "id": 1
+  },
+  "percentage": 40
+}
+
+###
+
+### Atjauno esošu sadalījumu
+PUT http://localhost:8080/api/assessment-distribution/1
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "UUID_HERE"
+  },
+  "component": {
+    "id": 1
+  },
+  "percentage": 60
+}
+
+###
+
+### Dzēš sadalījumu
+DELETE http://localhost:8080/api/assessment-distribution/1

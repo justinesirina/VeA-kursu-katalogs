@@ -1,0 +1,36 @@
+### Iegūst visas vērtēšanas formas
+GET http://localhost:8080/api/assessment-forms
+Accept: application/json
+
+###
+
+### Iegūst konkrētu vērtēšanas formu pēc ID
+GET http://localhost:8080/api/assessment-forms/1
+Accept: application/json
+
+###
+
+### Izveido jaunu vērtēšanas formu
+POST http://localhost:8080/api/assessment-forms
+Content-Type: application/json
+
+{
+  "name": "Eksāmens",
+  "description": "Studiju kursa noslēguma pārbaudījums"
+}
+
+###
+
+### Atjauno esošu vērtēšanas formu
+PUT http://localhost:8080/api/assessment-forms/1
+Content-Type: application/json
+
+{
+  "name": "Ieskaite",
+  "description": "Pārejas vērtējums bez atzīmes"
+}
+
+###
+
+### Dzēš vērtēšanas formu pēc ID
+DELETE http://localhost:8080/api/assessment-forms/2

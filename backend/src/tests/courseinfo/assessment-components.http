@@ -1,0 +1,36 @@
+### Iegūst visas vērtēšanas komponentes
+GET http://localhost:8080/api/assessment-components
+Accept: application/json
+
+###
+
+### Iegūst konkrētu komponenti pēc ID
+GET http://localhost:8080/api/assessment-components/1
+Accept: application/json
+
+###
+
+### Izveido jaunu komponenti
+POST http://localhost:8080/api/assessment-components
+Content-Type: application/json
+
+{
+  "name": "Studiju darbs",
+  "description": "Apjomīgs uzdevums semestra laikā"
+}
+
+###
+
+### Atjauno komponenti
+PUT http://localhost:8080/api/assessment-components/1
+Content-Type: application/json
+
+{
+  "name": "Prezentācija",
+  "description": "Publiska uzstāšanās kursa noslēgumā"
+}
+
+###
+
+### Dzēš komponenti
+DELETE http://localhost:8080/api/assessment-components/2

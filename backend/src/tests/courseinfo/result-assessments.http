@@ -1,0 +1,46 @@
+### Iegūst visas sasaistes
+GET http://localhost:8080/api/result-assessments
+Accept: application/json
+
+###
+
+### Iegūst konkrētu sasaisti pēc ID
+GET http://localhost:8080/api/result-assessments/1
+Accept: application/json
+
+###
+
+### Izveido jaunu sasaisti
+POST http://localhost:8080/api/result-assessments
+Content-Type: application/json
+
+{
+  "courseResult": {
+    "id": "COURSE_RESULT_UUID_HERE"
+  },
+  "component": {
+    "id": 1
+  },
+  "used": true
+}
+
+###
+
+### Atjauno esošu sasaisti
+PUT http://localhost:8080/api/result-assessments/1
+Content-Type: application/json
+
+{
+  "courseResult": {
+    "id": "COURSE_RESULT_UUID_HERE"
+  },
+  "component": {
+    "id": 1
+  },
+  "used": false
+}
+
+###
+
+### Dzēš sasaisti
+DELETE http://localhost:8080/api/result-assessments/1

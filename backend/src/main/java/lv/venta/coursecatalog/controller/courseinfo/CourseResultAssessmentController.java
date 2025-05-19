@@ -1,0 +1,60 @@
+package lv.venta.coursecatalog.controller.courseinfo;
+
+import lv.venta.coursecatalog.model.assessment.CourseResultAssessment;
+import lv.venta.coursecatalog.service.courseinfo.CourseResultAssessmentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/result-assessments")
+@CrossOrigin(origins = "*")
+public class CourseResultAssessmentController {
+
+    @Autowired
+    private CourseResultAssessmentService resultAssessmentService;
+
+    /**
+     * Iegūst visas sasaistes starp kursa rezultātiem un vērtēšanas komponentēm.
+     */
+    @GetMapping
+    public List<CourseResultAssessment> getAllLinks() {
+        return resultAssessmentService.getAllLinks();
+    }
+
+    /**
+     * Iegūst konkrētu sasaisti pēc ID.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<CourseResultAssessment> getLinkById(@PathVariable int id) {
+        return ResponseEntity.ok(resultAssessmentService.getLinkById(id));
+    }
+
+    /**
+     * Izveido jaunu sasaistes ierakstu.
+     */
+    @PostMapping
+    public ResponseEntity<CourseResultAssessment> createLink(@RequestBody CourseResultAssessment link) {
+        return ResponseEntity.ok(resultAssessmentService.createLink(link));
+    }
+
+    /**
+     * Atjauno esošu sasaisti.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<CourseResultAssessment> updateLink(@PathVariable int id,
+                                                             @RequestBody CourseResultAssessment updated) {
+        return ResponseEntity.ok(resultAssessmentService.updateLink(id, updated));
+    }
+
+    /**
+     * Dzēš sasaisti pēc ID.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteLink(@PathVariable int id) {
+        resultAssessmentService.deleteLinkById(id);
+        return ResponseEntity.noContent().build();
+    }
+}
