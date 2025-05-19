@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.assessment.AssessmentForm;
+import lv.venta.coursecatalog.model.courseinfo.CoursePrerequisites;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -89,4 +91,9 @@ public class CourseInfo {
 
     // Mīkstā dzēšana (soft delete)
     private LocalDateTime deletedAt;
+
+    //sasaiste ar CoursePrerequisites
+    @OneToMany(mappedBy = "courseInfo", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    private List<CoursePrerequisites> prerequisites;
 }

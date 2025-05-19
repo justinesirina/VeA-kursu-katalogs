@@ -1,0 +1,46 @@
+### Iegūst visus priekšnosacījumus
+GET http://localhost:8080/api/course-prerequisites
+Accept: application/json
+
+###
+
+### Iegūst konkrētu priekšnosacījumu pēc ID
+GET http://localhost:8080/api/course-prerequisites/1
+Accept: application/json
+
+###
+
+### Izveido jaunu priekšnosacījumu
+POST http://localhost:8080/api/course-prerequisites
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "COURSE_INFO_UUID_HERE"
+  },
+  "requiredCourse": {
+    "id": "COURSE_UUID_HERE"
+  },
+  "type": "required"
+}
+
+###
+
+### Atjauno priekšnosacījumu
+PUT http://localhost:8080/api/course-prerequisites/1
+Content-Type: application/json
+
+{
+  "courseInfo": {
+    "id": "COURSE_INFO_UUID_HERE"
+  },
+  "requiredCourse": {
+    "id": "COURSE_UUID_HERE"
+  },
+  "type": "recommended"
+}
+
+###
+
+### Dzēš priekšnosacījumu
+DELETE http://localhost:8080/api/course-prerequisites/1
