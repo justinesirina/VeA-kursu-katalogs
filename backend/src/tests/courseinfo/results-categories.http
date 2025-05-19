@@ -1,0 +1,34 @@
+### GET all categories
+GET http://localhost:8080/api/results-categories
+Accept: application/json
+
+###
+
+### CREATE category
+POST http://localhost:8080/api/results-categories
+Content-Type: application/json
+
+{
+  "name": "Zināšanas"
+}
+
+###
+
+### GET by ID
+GET http://localhost:8080/api/results-categories/00000000-0000-0000-0000-000000000001
+Accept: application/json
+
+###
+
+### UPDATE category
+PUT http://localhost:8080/api/results-categories/00000000-0000-0000-0000-000000000001
+Content-Type: application/json
+
+{
+  "name": "Prasmes"
+}
+
+###
+
+### DELETE category
+DELETE http://localhost:8080/api/results-categories/00000000-0000-0000-0000-000000000001
