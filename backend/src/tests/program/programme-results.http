@@ -5,7 +5,7 @@ Accept: application/json
 ###
 
 ### Iegūt programmas rezultātu pēc ID
-GET http://localhost:8080/api/programme-results/{{uuid}}
+GET http://localhost:8080/api/programme-results/0de335dd-7e74-4512-b670-9cc4ddfa8815
 Accept: application/json
 
 ###
@@ -19,7 +19,7 @@ Content-Type: application/json
     "id": 1
   },
   "category": {
-    "id": "b24ee2f0-b9c5-4cd2-a032-04ae11e6e9cd"
+    "id": "1"
   },
   "language": "lv",
   "learningOutcome": "Spēj izstrādāt vienkāršus algoritmus un programmēt tos izvēlētā valodā"
@@ -28,7 +28,7 @@ Content-Type: application/json
 ###
 
 ### Atjaunināt esošu programmas rezultātu
-PUT http://localhost:8080/api/programme-results/{{uuid}}
+PUT http://localhost:8080/api/programme-results/0de335dd-7e74-4512-b670-9cc4ddfa8815
 Content-Type: application/json
 
 {
@@ -36,7 +36,7 @@ Content-Type: application/json
     "id": 1
   },
   "category": {
-    "id": "b24ee2f0-b9c5-4cd2-a032-04ae11e6e9cd"
+    "id": "1"
   },
   "language": "en",
   "learningOutcome": "Able to develop simple algorithms and implement them in a selected programming language"
@@ -45,4 +45,4 @@ Content-Type: application/json
 ###
 
 ### Dzēst programmas rezultātu pēc ID
-DELETE http://localhost:8080/api/programme-results/{{uuid}}
+DELETE http://localhost:8080/api/programme-results/5e661726-fa17-4eac-9a4e-6470a962fe35

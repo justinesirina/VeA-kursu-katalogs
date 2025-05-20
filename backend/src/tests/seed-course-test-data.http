@@ -1,0 +1,120 @@
+### [1] Izveido fakultāti
+POST http://localhost:8080/api/faculties
+Content-Type: application/json
+
+{
+  "name": "Informācijas tehnoloģiju fakultāte",
+  "slug": "itf"
+}
+
+###
+
+### [2] Izveido studiju programmu (saista ar fakultāti id = 1 un direktorid = 1)
+# !!! Jāpārbauda vai User ar ID=1 pastāv.
+POST http://localhost:8080/api/study-programs
+Content-Type: application/json
+
+{
+  "name": "Datorzinātnes",
+  "slug": "datorzinas",
+  "facultyId": 1,
+  "directorId": 1
+}
+
+###
+
+### [3] Izveido studiju kursu
+POST http://localhost:8080/api/courses
+Content-Type: application/json
+
+{
+  "courseCode": "ITF101",
+  "titleLv": "Programmēšanas pamati",
+  "titleEn": "Introduction to Programming",
+  "slug": "prog-pamati",
+  "credits": 4
+}
+
+###
+
+### [4] Izveido kursa versiju
+POST http://localhost:8080/api/course-versions
+Content-Type: application/json
+
+{
+  "versionNumber": 2,
+  "slug": "java-v2",
+  "isArchived": false,
+  "isActive": false,
+  "approvalDate": "2025-05-11",
+  "decisionNumber": "Nr. 25-03",
+  "decisionReference": "ITF dome, 2025. gada 10. maijs",
+  "course": {
+    "id": "ffc2ffd8-466b-4c3f-9bb9-20ab0687a799"
+  },
+  "status": {
+    "id": 1
+  },
+  "academicYear": {
+    "id": 1
+  },
+  "semester": {
+    "id": 1
+  }
+}
+
+###
+
+### [5] Izveido kursa info (CourseInfo)
+POST http://localhost:8080/api/course-info
+Content-Type: application/json
+
+{
+  "course": {
+    "id": "ffc2ffd8-466b-4c3f-9bb9-20ab0687a799"
+  },
+  "courseVersion": {
+    "id": "89baa172-4c11-4c69-b679-c15117cda81c"
+  },
+  "academicHoursTotal": 40,
+  "lectureHours": 16,
+  "practClassesHours": 8,
+  "independentWorkHours": 16,
+  "prerequisitesDescription": "Zināšanas informātikā",
+  "goal": "Iepazīstināt ar datu struktūrām",
+  "annotation": "Kurss par klasiskajām datu struktūrām",
+  "assessmentForm": {
+    "id": 1
+  },
+  "language": "lv"
+}
+
+###
+
+### [6] Izveido kursa rezultātu
+POST http://localhost:8080/api/course-results
+Content-Type: application/json
+
+{
+  "course": {
+    "id": "ffc2ffd8-466b-4c3f-9bb9-20ab0687a799"
+  },
+  "category": {
+    "id": "1"
+  },
+  "language": "lv",
+  "learningOutcome": "Studējošais zina algoritmus datu analīzē."
+}
+
+###
+
+### [7] Izveido programmas rezultātu
+POST http://localhost:8080/api/programme-results
+Content-Type: application/json
+
+{
+  "studyProgramId": 1,
+  "categoryId": "1",
+  "language": "lv",
+  "learningOutcome": "Spēj izstrādāt vienkāršus IT risinājumus programmēšanas valodā."
+}

@@ -1,5 +1,6 @@
 package lv.venta.coursecatalog.model.program;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.user.User;
@@ -22,10 +23,12 @@ public class ProgrammeResult {
     @GeneratedValue
     private UUID id;
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "study_program_id")
     private StudyProgram studyProgram;
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id")
     private ResultsCategory category;
@@ -42,10 +45,12 @@ public class ProgrammeResult {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
     private User updatedBy;

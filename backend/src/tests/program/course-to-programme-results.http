@@ -1,0 +1,36 @@
+### [POST] Izveido kursa un programmas rezultātu sasaisti
+POST http://localhost:8080/api/course-to-programme-results
+Content-Type: application/json
+
+{
+  "courseInfo": { "id": "ced16f65-dfc7-4d5f-b599-300dab33e6bf" },
+  "courseResult": { "id": "5c0425e1-f1a1-4a77-982a-a4ec2ae8c96e" },
+  "programmeResult": { "id": "0de335dd-7e74-4512-b670-9cc4ddfa8815" }
+}
+
+###
+
+### [GET] Iegūst visas sasaistes
+GET http://localhost:8080/api/course-to-programme-results
+
+###
+
+### [GET] Iegūst konkrētu sasaisti pēc ID
+GET http://localhost:8080/api/course-to-programme-results/1
+
+###
+
+### [PUT] Atjaunina sasaisti ar ID = 1
+PUT http://localhost:8080/api/course-to-programme-results/1
+Content-Type: application/json
+
+{
+  "courseInfo": { "id": "ced16f65-dfc7-4d5f-b599-300dab33e6bf" },
+  "courseResult": { "id": "5c0425e1-f1a1-4a77-982a-a4ec2ae8c96e" },
+  "programmeResult": { "id": "36c56c5f-f8d1-4bdb-ba90-e6bdc3cfeae1" }
+}
+
+###
+
+### [DELETE] Dzēš sasaisti ar ID = 1
+DELETE http://localhost:8080/api/course-to-programme-results/1

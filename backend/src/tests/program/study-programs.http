@@ -16,7 +16,7 @@ Content-Type: application/json
 
 {
   "name": "Datorzinātnes",
-  "slug": "ITBs",
+  "slug": "ITM",
   "faculty": {
     "id": 1
   },
@@ -53,4 +53,4 @@ Content-Type: application/json
 ###
 
 ### Dzēst studiju programmu pēc ID
-DELETE http://localhost:8080/api/study-programs/1
+DELETE http://localhost:8080/api/study-programs/2

@@ -1,0 +1,77 @@
+### [1] Izveido lietotāju lomu “Admin”
+POST http://localhost:8080/api/user-roles
+Content-Type: application/json
+
+{
+  "roleName": "Admin"
+}
+
+###
+
+### [2] Izveido lietotāju ar lomu “Admin” (ID = 1)
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "Testa",
+  "surname": "Administrators",
+  "email": "admin@test.lv",
+  "role": {
+    "id": 1
+  },
+  "active": true
+}
+
+###
+
+### [3] Izveido versijas statusu “Apstiprināta”
+POST http://localhost:8080/api/version-statuses
+Content-Type: application/json
+
+{
+  "name": "Apstiprināta",
+  "description": "Versija ir apstiprināta un aktīva."
+}
+
+###
+
+### [4] Izveido akadēmisko gadu “2024/2025”
+POST http://localhost:8080/api/academic-years
+Content-Type: application/json
+
+{
+  "name": "2024/2025",
+  "startDate": "2024-09-01",
+  "endDate": "2025-06-30"
+}
+
+###
+
+### [5] Izveido semestri “Pavasara”
+POST http://localhost:8080/api/semesters
+Content-Type: application/json
+
+{
+  "name": "Pavasara"
+}
+
+###
+
+### [6] Izveido pārbaudes formu “Eksāmens”
+POST http://localhost:8080/api/assessment-forms
+Content-Type: application/json
+
+{
+  "name": "Eksāmens",
+  "description": "Studiju kursa gala pārbaudes forma"
+}
+
+###
+
+### [7] Izveido rezultātu kategoriju “Zināšanas”
+POST http://localhost:8080/api/results-categories
+Content-Type: application/json
+
+{
+  "name": "Zināšanas"
+}

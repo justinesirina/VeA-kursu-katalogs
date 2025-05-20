@@ -33,4 +33,4 @@ Content-Type: application/json
 ###
 
 ### Dzēst fakultāti pēc ID
-DELETE http://localhost:8080/api/faculties/1
+DELETE http://localhost:8080/api/faculties/4
