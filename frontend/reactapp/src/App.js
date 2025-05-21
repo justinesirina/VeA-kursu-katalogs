@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AllCourses from './pages/AllCourses';
-import CourseDetails from './pages/CourseDetails'; // vēl jāizveido
+import CourseDetails from './pages/CourseDetails';
 
 function App() {
     return (

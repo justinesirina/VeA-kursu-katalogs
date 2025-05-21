@@ -30,17 +30,19 @@ services:
   frontend-app:
     build:
       context: ./frontend/reactapp
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: frontend-app
     ports:
       - "3000:3000"
     volumes:
-     - ./frontend/reactapp:/app
-     - /app/node_modules
+      - ./frontend/reactapp:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
     depends_on:
       - backend-app
     networks:
-     - course_catalog_network
+      - course_catalog_network
 
 volumes:
   postgres_data:
