@@ -1,9 +1,16 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import AllCourses from './pages/AllCourses';
+import CourseDetails from './pages/CourseDetails'; // vēl jāizveido
+
 function App() {
-  return (
-      <div className="text-3xl font-bold text-blue-600 underline p-4">
-        Tailwind darbojas! 💙
-      </div>
-  );
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={<AllCourses />} />
+                <Route path="/courses/:id" element={<CourseDetails />} />
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;
