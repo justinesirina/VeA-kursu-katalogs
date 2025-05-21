@@ -1,0 +1,31 @@
+### [POST] Izveido kursa docētāju
+POST http://localhost:8080/api/course-teachers
+Content-Type: application/json
+
+{
+  "course": { "id": "38769e2d-6ada-4749-9dde-18f699340d83" },
+  "user": { "id": 1 },
+  "role": "vadītājs"
+}
+
+###
+
+### [GET] Iegūst visus kursa docētājus
+GET http://localhost:8080/api/course-teachers
+
+###
+
+### [PUT] Atjauno docētāju ar ID = 1
+PUT http://localhost:8080/api/course-teachers/1
+Content-Type: application/json
+
+{
+  "course": { "id": "38769e2d-6ada-4749-9dde-18f699340d83" },
+  "user": { "id": 1 },
+  "role": "asistents"
+}
+
+###
+
+### [DELETE] Dzēš docētāju ar ID = 1
+DELETE http://localhost:8080/api/course-teachers/1

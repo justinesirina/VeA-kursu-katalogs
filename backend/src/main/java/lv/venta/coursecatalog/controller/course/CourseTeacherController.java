@@ -1,0 +1,39 @@
+package lv.venta.coursecatalog.controller.course;
+
+import lv.venta.coursecatalog.model.course.CourseTeacher;
+import lv.venta.coursecatalog.service.course.CourseTeacherService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * Kontrolieris kursa docētāju API piekļuvei.
+ */
+@RestController
+@RequestMapping("/api/course-teachers")
+public class CourseTeacherController {
+
+    @Autowired
+    private CourseTeacherService service;
+
+    @GetMapping
+    public List<CourseTeacher> getAll() {
+        return service.getAll();
+    }
+
+    @PostMapping
+    public CourseTeacher create(@RequestBody CourseTeacher input) {
+        return service.create(input);
+    }
+
+    @PutMapping("/{id}")
+    public CourseTeacher update(@PathVariable int id, @RequestBody CourseTeacher input) throws Exception {
+        return service.update(id, input);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable int id) {
+        service.delete(id);
+    }
+}
