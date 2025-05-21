@@ -37,7 +37,7 @@ POST http://localhost:8080/api/course-to-study-programs
 Content-Type: application/json
 
 {
-  "course": { "id": "d791dcbe-62dc-4527-aa73-d19793a1db73" },
+  "course": { "id": "47a251e1-e02f-49a6-b61f-40f35b69a9b4" },
   "program": { "id": "1" }
 }
 

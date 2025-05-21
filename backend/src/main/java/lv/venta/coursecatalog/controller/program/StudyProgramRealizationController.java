@@ -1,0 +1,39 @@
+package lv.venta.coursecatalog.controller.program;
+
+import lv.venta.coursecatalog.model.program.StudyProgramRealization;
+import lv.venta.coursecatalog.service.program.StudyProgramRealizationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * Kontrolieris, kas nodrošina studiju programmu realizāciju API piekļuvi.
+ */
+@RestController
+@RequestMapping("/api/study-program-realizations")
+public class StudyProgramRealizationController {
+
+    @Autowired
+    private StudyProgramRealizationService service;
+
+    @GetMapping
+    public List<StudyProgramRealization> getAll() {
+        return service.getAll();
+    }
+
+    @PostMapping
+    public StudyProgramRealization create(@RequestBody StudyProgramRealization input) {
+        return service.create(input);
+    }
+
+    @PutMapping("/{id}")
+    public StudyProgramRealization update(@PathVariable int id, @RequestBody StudyProgramRealization input) throws Exception {
+        return service.update(id, input);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable int id) {
+        service.delete(id);
+    }
+}

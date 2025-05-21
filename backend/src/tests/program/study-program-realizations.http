@@ -1,0 +1,43 @@
+### [POST] Izveido studiju programmas realizāciju
+POST http://localhost:8080/api/study-program-realizations
+Content-Type: application/json
+
+{
+  "program": { "id": 1 },
+  "language": { "id": 1 },
+  "studyForm": { "id": 1 },
+  "level": { "id": 1 },
+  "durationYears": 3,
+  "credits": 180,
+  "qualification": "Programmēšanas tehniķis",
+  "degree": "Profesionālais bakalaurs",
+  "active": true
+}
+
+###
+
+### [GET] Iegūst visas realizācijas
+GET http://localhost:8080/api/study-program-realizations
+
+###
+
+### [PUT] Atjauno realizāciju ar ID = 1
+PUT http://localhost:8080/api/study-program-realizations/1
+Content-Type: application/json
+
+{
+  "program": { "id": 1 },
+  "language": { "id": 1 },
+  "studyForm": { "id": 1 },
+  "level": { "id": 1 },
+  "durationYears": 4,
+  "credits": 240,
+  "qualification": "Programmatūras inženieris",
+  "degree": "Profesionālais bakalaurs",
+  "active": true
+}
+
+###
+
+### [DELETE] Dzēš realizāciju ar ID = 1
+DELETE http://localhost:8080/api/study-program-realizations/1
