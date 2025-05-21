@@ -1,0 +1,77 @@
+### ===============================
+### [POST] Izveido darbību tipu
+POST http://localhost:8080/api/course-version-actions
+Content-Type: application/json
+
+{
+  "code": "approve",
+  "label": "Apstiprināšana",
+  "description": "Versijas apstiprināšanas darbība"
+}
+
+###
+
+### [POST] Izveido žurnāla ierakstu
+POST http://localhost:8080/api/course-version-logs
+Content-Type: application/json
+
+{
+  "courseVersion": { "id": "0502af48-92ef-4cbd-86c5-f5b220996573" },
+  "user": { "id": 1 },
+  "action": { "id": 1 },
+  "comment": "Apstiprināts ar korekcijām"
+}
+
+###
+
+### [POST] Izveido komentāru
+POST http://localhost:8080/api/course-version-comments
+Content-Type: application/json
+
+{
+  "courseVersion": { "id": "0502af48-92ef-4cbd-86c5-f5b220996573" },
+  "user": { "id": 1 },
+  "comment": "Nepieciešams papildināt anotāciju"
+}
+
+### ===============================
+### [GET] Iegūst visus ierakstus
+
+GET http://localhost:8080/api/course-version-actions
+###
+GET http://localhost:8080/api/course-version-logs
+###
+GET http://localhost:8080/api/course-version-comments
+
+### ===============================
+### [PUT] Atjauno žurnāla ierakstu ar ID = 1
+PUT http://localhost:8080/api/course-version-logs/1
+Content-Type: application/json
+
+{
+  "courseVersion": { "id": "0502af48-92ef-4cbd-86c5-f5b220996573" },
+  "user": { "id": 1 },
+  "action": { "id": 1 },
+  "comment": "Atjaunināts ieraksts ar piezīmēm"
+}
+
+###
+
+### [PUT] Atjauno komentāru ar ID = 1
+PUT http://localhost:8080/api/course-version-comments/1
+Content-Type: application/json
+
+{
+  "courseVersion": { "id": "0502af48-92ef-4cbd-86c5-f5b220996573" },
+  "user": { "id": 1 },
+  "comment": "Piezīme atjaunināta pēc saskaņošanas"
+}
+
+### ===============================
+### [DELETE] Dzēš ierakstus pēc ID
+
+DELETE http://localhost:8080/api/course-version-actions/1
+###
+DELETE http://localhost:8080/api/course-version-logs/1
+###
+DELETE http://localhost:8080/api/course-version-comments/1
