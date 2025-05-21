@@ -15,8 +15,8 @@ POST http://localhost:8080/api/study-programs
 Content-Type: application/json
 
 {
-  "name": "Datorzinātnes",
-  "slug": "datorzinas",
+  "name": "Datorzinātnes - maģistri",
+  "slug": "ITM",
   "facultyId": 1,
   "directorId": 1
 }

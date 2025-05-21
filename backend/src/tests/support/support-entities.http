@@ -1,0 +1,107 @@
+### -------------------------------
+### [POST] Izveido studiju līmeni
+POST http://localhost:8080/api/study-levels
+Content-Type: application/json
+
+{
+  "name": "Bakalaura",
+  "description": "Pamatlīmenis augstākajā izglītībā"
+}
+
+###
+
+### [POST] Izveido studiju formu
+POST http://localhost:8080/api/study-forms
+Content-Type: application/json
+
+{
+  "name": "Pilna laika",
+  "description": "Pilna laika klātienes studijas"
+}
+
+###
+
+### [POST] Izveido valodu
+POST http://localhost:8080/api/languages
+Content-Type: application/json
+
+{
+  "name": "Latviešu valoda",
+  "code": "lv"
+}
+
+###
+
+### [POST] Izveido kursa un programmas sasaisti (iegultie objekti ar ID)
+POST http://localhost:8080/api/course-to-study-programs
+Content-Type: application/json
+
+{
+  "course": { "id": "d791dcbe-62dc-4527-aa73-d19793a1db73" },
+  "program": { "id": "1" }
+}
+
+### ---------------------------------------------------
+### [GET] Pieprasījumi visām entītijām
+
+GET http://localhost:8080/api/study-levels
+###
+GET http://localhost:8080/api/study-forms
+###
+GET http://localhost:8080/api/languages
+###
+GET http://localhost:8080/api/course-to-study-programs
+
+### ---------------------------------------------------
+### [PUT] Atjauno studiju līmeni ar ID = 1
+PUT http://localhost:8080/api/study-levels/1
+Content-Type: application/json
+
+{
+  "name": "Bakalaura līmenis",
+  "description": "Atjaunināts apraksts"
+}
+
+###
+
+### [PUT] Atjauno studiju formu ar ID = 1
+PUT http://localhost:8080/api/study-forms/1
+Content-Type: application/json
+
+{
+  "name": "Nepilna laika",
+  "description": "Vakara vai brīvdienu studijas"
+}
+
+###
+
+### [PUT] Atjauno valodu ar ID = 1
+PUT http://localhost:8080/api/languages/1
+Content-Type: application/json
+
+{
+  "name": "Angļu valoda",
+  "code": "en"
+}
+
+###
+
+### [PUT] Atjauno sasaisti ar ID = 1
+PUT http://localhost:8080/api/course-to-study-programs/1
+Content-Type: application/json
+
+{
+  "course": { "id": "d791dcbe-62dc-4527-aa73-d19793a1db73" },
+  "program": { "id": "2" }
+}
+
+### ---------------------------------------------------
+### [DELETE] Dzēš ierakstus pēc ID (ja nepieciešams)
+
+DELETE http://localhost:8080/api/study-levels/1
+###
+DELETE http://localhost:8080/api/study-forms/1
+###
+DELETE http://localhost:8080/api/languages/1
+###
+DELETE http://localhost:8080/api/course-to-study-programs/1
