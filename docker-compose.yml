@@ -27,16 +27,21 @@ services:
     networks:
       - course_catalog_network
 
-# frontend-app:
-#   build:
-#     context: ./frontend
-#   container_name: frontend-app
-#   ports:
-#     - "3000:80"
-#   depends_on:
-#     - backend-app
-#   networks:
-#     - course_catalog_network
+  frontend-app:
+    build:
+      context: ./frontend/reactapp
+      dockerfile: Dockerfile
+    container_name: frontend-app
+    ports:
+      - "3000:3000"
+    volumes:
+     - ./frontend/reactapp:/app
+     - /app/node_modules
+    depends_on:
+      - backend-app
+    networks:
+     - course_catalog_network
+
 volumes:
   postgres_data:
 
