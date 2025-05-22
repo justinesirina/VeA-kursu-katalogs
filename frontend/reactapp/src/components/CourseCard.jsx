@@ -5,7 +5,12 @@ function CourseCard({ course }) {
 
     return (
         <div className="bg-white rounded shadow p-4 border hover:shadow-lg transition">
-            <h3 className="text-xl font-semibold mb-1">{course.titleLv}</h3>
+            <h3
+                className="text-xl font-semibold mb-1 text-blue-600 hover:underline cursor-pointer"
+                onClick={() => navigate(`/courses/${course.id}`)}
+            >
+                {course.titleLv}
+            </h3>
             <p className="text-sm text-gray-600 mb-1">Kods: {course.courseCode}</p>
             <p className="text-sm text-gray-600 mb-3">Kredītpunkti: {course.credits}</p>
             <button
