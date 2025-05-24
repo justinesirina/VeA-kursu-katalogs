@@ -1,5 +1,6 @@
 package lv.venta.coursecatalog.model.course;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -93,10 +94,11 @@ public class Course {
     private LocalDateTime deletedAt;
 
     /**
-     * Visas šī studiju kursa versijas. Bidirekcionāla saite ar CourseVersion.
+     * Visas šī studiju kursa versijas. Saite ar CourseVersion.
      * Tiek ielādētas tikai pēc pieprasījuma (LAZY fetch).
      */
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @ToString.Exclude
+    @JsonManagedReference
     private List<CourseVersion> courseVersions;
 }

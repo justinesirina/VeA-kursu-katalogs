@@ -6,7 +6,7 @@
 target/
 out/
 
-# Node.js nākotnes frontendam
+# Node.js
 node_modules/
 build/
 

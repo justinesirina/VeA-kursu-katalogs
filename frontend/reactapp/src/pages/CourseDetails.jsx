@@ -10,39 +10,13 @@ function CourseDetails() {
     useEffect(() => {
         axios.get(`/api/courses/${id}`)
             .then(response => setCourse(response.data))
-            .catch(() => {
-                // MOCK: Pilns kursa apraksts
-                setCourse({
-                    courseCode: 'ITB123',
-                    titleLv: 'Datu struktūras un pamatalgoritmi',
-                    credits: 4,
-                    version: {
-                        versionNumber: 1,
-                        academicYear: { name: '2024/2025' },
-                        semester: { name: 'Rudens' },
-                        status: { name: 'Apstiprināts' },
-                        approvalDate: '2024-05-10'
-                    },
-                    info: {
-                        goal: 'Sniegt pamatzināšanas par datu struktūrām un to pielietojumu.',
-                        annotation: 'Kurss aptver pamata datu struktūras un algoritmus.',
-                        prerequisitesDescription: 'Programmēšanas pamati',
-                        academicHoursTotal: 32,
-                        lectureHours: 16,
-                        practClassesHours: 16,
-                        independentWorkHours: 48,
-                        assessmentForm: { name: 'Eksāmens' },
-                        language: 'Latviešu',
-                        studyField: 'Informācijas tehnoloģijas',
-                        laisCode: 'DatZB031',
-                        studyPart: 'Obligātā daļa'
-                    },
-                    createdBy: { name: 'Dace', surname: 'Docētāja' }
-                });
+            .catch((error) => {
+                console.error('Kļūda ielādējot kursa datus:', error);
+                setCourse(null);
             });
     }, [id]);
 
-    if (!course) return <div className="p-6">Notiek ielāde...</div>;
+    if (!course) return <div className="p-6">Notiek ielāde vai kursa dati nav pieejami.</div>;
 
     const version = course.version || {};
     const info = course.info || {};

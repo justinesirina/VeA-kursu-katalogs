@@ -1,5 +1,7 @@
 package lv.venta.coursecatalog.model.course;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.support.AcademicYear;
@@ -36,6 +38,7 @@ public class CourseVersion {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "course_id", nullable = false)
+    @JsonBackReference
     private Course course;
 
     /**
@@ -49,6 +52,7 @@ public class CourseVersion {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "status_id", nullable = false)
+    @JsonIgnoreProperties({"courseVersions"})
     private VersionStatus status;
 
     /**
@@ -70,6 +74,7 @@ public class CourseVersion {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "created_by", nullable = true)
+    @JsonIgnoreProperties({"createdCourseVersions", "updatedCourseVersions"})
     private User createdBy;
 
     /**
@@ -77,6 +82,7 @@ public class CourseVersion {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "updated_by", nullable = true)
+    @JsonIgnoreProperties({"createdCourseVersions", "updatedCourseVersions"})
     private User updatedBy;
 
     @Column(name = "is_archived", nullable = false)
@@ -90,6 +96,7 @@ public class CourseVersion {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "academic_year_id", nullable = false)
+    @JsonIgnoreProperties({"courseVersions"})
     private AcademicYear academicYear;
 
     /**
@@ -97,6 +104,7 @@ public class CourseVersion {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "semester_id", nullable = false)
+    @JsonIgnoreProperties({"courseVersions"})
     private Semester semester;
 
     /**

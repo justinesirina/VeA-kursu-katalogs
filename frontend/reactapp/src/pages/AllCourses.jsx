@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../services/axiosConfig';
 import CourseCard from '../components/CourseCard';
 import ViewToggle from '../components/ViewToggle';
 
@@ -8,32 +8,34 @@ function AllCourses() {
     const [query, setQuery] = useState('');
     const [view, setView] = useState('cards');
 
-
     useEffect(() => {
-        axios.get('/api/courses')
-            .then(res => setCourses(res.data))
-            .catch(() => {
+        api.get('/courses')
+            .then(response => {
+                console.log('Saņemtie dati no API:', response.data);
+
+                if (Array.isArray(response.data)) {
+                    setCourses(response.data);
+                } else {
+                    console.warn('API neatgrieza masīvu. Tiek izmantoti mock dati.');
+                    setCourses([
+                        { id: '1', courseCode: 'ITB101', titleLv: 'Programmēšanas pamati', credits: 4 }
+                    ]);
+                }
+            })
+            .catch(error => {
+                console.error('Kļūda ielādējot kursus:', error);
                 setCourses([
-                    {
-                        id: 'mock-1',
-                        courseCode: 'ITB101',
-                        titleLv: 'Programmēšanas pamati',
-                        credits: 4
-                    },
-                    {
-                        id: 'mock-2',
-                        courseCode: 'ITB102',
-                        titleLv: 'Datu struktūras',
-                        credits: 3
-                    }
+                    { id: '1', courseCode: 'ITB101', titleLv: 'Programmēšanas pamati', credits: 4 }
                 ]);
             });
     }, []);
 
-    const filteredCourses = courses.filter(course =>
-        course.titleLv.toLowerCase().includes(query.toLowerCase()) ||
-        course.courseCode.toLowerCase().includes(query.toLowerCase())
-    );
+    const filteredCourses = Array.isArray(courses)
+        ? courses.filter(course =>
+            course.titleLv?.toLowerCase().includes(query.toLowerCase()) ||
+            course.courseCode?.toLowerCase().includes(query.toLowerCase())
+        )
+        : [];
 
     return (
         <div className="p-6 max-w-6xl mx-auto">
@@ -48,7 +50,6 @@ function AllCourses() {
                     value={query}
                     onChange={e => setQuery(e.target.value)}
                 />
-            {/* Pārslēgšanas poga */}
                 <ViewToggle view={view} setView={setView} />
             </div>
 
@@ -75,14 +76,13 @@ function AllCourses() {
                     {filteredCourses.map(course => (
                         <tr key={course.id} className="border-t hover:bg-gray-50">
                             <td className="p-2">
-                              <span
-                                  onClick={() => window.location.href = `/courses/${course.id}`}
-                                  className="text-blue-600 hover:underline cursor-pointer"
-                              >
-                                {course.titleLv}
-                              </span>
+                                    <span
+                                        onClick={() => window.location.href = `/courses/${course.id}`}
+                                        className="text-blue-600 hover:underline cursor-pointer"
+                                    >
+                                        {course.titleLv}
+                                    </span>
                             </td>
-
                             <td className="p-2">{course.courseCode}</td>
                             <td className="p-2">{course.credits}</td>
                             <td className="p-2">
