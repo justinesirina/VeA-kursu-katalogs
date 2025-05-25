@@ -1,5 +1,6 @@
 package lv.venta.coursecatalog.repository.course;
 
+import lv.venta.coursecatalog.model.course.Course;
 import lv.venta.coursecatalog.model.course.CourseVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -7,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -32,4 +34,7 @@ public interface CourseVersionRepository extends JpaRepository<CourseVersion, UU
      * Atrod visas versijas, kas aktīvas (piemēram, lai lietotājam rādītu tikai aktuālo versiju).
      */
     List<CourseVersion> findByIsActiveTrue();
+
+    Optional<CourseVersion> findTopByCourseAndIsActiveTrueOrderByVersionNumberDesc(Course course);
+
 }

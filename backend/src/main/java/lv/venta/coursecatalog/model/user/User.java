@@ -46,6 +46,18 @@ public class User {
     private String email;
 
     /**
+     * Lietotāja zinātniskais grāds, piemēram: “Mg.sc.comp.”.
+     */
+    @Column(name = "academic_degree")
+    private String academicDegree;
+
+    /**
+     * Lietotāja amats vai akadēmiskā pozīcija, piemēram, lektors, dekāns.
+     */
+    @Column(name = "position")
+    private String position;
+
+    /**
      * Lietotāja loma sistēmā (atsauce uz user_roles).
      */
     @ManyToOne(fetch = FetchType.EAGER)

@@ -17,11 +17,14 @@ Thumbs.db
 *.class
 
 # Sensitīvi konfigurācijas faili
-application.properties
-application.yml
+#application.properties
+#application.yml
 .env
 
-# Docker lokālie faili
-docker-compose.override.yml
-*.jar
+# Docker datu apjoms (bet NE izpildfaili)
 docker-data/
+postgres_data/
+
+# Docker lokālie faili
+#docker-compose.override.yml
+#*.jar

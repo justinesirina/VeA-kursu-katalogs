@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.support.AcademicYear;
+import lv.venta.coursecatalog.model.support.Faculty;
 import lv.venta.coursecatalog.model.support.Semester;
 import lv.venta.coursecatalog.model.support.VersionStatus;
 import lv.venta.coursecatalog.model.user.User;
@@ -90,6 +91,13 @@ public class CourseVersion {
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = false;
+
+    /**
+     * Saite ar fakultāti, kas atbild par kursa versijas īstenošanu.
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "faculty_id", nullable = true)
+    private Faculty faculty;
 
     /**
      * Atsauce uz akadēmisko gadu, kurā šī kursa versija ir spēkā.

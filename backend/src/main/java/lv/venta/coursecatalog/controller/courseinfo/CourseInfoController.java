@@ -1,6 +1,7 @@
 package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CourseInfo;
+import lv.venta.coursecatalog.model.dto.CourseDetailsDTO;
 import lv.venta.coursecatalog.service.courseinfo.CourseInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -57,5 +58,22 @@ public class CourseInfoController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         infoService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+    /**
+     * Atgriež informāaciju priekš CourseDetails.jsx skata.
+     */
+    @GetMapping("/details/{courseId}")
+    public ResponseEntity<CourseDetailsDTO> getCourseDetails(@PathVariable UUID courseId) {
+        // Izsauc servisa metodi, kas atgriež detalizētu informāciju par kursu DTO formā
+        CourseDetailsDTO dto = infoService.getCourseDetailsById(courseId);
+
+        // Ja DTO tika veiksmīgi izveidots, atgriežam ar statusu 200 OK
+        if (dto != null) {
+            return ResponseEntity.ok(dto);
+        }
+        // Ja kurss nav atrasts, atgriežam statusu 404 Not Found
+        else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

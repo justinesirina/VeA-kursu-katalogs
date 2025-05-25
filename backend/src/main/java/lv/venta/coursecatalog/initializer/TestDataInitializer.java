@@ -10,6 +10,12 @@ import lv.venta.coursecatalog.model.support.Semester;
 import lv.venta.coursecatalog.model.support.VersionStatus;
 import lv.venta.coursecatalog.model.user.User;
 import lv.venta.coursecatalog.model.user.UserRole;
+import lv.venta.coursecatalog.model.support.Faculty;
+import lv.venta.coursecatalog.service.support.FacultyService;
+import lv.venta.coursecatalog.model.courseinfo.CourseInfo;
+import lv.venta.coursecatalog.model.courseinfo.AssessmentForm;
+import lv.venta.coursecatalog.service.courseinfo.CourseInfoService;
+import lv.venta.coursecatalog.service.courseinfo.AssessmentFormService;
 import lv.venta.coursecatalog.service.course.CourseServiceImpl;
 import lv.venta.coursecatalog.service.course.CourseVersionService;
 import lv.venta.coursecatalog.service.support.AcademicYearService;
@@ -32,6 +38,10 @@ public class TestDataInitializer {
     private final AcademicYearService yearService;
     private final SemesterService semesterService;
     private final VersionStatusService versionStatusService;
+    private final FacultyService facultyService;
+    private final CourseInfoService courseInfoService;
+    private final AssessmentFormService assessmentFormService;
+
 
     @PostConstruct
     public void init() {
@@ -47,8 +57,16 @@ public class TestDataInitializer {
         author.setName("Dace");
         author.setSurname("Docētāja");
         author.setEmail("dace@venta.lv");
+        author.setAcademicDegree("Mg.sc.comp.");
+        author.setPosition("lektore");
         author.setRole(lecturerRole);
         userService.save(author);
+
+        // Izveidojam fakultāti
+        Faculty faculty = new Faculty();
+        faculty.setName("ITF");
+        faculty.setSlug("itf");
+        facultyService.createFaculty(faculty);
 
         // Izveidojam kursu
         Course course = new Course();
@@ -88,6 +106,7 @@ public class TestDataInitializer {
         version.setUpdatedBy(author);
         version.setActive(true);
         version.setArchived(false);
+        version.setFaculty(faculty);
         version.setAcademicYear(year);
         version.setSemester(semester);
         version.setApprovalDate(LocalDate.of(2024, 6, 1));
@@ -95,5 +114,28 @@ public class TestDataInitializer {
         version.setDecisionReference("ITF domes sēde, 2024.06.01");
 
         courseVersionService.saveCourseVersion(version);
+
+        // Izveidojam pārbaudes formu
+        AssessmentForm examForm = new AssessmentForm();
+        examForm.setName("Eksāmens");
+        assessmentFormService.createForm(examForm);
+
+        // Izveidojam CourseInfo
+        CourseInfo info = new CourseInfo();
+        info.setCourse(course);
+        info.setCourseVersion(version);
+        info.setAssessmentForm(examForm);
+        info.setAcademicHoursTotal(36);
+        info.setLectureHours(18);
+        info.setPractClassesHours(18);
+        info.setIndependentWorkHours(54);
+        info.setLanguage("lv");
+        info.setAnnotation("Šis kurss iepazīstina ar programmēšanas pamatiem.");
+        info.setGoal("Iemācīt studentiem programmēšanas pamatprincipus.");
+        info.setPrerequisitesDescription("Nepieciešamas pamatzināšanas matemātikā un loģikā.");
+        info.setCreatedBy(author);
+        info.setUpdatedBy(author);
+
+        courseInfoService.create(info);
     }
 }
