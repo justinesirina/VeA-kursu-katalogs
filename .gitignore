@@ -2,29 +2,31 @@
 .idea/
 *.iml
 
-# Maven
+# Java / Maven
+backend/target/
 target/
 out/
+*.class
+*.jar
 
-# Node.js
+# Node.js / React
+frontend/reactapp/node_modules/
 node_modules/
 build/
+frontend/reactapp/build/
 
-# Sistēmas un pagaidu faili
+# Logs
+*.log
+
+# OS faili
 .DS_Store
 Thumbs.db
-*.log
-*.class
 
-# Sensitīvi konfigurācijas faili
-#application.properties
-#application.yml
+# Environment / config
 .env
 
-# Docker datu apjoms (bet NE izpildfaili)
-docker-data/
+# Database
 postgres_data/
 
-# Docker lokālie faili
-#docker-compose.override.yml
-#*.jar
+# Docker
+docker-compose.override.yml
