@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-CourseCatalogApplication<course-catalog>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "lv.venta.coursecatalog.CourseCatalogApplication",
+            "projectName": "course-catalog",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
