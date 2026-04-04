@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/axiosConfig';
 import CourseCard from '../components/CourseCard';
 import ViewToggle from '../components/ViewToggle';
@@ -7,41 +8,41 @@ function AllCourses() {
     const [courses, setCourses] = useState([]);
     const [query, setQuery] = useState('');
     const [view, setView] = useState('cards');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
+        setLoading(true);
+        setError(null);
         api.get('/courses')
             .then(response => {
-                console.log('Saņemtie dati no API:', response.data);
-
                 if (Array.isArray(response.data)) {
                     setCourses(response.data);
                 } else {
-                    console.warn('API neatgrieza masīvu. Tiek izmantoti mock dati.');
-                    setCourses([
-                        { id: '1', courseCode: 'ITB101', titleLv: 'Programmēšanas pamati', credits: 4 }
-                    ]);
+                    console.warn('API neatgrieza masīvu:', response.data);
+                    setCourses([]);
                 }
             })
             .catch(error => {
                 console.error('Kļūda ielādējot kursus:', error);
-                setCourses([
-                    { id: '1', courseCode: 'ITB101', titleLv: 'Programmēšanas pamati', credits: 4 }
-                ]);
-            });
+                setError('Neizdevās ielādēt kursus. Lūdzu, pārbaudi, vai serveris darbojas.');
+            })
+            .finally(() => setLoading(false));
     }, []);
 
-    const filteredCourses = Array.isArray(courses)
-        ? courses.filter(course =>
-            course.titleLv?.toLowerCase().includes(query.toLowerCase()) ||
-            course.courseCode?.toLowerCase().includes(query.toLowerCase())
-        )
-        : [];
+    const filteredCourses = courses.filter(course =>
+        course.titleLv?.toLowerCase().includes(query.toLowerCase()) ||
+        course.courseCode?.toLowerCase().includes(query.toLowerCase())
+    );
+
+    if (loading) return <div className="p-8 text-center text-gray-500">Ielādē kursus...</div>;
+    if (error) return <div className="p-8 text-red-600">{error}</div>;
 
     return (
         <div className="p-6 max-w-6xl mx-auto">
             <h1 className="text-3xl font-bold mb-4">Visi studiju kursi</h1>
 
-            {/* Meklēšanas ievade */}
             <div className="flex items-center justify-between mb-4">
                 <input
                     type="text"
@@ -53,7 +54,6 @@ function AllCourses() {
                 <ViewToggle view={view} setView={setView} />
             </div>
 
-            {/* Kursu attēlošana pēc izvēlētā skata */}
             {filteredCourses.length === 0 ? (
                 <p className="text-gray-600">Nav neviena kursa, kas atbilst meklēšanai.</p>
             ) : view === 'cards' ? (
@@ -76,19 +76,19 @@ function AllCourses() {
                     {filteredCourses.map(course => (
                         <tr key={course.id} className="border-t hover:bg-gray-50">
                             <td className="p-2">
-                                    <span
-                                        onClick={() => window.location.href = `/courses/${course.id}`}
-                                        className="text-blue-600 hover:underline cursor-pointer"
-                                    >
-                                        {course.titleLv}
-                                    </span>
+                                <span
+                                    onClick={() => navigate(`/courses/${course.id}`)}
+                                    className="text-blue-600 hover:underline cursor-pointer"
+                                >
+                                    {course.titleLv}
+                                </span>
                             </td>
                             <td className="p-2">{course.courseCode}</td>
                             <td className="p-2">{course.credits}</td>
                             <td className="p-2">
                                 <button
                                     className="text-blue-600 hover:underline text-sm"
-                                    onClick={() => window.location.href = `/courses/${course.id}`}
+                                    onClick={() => navigate(`/courses/${course.id}`)}
                                 >
                                     Skatīt
                                 </button>

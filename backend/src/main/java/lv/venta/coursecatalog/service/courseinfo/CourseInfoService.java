@@ -67,6 +67,26 @@ public class CourseInfoService {
     private LiteratureSourceRepository literatureRepo;
 
     /**
+     * Veido docētāja pilno nosaukumu ar grādu un amatu.
+     * Null vērtības tiek izlaistas, lai izvairītos no "null, null Vārds Uzvārds".
+     */
+    private String buildAuthorTitle(String degree, String position, String name, String surname) {
+        StringBuilder sb = new StringBuilder();
+        if (degree != null && !degree.isBlank()) sb.append(degree);
+        if (position != null && !position.isBlank()) {
+            if (!sb.isEmpty()) sb.append(", ");
+            sb.append(position);
+        }
+        if (!sb.isEmpty()) sb.append(" ");
+        if (name != null) sb.append(name);
+        if (surname != null) {
+            if (name != null) sb.append(" ");
+            sb.append(surname);
+        }
+        return sb.toString().trim();
+    }
+
+    /**
      * Iegūst visus CourseInfo ierakstus.
      */
     public List<CourseInfo> getAll() {
@@ -141,7 +161,7 @@ public class CourseInfoService {
 
         CourseDetailsDTO dto = new CourseDetailsDTO();
 
-        dto.setVersionStatus(version.getStatus().getName());
+        dto.setVersionStatus(version.getStatus() != null ? version.getStatus().getName() : null);
         if (version.getApprovalDate() != null)
             dto.setApprovalDate(version.getApprovalDate().toString());
         if (version.getDecisionNumber() != null)
@@ -160,8 +180,8 @@ public class CourseInfoService {
         dto.setLectureHours(info.getLectureHours());
         dto.setPractClassesHours(info.getPractClassesHours());
 
-        dto.setAcademicYear(version.getAcademicYear().getName());
-        dto.setSemester(version.getSemester().getName());
+        dto.setAcademicYear(version.getAcademicYear() != null ? version.getAcademicYear().getName() : null);
+        dto.setSemester(version.getSemester() != null ? version.getSemester().getName() : null);
         dto.setLanguage(info.getLanguage());
 
         dto.setFacultyName(version.getFaculty() != null ? version.getFaculty().getName() : null);
@@ -173,14 +193,14 @@ public class CourseInfoService {
 
         if (!authors.isEmpty()) {
             var user = authors.get(0).getUser();
-            authorName = user.getAcademicDegree() + ", " + user.getPosition() + " " +
-                    user.getName() + " " + user.getSurname();
+            authorName = buildAuthorTitle(user.getAcademicDegree(), user.getPosition(),
+                    user.getName(), user.getSurname());
         } else {
             List<CourseTeacher> teachers = courseTeacherRepo.findByCourseId(course.getId());
             if (!teachers.isEmpty()) {
                 var user = teachers.get(0).getUser();
-                authorName = user.getAcademicDegree() + ", " + user.getPosition() + " " +
-                        user.getName() + " " + user.getSurname();
+                authorName = buildAuthorTitle(user.getAcademicDegree(), user.getPosition(),
+                        user.getName(), user.getSurname());
             }
         }
         dto.setAuthorFullTitle(authorName);
@@ -188,6 +208,7 @@ public class CourseInfoService {
         // --- Studiju kursa priekšnosacījumi ---
         List<PrerequisiteDTO> prereqDtos = new ArrayList <>();
         coursePrereqRepo.findByCourseInfo(info).forEach(prereq -> {
+            if (prereq.getRequiredCourse() == null) return;
             String title = prereq.getRequiredCourse().getTitleLv();
             String type = prereq.getType(); // sagaidām “obligāts” vai “ieteicams”
             prereqDtos.add(new PrerequisiteDTO(title, type));

@@ -1,7 +1,6 @@
 package lv.venta.coursecatalog.controller.course;
 
 import lv.venta.coursecatalog.model.course.CourseVersion;
-import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
 import lv.venta.coursecatalog.service.course.CourseVersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -69,10 +68,4 @@ public class CourseVersionController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/api/debug/course-versions")
-    public List<CourseVersion> debugAllVersions(@Autowired CourseVersionRepository repo) {
-        List<CourseVersion> list = repo.findAll();
-        System.out.println(">>> DEBUG GET: Kursa versijas no repo: " + list.size());
-        return list;
-    }
 }
