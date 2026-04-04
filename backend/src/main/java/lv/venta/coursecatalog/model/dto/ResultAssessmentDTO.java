@@ -22,6 +22,9 @@ public class ResultAssessmentDTO {
     // SKR kā teksts (piemēram, "Spēj veikt datu struktūru implementāciju")
     private String learningOutcome;
 
+    // Kategorijas nosaukums (piemēram: "Zināšanas", "Prasmes", "Kompetences")
+    private String categoryName;
+
     // SPSR — studiju programmas studiju rezultāts, kuram atbilst šis SKR (var būt null)
     private String spsr;
 

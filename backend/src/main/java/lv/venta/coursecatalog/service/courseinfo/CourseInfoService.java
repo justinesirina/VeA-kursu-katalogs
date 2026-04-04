@@ -194,24 +194,21 @@ public class CourseInfoService {
 
         dto.setFacultyName(version.getFaculty() != null ? version.getFaculty().getName() : null);
 
-        // --- Autora (docētāja) vārds ar grādu un amatu ---
-        String authorName = null;
-
+        // --- Kursa autors ---
         List<CourseAuthor> authors = courseAuthorRepo.findByCourseId(course.getId());
-
         if (!authors.isEmpty()) {
             var user = authors.get(0).getUser();
-            authorName = buildAuthorTitle(user.getAcademicDegree(), user.getPosition(),
-                    user.getName(), user.getSurname());
-        } else {
-            List<CourseTeacher> teachers = courseTeacherRepo.findByCourseId(course.getId());
-            if (!teachers.isEmpty()) {
-                var user = teachers.get(0).getUser();
-                authorName = buildAuthorTitle(user.getAcademicDegree(), user.getPosition(),
-                        user.getName(), user.getSurname());
-            }
+            dto.setAuthorFullTitle(buildAuthorTitle(user.getAcademicDegree(), user.getPosition(),
+                    user.getName(), user.getSurname()));
         }
-        dto.setAuthorFullTitle(authorName);
+
+        // --- Atbildīgais mācībspēks (var atšķirties no autora) ---
+        List<CourseTeacher> teachers = courseTeacherRepo.findByCourseId(course.getId());
+        if (!teachers.isEmpty()) {
+            var user = teachers.get(0).getUser();
+            dto.setTeacherFullTitle(buildAuthorTitle(user.getAcademicDegree(), user.getPosition(),
+                    user.getName(), user.getSurname()));
+        }
 
         // --- Studiju kursa priekšnosacījumi ---
         List<PrerequisiteDTO> prereqDtos = new ArrayList <>();
@@ -259,7 +256,13 @@ public class CourseInfoService {
             String spsr = spsrLinks.isEmpty() ? null
                     : spsrLinks.get(0).getProgrammeResult().getLearningOutcome();
 
-            assessmentCriteriaDtos.add(new ResultAssessmentDTO(cr.getId(), cr.getLearningOutcome(), spsr, components));
+            assessmentCriteriaDtos.add(new ResultAssessmentDTO(
+                    cr.getId(),
+                    cr.getLearningOutcome(),
+                    cr.getCategory() != null ? cr.getCategory().getName() : null,
+                    spsr,
+                    components
+            ));
         });
         dto.setResultAssessments(assessmentCriteriaDtos);
 
