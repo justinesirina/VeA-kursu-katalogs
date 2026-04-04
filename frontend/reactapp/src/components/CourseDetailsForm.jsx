@@ -2,7 +2,7 @@
 // Tas ir pirmais solis, lai pārbaudītu, ka frontend korekti saglabā datus backend pusē.
 
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../services/axiosConfig';
 
 function CourseDetailsForm() {
     // Kursa pamata informācija atbilstoši Course entītijai
@@ -31,7 +31,7 @@ function CourseDetailsForm() {
                 credits: Number(course.credits)
             };
 
-            const res = await axios.post('/api/courses', payload);
+            const res = await api.post('/courses', payload);
 
             setCourseId(res.data.id);
             alert('Kurss veiksmīgi saglabāts!');

@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../services/axiosConfig';
 
 function CourseDetails() {
     const { id } = useParams();
@@ -8,7 +8,7 @@ function CourseDetails() {
     const [course, setCourse] = useState(null);
 
     useEffect(() => {
-        axios.get(`/api/courses/${id}`)
+        api.get(`/courses/${id}`)
             .then(response => setCourse(response.data))
             .catch((error) => {
                 console.error('Kļūda ielādējot kursa datus:', error);
