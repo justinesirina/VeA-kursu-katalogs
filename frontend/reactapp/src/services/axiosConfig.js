@@ -1,9 +1,12 @@
 import axios from 'axios';
 
-const isDocker = window.location.hostname !== 'localhost';
+// Use Docker backend hostname only when explicitly running inside Docker network.
+// When running locally (npm start), always use localhost regardless of how the
+// browser accesses the page (localhost, 127.0.0.1, host.docker.internal, etc.)
+const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
-    baseURL: isDocker ? 'http://backend-app:8080/api' : 'http://localhost:8080/api',
+    baseURL: backendUrl,
 });
 
 export default api;
