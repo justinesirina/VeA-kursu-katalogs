@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.program;
 
 import lv.venta.coursecatalog.model.program.StudyProgramRealization;
 import lv.venta.coursecatalog.service.program.StudyProgramRealizationService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +24,12 @@ public class StudyProgramRealizationController {
     }
 
     @PostMapping
-    public StudyProgramRealization create(@RequestBody StudyProgramRealization input) {
+    public StudyProgramRealization create(@Valid @RequestBody StudyProgramRealization input) {
         return service.create(input);
     }
 
     @PutMapping("/{id}")
-    public StudyProgramRealization update(@PathVariable int id, @RequestBody StudyProgramRealization input) throws Exception {
+    public StudyProgramRealization update(@PathVariable int id, @Valid @RequestBody StudyProgramRealization input) throws Exception {
         return service.update(id, input);
     }
 

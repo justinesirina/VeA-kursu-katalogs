@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.support;
 
 import lv.venta.coursecatalog.model.support.StudyForm;
 import lv.venta.coursecatalog.service.support.StudyFormService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +24,12 @@ public class StudyFormController {
     }
 
     @PostMapping
-    public StudyForm create(@RequestBody StudyForm input) {
+    public StudyForm create(@Valid @RequestBody StudyForm input) {
         return service.create(input);
     }
 
     @PutMapping("/{id}")
-    public StudyForm update(@PathVariable int id, @RequestBody StudyForm input) throws Exception {
+    public StudyForm update(@PathVariable int id, @Valid @RequestBody StudyForm input) throws Exception {
         return service.update(id, input);
     }
 

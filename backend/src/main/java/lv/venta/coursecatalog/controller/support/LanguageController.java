@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.support;
 
 import lv.venta.coursecatalog.model.support.Language;
 import lv.venta.coursecatalog.service.support.LanguageService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +24,12 @@ public class LanguageController {
     }
 
     @PostMapping
-    public Language create(@RequestBody Language input) {
+    public Language create(@Valid @RequestBody Language input) {
         return service.create(input);
     }
 
     @PutMapping("/{id}")
-    public Language update(@PathVariable int id, @RequestBody Language input) throws Exception {
+    public Language update(@PathVariable int id, @Valid @RequestBody Language input) throws Exception {
         return service.update(id, input);
     }
 

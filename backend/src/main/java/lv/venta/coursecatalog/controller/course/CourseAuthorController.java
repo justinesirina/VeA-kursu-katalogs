@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.course;
 
 import lv.venta.coursecatalog.model.course.CourseAuthor;
 import lv.venta.coursecatalog.service.course.CourseAuthorService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +24,12 @@ public class CourseAuthorController {
     }
 
     @PostMapping
-    public CourseAuthor create(@RequestBody CourseAuthor input) {
+    public CourseAuthor create(@Valid @RequestBody CourseAuthor input) {
         return service.create(input);
     }
 
     @PutMapping("/{id}")
-    public CourseAuthor update(@PathVariable int id, @RequestBody CourseAuthor input) throws Exception {
+    public CourseAuthor update(@PathVariable int id, @Valid @RequestBody CourseAuthor input) throws Exception {
         return service.update(id, input);
     }
 

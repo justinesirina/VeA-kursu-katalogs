@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.user;
 
 import lv.venta.coursecatalog.model.user.User;
 import lv.venta.coursecatalog.service.user.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +36,7 @@ public class UserController {
      * Izveido jaunu lietotāju.
      */
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         return service.save(user);
     }
 
@@ -43,7 +44,7 @@ public class UserController {
      * Atjauno lietotāju pēc ID.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable int id, @RequestBody User updated) {
+    public ResponseEntity<User> update(@PathVariable int id, @Valid @RequestBody User updated) {
         return service.getById(id)
                 .map(existing -> {
                     existing.setName(updated.getName());

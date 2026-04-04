@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CourseResult;
 import lv.venta.coursecatalog.service.courseinfo.CourseResultService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,7 @@ public class CourseResultController {
      * Izveido jaunu kursa rezultātu.
      */
     @PostMapping
-    public ResponseEntity<CourseResult> createResult(@RequestBody CourseResult result) {
+    public ResponseEntity<CourseResult> createResult(@Valid @RequestBody CourseResult result) {
         return ResponseEntity.ok(resultService.createResult(result));
     }
 
@@ -53,7 +54,7 @@ public class CourseResultController {
      * Atjauno kursa rezultātu.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CourseResult> updateResult(@PathVariable UUID id, @RequestBody CourseResult updated) {
+    public ResponseEntity<CourseResult> updateResult(@PathVariable UUID id, @Valid @RequestBody CourseResult updated) {
         return ResponseEntity.ok(resultService.updateResult(id, updated));
     }
 

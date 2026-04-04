@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.support;
 
 import lv.venta.coursecatalog.model.support.AcademicYear;
 import lv.venta.coursecatalog.service.support.AcademicYearService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class AcademicYearController {
      * Izveido jaunu akadēmisko gadu.
      */
     @PostMapping
-    public AcademicYear create(@RequestBody AcademicYear year) {
+    public AcademicYear create(@Valid @RequestBody AcademicYear year) {
         return service.save(year);
     }
 
@@ -42,7 +43,7 @@ public class AcademicYearController {
      * Atjauno esošu akadēmisko gadu pēc ID.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<AcademicYear> update(@PathVariable int id, @RequestBody AcademicYear updated) {
+    public ResponseEntity<AcademicYear> update(@PathVariable int id, @Valid @RequestBody AcademicYear updated) {
         return service.getById(id)
                 .map(existing -> {
                     existing.setName(updated.getName());

@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CourseSelfStudyDistribution;
 import lv.venta.coursecatalog.service.courseinfo.CourseSelfStudyDistributionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ public class CourseSelfStudyDistributionController {
      * Izveido jaunu sadalījumu.
      */
     @PostMapping
-    public ResponseEntity<CourseSelfStudyDistribution> create(@RequestBody CourseSelfStudyDistribution obj) {
+    public ResponseEntity<CourseSelfStudyDistribution> create(@Valid @RequestBody CourseSelfStudyDistribution obj) {
         return ResponseEntity.ok(distService.create(obj));
     }
 
@@ -45,7 +46,7 @@ public class CourseSelfStudyDistributionController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<CourseSelfStudyDistribution> update(@PathVariable int id,
-                                                              @RequestBody CourseSelfStudyDistribution obj) {
+                                                              @Valid @RequestBody CourseSelfStudyDistribution obj) {
         return ResponseEntity.ok(distService.update(id, obj));
     }
 

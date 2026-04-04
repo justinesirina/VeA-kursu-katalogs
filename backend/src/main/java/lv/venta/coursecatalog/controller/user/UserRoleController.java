@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.user;
 
 import lv.venta.coursecatalog.model.user.UserRole;
 import lv.venta.coursecatalog.service.user.UserRoleService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,12 +29,12 @@ public class UserRoleController {
     }
 
     @PostMapping
-    public UserRole create(@RequestBody UserRole role) {
+    public UserRole create(@Valid @RequestBody UserRole role) {
         return service.save(role);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserRole> update(@PathVariable int id, @RequestBody UserRole updated) {
+    public ResponseEntity<UserRole> update(@PathVariable int id, @Valid @RequestBody UserRole updated) {
         return service.getById(id)
                 .map(existing -> {
                     existing.setRoleName(updated.getRoleName());

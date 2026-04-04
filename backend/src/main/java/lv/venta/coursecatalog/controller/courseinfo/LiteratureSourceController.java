@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.LiteratureSource;
 import lv.venta.coursecatalog.service.courseinfo.LiteratureSourceService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +28,13 @@ public class LiteratureSourceController {
     }
 
     @PostMapping
-    public ResponseEntity<LiteratureSource> create(@RequestBody LiteratureSource source) {
+    public ResponseEntity<LiteratureSource> create(@Valid @RequestBody LiteratureSource source) {
         return ResponseEntity.ok(sourceService.createSource(source));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<LiteratureSource> update(@PathVariable int id,
-                                                   @RequestBody LiteratureSource updated) {
+                                                   @Valid @RequestBody LiteratureSource updated) {
         return ResponseEntity.ok(sourceService.updateSource(id, updated));
     }
 

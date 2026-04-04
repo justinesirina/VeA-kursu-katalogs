@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.program;
 
 import lv.venta.coursecatalog.model.program.CourseToProgrammeResults;
 import lv.venta.coursecatalog.service.program.CourseToProgrammeResultsService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,7 @@ public class CourseToProgrammeResultsController {
      * Izveido jaunu kursa un programmas rezultātu sasaisti.
      */
     @PostMapping
-    public CourseToProgrammeResults createRelation(@RequestBody CourseToProgrammeResults input) {
+    public CourseToProgrammeResults createRelation(@Valid @RequestBody CourseToProgrammeResults input) {
         return courseToProgrammeResultsService.createRelation(input);
     }
 
@@ -42,7 +43,7 @@ public class CourseToProgrammeResultsController {
      * Atjaunina esošu sasaistes ierakstu.
      */
     @PutMapping("/{id}")
-    public CourseToProgrammeResults updateRelation(@PathVariable int id, @RequestBody CourseToProgrammeResults input) throws Exception {
+    public CourseToProgrammeResults updateRelation(@PathVariable int id, @Valid @RequestBody CourseToProgrammeResults input) throws Exception {
         return courseToProgrammeResultsService.updateRelation(id, input);
     }
 

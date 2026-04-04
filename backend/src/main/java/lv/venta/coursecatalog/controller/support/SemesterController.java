@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.support;
 
 import lv.venta.coursecatalog.model.support.Semester;
 import lv.venta.coursecatalog.service.support.SemesterService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class SemesterController {
      * Izveido jaunu semestri.
      */
     @PostMapping
-    public Semester create(@RequestBody Semester semester) {
+    public Semester create(@Valid @RequestBody Semester semester) {
         return service.save(semester);
     }
 
@@ -42,7 +43,7 @@ public class SemesterController {
      * Atjauno esošu semestri pēc ID.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Semester> update(@PathVariable int id, @RequestBody Semester updated) {
+    public ResponseEntity<Semester> update(@PathVariable int id, @Valid @RequestBody Semester updated) {
         return service.getById(id)
                 .map(existing -> {
                     existing.setName(updated.getName());

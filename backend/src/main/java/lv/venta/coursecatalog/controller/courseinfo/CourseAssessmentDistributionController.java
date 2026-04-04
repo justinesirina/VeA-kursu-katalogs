@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CourseAssessmentDistribution;
 import lv.venta.coursecatalog.service.courseinfo.CourseAssessmentDistributionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class CourseAssessmentDistributionController {
      */
     @PostMapping
     public ResponseEntity<CourseAssessmentDistribution> createDistribution(
-            @RequestBody CourseAssessmentDistribution distribution) {
+            @Valid @RequestBody CourseAssessmentDistribution distribution) {
         return ResponseEntity.ok(distributionService.createDistribution(distribution));
     }
 
@@ -46,7 +47,7 @@ public class CourseAssessmentDistributionController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<CourseAssessmentDistribution> updateDistribution(@PathVariable int id,
-                                                                           @RequestBody CourseAssessmentDistribution updated) {
+                                                                           @Valid @RequestBody CourseAssessmentDistribution updated) {
         return ResponseEntity.ok(distributionService.updateDistribution(id, updated));
     }
 

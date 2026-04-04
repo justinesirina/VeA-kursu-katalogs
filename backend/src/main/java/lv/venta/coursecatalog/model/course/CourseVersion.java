@@ -10,6 +10,7 @@ import lv.venta.coursecatalog.model.support.Semester;
 import lv.venta.coursecatalog.model.support.VersionStatus;
 import lv.venta.coursecatalog.model.user.User;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
@@ -23,6 +24,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "course_versions")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.support;
 
 import lv.venta.coursecatalog.model.support.StudyLevel;
 import lv.venta.coursecatalog.service.support.StudyLevelService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +24,12 @@ public class StudyLevelController {
     }
 
     @PostMapping
-    public StudyLevel create(@RequestBody StudyLevel input) {
+    public StudyLevel create(@Valid @RequestBody StudyLevel input) {
         return service.create(input);
     }
 
     @PutMapping("/{id}")
-    public StudyLevel update(@PathVariable int id, @RequestBody StudyLevel input) throws Exception {
+    public StudyLevel update(@PathVariable int id, @Valid @RequestBody StudyLevel input) throws Exception {
         return service.update(id, input);
     }
 

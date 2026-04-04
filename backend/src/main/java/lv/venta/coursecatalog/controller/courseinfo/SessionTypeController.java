@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.SessionType;
 import lv.venta.coursecatalog.service.courseinfo.SessionTypeService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,12 +28,12 @@ public class SessionTypeController {
     }
 
     @PostMapping
-    public ResponseEntity<SessionType> create(@RequestBody SessionType obj) {
+    public ResponseEntity<SessionType> create(@Valid @RequestBody SessionType obj) {
         return ResponseEntity.ok(service.create(obj));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SessionType> update(@PathVariable int id, @RequestBody SessionType obj) {
+    public ResponseEntity<SessionType> update(@PathVariable int id, @Valid @RequestBody SessionType obj) {
         return ResponseEntity.ok(service.update(id, obj));
     }
 

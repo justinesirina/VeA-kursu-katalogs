@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.log;
 
 import lv.venta.coursecatalog.model.log.CourseVersionComment;
 import lv.venta.coursecatalog.service.log.CourseVersionCommentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +24,12 @@ public class CourseVersionCommentController {
     }
 
     @PostMapping
-    public CourseVersionComment create(@RequestBody CourseVersionComment input) {
+    public CourseVersionComment create(@Valid @RequestBody CourseVersionComment input) {
         return service.create(input);
     }
 
     @PutMapping("/{id}")
-    public CourseVersionComment update(@PathVariable int id, @RequestBody CourseVersionComment input) throws Exception {
+    public CourseVersionComment update(@PathVariable int id, @Valid @RequestBody CourseVersionComment input) throws Exception {
         return service.update(id, input);
     }
 

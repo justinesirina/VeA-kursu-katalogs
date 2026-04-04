@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CourseContent;
 import lv.venta.coursecatalog.service.courseinfo.CourseContentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +28,13 @@ public class CourseContentController {
     }
 
     @PostMapping
-    public ResponseEntity<CourseContent> create(@RequestBody CourseContent content) {
+    public ResponseEntity<CourseContent> create(@Valid @RequestBody CourseContent content) {
         return ResponseEntity.ok(contentService.create(content));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CourseContent> update(@PathVariable int id,
-                                                @RequestBody CourseContent updated) {
+                                                @Valid @RequestBody CourseContent updated) {
         return ResponseEntity.ok(contentService.update(id, updated));
     }
 

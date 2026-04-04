@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.SelfStudyActivity;
 import lv.venta.coursecatalog.service.courseinfo.SelfStudyActivityService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ public class SelfStudyActivityController {
      * Izveido jaunu aktivitāti.
      */
     @PostMapping
-    public ResponseEntity<SelfStudyActivity> create(@RequestBody SelfStudyActivity obj) {
+    public ResponseEntity<SelfStudyActivity> create(@Valid @RequestBody SelfStudyActivity obj) {
         return ResponseEntity.ok(activityService.create(obj));
     }
 
@@ -44,7 +45,7 @@ public class SelfStudyActivityController {
      * Atjauno aktivitāti.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<SelfStudyActivity> update(@PathVariable int id, @RequestBody SelfStudyActivity obj) {
+    public ResponseEntity<SelfStudyActivity> update(@PathVariable int id, @Valid @RequestBody SelfStudyActivity obj) {
         return ResponseEntity.ok(activityService.update(id, obj));
     }
 

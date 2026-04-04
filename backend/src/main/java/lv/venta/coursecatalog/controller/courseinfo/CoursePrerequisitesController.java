@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CoursePrerequisites;
 import lv.venta.coursecatalog.service.courseinfo.CoursePrerequisitesService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +28,13 @@ public class CoursePrerequisitesController {
     }
 
     @PostMapping
-    public ResponseEntity<CoursePrerequisites> create(@RequestBody CoursePrerequisites prereq) {
+    public ResponseEntity<CoursePrerequisites> create(@Valid @RequestBody CoursePrerequisites prereq) {
         return ResponseEntity.ok(prereqService.create(prereq));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CoursePrerequisites> update(@PathVariable int id,
-                                                      @RequestBody CoursePrerequisites updated) {
+                                                      @Valid @RequestBody CoursePrerequisites updated) {
         return ResponseEntity.ok(prereqService.update(id, updated));
     }
 

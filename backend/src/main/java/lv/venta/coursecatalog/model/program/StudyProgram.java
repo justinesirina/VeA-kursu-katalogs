@@ -5,11 +5,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.user.User;
 import lv.venta.coursecatalog.model.support.Faculty;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "study_programs")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor

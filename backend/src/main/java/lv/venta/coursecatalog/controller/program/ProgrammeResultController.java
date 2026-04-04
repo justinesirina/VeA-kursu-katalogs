@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.program;
 
 import lv.venta.coursecatalog.model.program.ProgrammeResult;
 import lv.venta.coursecatalog.service.program.ProgrammeResultService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,7 +42,7 @@ public class ProgrammeResultController {
      * @return izveidotais objekts
      */
     @PostMapping
-    public ProgrammeResult createProgrammeResult(@RequestBody ProgrammeResult input) {
+    public ProgrammeResult createProgrammeResult(@Valid @RequestBody ProgrammeResult input) {
         return programmeResultService.createProgrammeResult(input);
     }
 
@@ -53,7 +54,7 @@ public class ProgrammeResultController {
      * @throws Exception ja rezultāts nav atrasts
      */
     @PutMapping("/{id}")
-    public ProgrammeResult updateProgrammeResult(@PathVariable UUID id, @RequestBody ProgrammeResult input) throws Exception {
+    public ProgrammeResult updateProgrammeResult(@PathVariable UUID id, @Valid @RequestBody ProgrammeResult input) throws Exception {
         return programmeResultService.updateProgrammeResult(id, input);
     }
 

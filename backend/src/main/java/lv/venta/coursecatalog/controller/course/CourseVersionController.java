@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.course;
 
 import lv.venta.coursecatalog.model.course.CourseVersion;
 import lv.venta.coursecatalog.service.course.CourseVersionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,7 +55,7 @@ public class CourseVersionController {
      * Izveido vai atjaunina kursa versiju.
      */
     @PostMapping
-    public CourseVersion createOrUpdateVersion(@RequestBody CourseVersion version) {
+    public CourseVersion createOrUpdateVersion(@Valid @RequestBody CourseVersion version) {
         return courseVersionService.saveCourseVersion(version);
     }
 

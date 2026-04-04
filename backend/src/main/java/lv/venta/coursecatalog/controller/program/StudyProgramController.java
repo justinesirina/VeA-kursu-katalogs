@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.program;
 
 import lv.venta.coursecatalog.model.program.StudyProgram;
 import lv.venta.coursecatalog.service.program.StudyProgramService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,7 @@ public class StudyProgramController {
      * Izveido jaunu studiju programmu.
      */
     @PostMapping
-    public StudyProgram createStudyProgram(@RequestBody StudyProgram input) {
+    public StudyProgram createStudyProgram(@Valid @RequestBody StudyProgram input) {
         return studyProgramService.createStudyProgram(input);
     }
 
@@ -42,7 +43,7 @@ public class StudyProgramController {
      * Atjaunina esošu studiju programmu.
      */
     @PutMapping("/{id}")
-    public StudyProgram updateStudyProgram(@PathVariable int id, @RequestBody StudyProgram input) throws Exception {
+    public StudyProgram updateStudyProgram(@PathVariable int id, @Valid @RequestBody StudyProgram input) throws Exception {
         return studyProgramService.updateStudyProgram(id, input);
     }
 

@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.support;
 
 import lv.venta.coursecatalog.model.support.Faculty;
 import lv.venta.coursecatalog.service.support.FacultyService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,7 @@ public class FacultyController {
      * Izveido jaunu fakultāti.
      */
     @PostMapping
-    public Faculty createFaculty(@RequestBody Faculty input) {
+    public Faculty createFaculty(@Valid @RequestBody Faculty input) {
         return facultyService.createFaculty(input);
     }
 
@@ -42,7 +43,7 @@ public class FacultyController {
      * Atjaunina esošu fakultāti.
      */
     @PutMapping("/{id}")
-    public Faculty updateFaculty(@PathVariable int id, @RequestBody Faculty input) throws Exception {
+    public Faculty updateFaculty(@PathVariable int id, @Valid @RequestBody Faculty input) throws Exception {
         return facultyService.updateFaculty(id, input);
     }
 

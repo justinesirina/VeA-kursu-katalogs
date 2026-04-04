@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.support;
 
 import lv.venta.coursecatalog.model.support.VersionStatus;
 import lv.venta.coursecatalog.service.support.VersionStatusService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class VersionStatusController {
      * Izveido jaunu statusu (piemēram, "Sagatavē").
      */
     @PostMapping
-    public VersionStatus create(@RequestBody VersionStatus status) {
+    public VersionStatus create(@Valid @RequestBody VersionStatus status) {
         return service.saveStatus(status);
     }
 
@@ -42,7 +43,7 @@ public class VersionStatusController {
      * Atjauno esošu statusu pēc ID.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<VersionStatus> update(@PathVariable int id, @RequestBody VersionStatus updatedStatus) {
+    public ResponseEntity<VersionStatus> update(@PathVariable int id, @Valid @RequestBody VersionStatus updatedStatus) {
         return service.getStatusById(id)
                 .map(existing -> {
                     existing.setName(updatedStatus.getName());

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.course.CourseVersion;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -16,14 +17,13 @@ import java.util.List;
  */
 @Entity
 @Table(name = "users")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-
 public class User {
 
     @Id

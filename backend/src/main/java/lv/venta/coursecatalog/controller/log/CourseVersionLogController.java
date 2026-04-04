@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.log;
 
 import lv.venta.coursecatalog.model.log.CourseVersionLog;
 import lv.venta.coursecatalog.service.log.CourseVersionLogService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +24,12 @@ public class CourseVersionLogController {
     }
 
     @PostMapping
-    public CourseVersionLog create(@RequestBody CourseVersionLog input) {
+    public CourseVersionLog create(@Valid @RequestBody CourseVersionLog input) {
         return service.create(input);
     }
 
     @PutMapping("/{id}")
-    public CourseVersionLog update(@PathVariable int id, @RequestBody CourseVersionLog input) throws Exception {
+    public CourseVersionLog update(@PathVariable int id, @Valid @RequestBody CourseVersionLog input) throws Exception {
         return service.update(id, input);
     }
 

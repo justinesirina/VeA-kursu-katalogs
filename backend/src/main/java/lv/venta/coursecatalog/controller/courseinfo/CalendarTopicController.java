@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CalendarTopic;
 import lv.venta.coursecatalog.service.courseinfo.CalendarTopicService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,12 +28,12 @@ public class CalendarTopicController {
     }
 
     @PostMapping
-    public ResponseEntity<CalendarTopic> create(@RequestBody CalendarTopic obj) {
+    public ResponseEntity<CalendarTopic> create(@Valid @RequestBody CalendarTopic obj) {
         return ResponseEntity.ok(service.create(obj));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CalendarTopic> update(@PathVariable int id, @RequestBody CalendarTopic obj) {
+    public ResponseEntity<CalendarTopic> update(@PathVariable int id, @Valid @RequestBody CalendarTopic obj) {
         return ResponseEntity.ok(service.update(id, obj));
     }
 

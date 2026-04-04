@@ -3,6 +3,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 import lv.venta.coursecatalog.model.courseinfo.CourseInfo;
 import lv.venta.coursecatalog.model.dto.CourseDetailsDTO;
 import lv.venta.coursecatalog.service.courseinfo.CourseInfoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class CourseInfoController {
      * Izveido jaunu CourseInfo ierakstu.
      */
     @PostMapping
-    public ResponseEntity<CourseInfo> create(@RequestBody CourseInfo courseInfo) {
+    public ResponseEntity<CourseInfo> create(@Valid @RequestBody CourseInfo courseInfo) {
         return ResponseEntity.ok(infoService.create(courseInfo));
     }
 
@@ -47,7 +48,7 @@ public class CourseInfoController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<CourseInfo> update(@PathVariable UUID id,
-                                             @RequestBody CourseInfo updated) {
+                                             @Valid @RequestBody CourseInfo updated) {
         return ResponseEntity.ok(infoService.update(id, updated));
     }
 

@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.AssessmentComponent;
 import lv.venta.coursecatalog.service.courseinfo.AssessmentComponentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ public class AssessmentComponentController {
      * Izveido jaunu komponenti.
      */
     @PostMapping
-    public ResponseEntity<AssessmentComponent> createComponent(@RequestBody AssessmentComponent component) {
+    public ResponseEntity<AssessmentComponent> createComponent(@Valid @RequestBody AssessmentComponent component) {
         return ResponseEntity.ok(componentService.createComponent(component));
     }
 
@@ -45,7 +46,7 @@ public class AssessmentComponentController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<AssessmentComponent> updateComponent(@PathVariable int id,
-                                                               @RequestBody AssessmentComponent updated) {
+                                                               @Valid @RequestBody AssessmentComponent updated) {
         return ResponseEntity.ok(componentService.updateComponent(id, updated));
     }
 

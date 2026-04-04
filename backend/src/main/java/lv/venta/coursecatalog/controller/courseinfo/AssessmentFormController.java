@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.AssessmentForm;
 import lv.venta.coursecatalog.service.courseinfo.AssessmentFormService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ public class AssessmentFormController {
      * Izveido jaunu vērtēšanas formu.
      */
     @PostMapping
-    public ResponseEntity<AssessmentForm> createForm(@RequestBody AssessmentForm form) {
+    public ResponseEntity<AssessmentForm> createForm(@Valid @RequestBody AssessmentForm form) {
         return ResponseEntity.ok(formService.createForm(form));
     }
 
@@ -44,7 +45,7 @@ public class AssessmentFormController {
      * Atjauno esošu vērtēšanas formu pēc ID.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<AssessmentForm> updateForm(@PathVariable int id, @RequestBody AssessmentForm updated) {
+    public ResponseEntity<AssessmentForm> updateForm(@PathVariable int id, @Valid @RequestBody AssessmentForm updated) {
         return ResponseEntity.ok(formService.updateForm(id, updated));
     }
 
