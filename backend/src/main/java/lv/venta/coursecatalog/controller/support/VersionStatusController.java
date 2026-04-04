@@ -3,7 +3,6 @@ package lv.venta.coursecatalog.controller.support;
 import lv.venta.coursecatalog.model.support.VersionStatus;
 import lv.venta.coursecatalog.service.support.VersionStatusService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +17,6 @@ public class VersionStatusController {
 
     private final VersionStatusService service;
 
-    @Autowired
     public VersionStatusController(VersionStatusService service) {
         this.service = service;
     }

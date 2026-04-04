@@ -3,7 +3,6 @@ package lv.venta.coursecatalog.controller.user;
 import lv.venta.coursecatalog.model.user.UserRole;
 import lv.venta.coursecatalog.service.user.UserRoleService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +17,6 @@ public class UserRoleController {
 
     private final UserRoleService service;
 
-    @Autowired
     public UserRoleController(UserRoleService service) {
         this.service = service;
     }

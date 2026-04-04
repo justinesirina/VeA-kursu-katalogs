@@ -3,7 +3,6 @@ package lv.venta.coursecatalog.controller.user;
 import lv.venta.coursecatalog.model.user.User;
 import lv.venta.coursecatalog.service.user.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +18,6 @@ public class UserController {
 
     private final UserService service;
 
-    @Autowired
     public UserController(UserService service) {
         this.service = service;
     }

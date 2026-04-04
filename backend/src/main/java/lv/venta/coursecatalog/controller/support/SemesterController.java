@@ -3,7 +3,6 @@ package lv.venta.coursecatalog.controller.support;
 import lv.venta.coursecatalog.model.support.Semester;
 import lv.venta.coursecatalog.service.support.SemesterService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +17,6 @@ public class SemesterController {
 
     private final SemesterService service;
 
-    @Autowired
     public SemesterController(SemesterService service) {
         this.service = service;
     }

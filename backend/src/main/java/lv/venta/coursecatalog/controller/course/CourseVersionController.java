@@ -3,7 +3,6 @@ package lv.venta.coursecatalog.controller.course;
 import lv.venta.coursecatalog.model.course.CourseVersion;
 import lv.venta.coursecatalog.service.course.CourseVersionService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +20,6 @@ public class CourseVersionController {
 
     private final CourseVersionService courseVersionService;
 
-    @Autowired
     public CourseVersionController(CourseVersionService courseVersionService) {
         this.courseVersionService = courseVersionService;
     }
