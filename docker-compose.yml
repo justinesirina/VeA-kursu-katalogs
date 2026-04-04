@@ -25,6 +25,11 @@ services:
       - "8080:8080"
     volumes:
       - ./backend:/app
+    environment:
+      - DB_URL=jdbc:postgresql://postgres-db:5432/course_catalog
+      - DB_USERNAME=user
+      - DB_PASSWORD=password
+      - SPRING_PROFILES_ACTIVE=dev
     networks:
       - course_catalog_network
 
