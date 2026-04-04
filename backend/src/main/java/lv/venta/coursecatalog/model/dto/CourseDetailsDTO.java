@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * DTO klase, kas apkopo visus datus detalizētajam studiju kursa skatam.
@@ -14,6 +15,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseDetailsDTO {
+
+    // --- CourseInfo identifikators (vajadzīgs rediģēšanai) ---
+    private UUID courseInfoId;
 
     // --- Versijas apstiprinājuma informācija (augšā stūrī) ---
     private String versionStatus;
@@ -26,7 +30,8 @@ public class CourseDetailsDTO {
     private String titleEn;
     private String authorFullTitle;    // Piemēram: "Mg.sc.comp., docents Kārlis Immers"
     private String courseCode;
-    private String assessmentForm;     // Piemēram: "Eksāmens"
+    private String assessmentForm;      // Piemēram: "Eksāmens"
+    private Integer assessmentFormId;   // ID rediģēšanai
     private int credits;
 
     // --- Stundu sadalījums ---

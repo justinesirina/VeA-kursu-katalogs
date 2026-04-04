@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.model.course;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.support.AcademicYear;
@@ -91,6 +92,7 @@ public class CourseVersion {
     @Column(name = "is_archived", nullable = false)
     private boolean isArchived = false;
 
+    @JsonProperty("active")
     @Column(name = "is_active", nullable = false)
     private boolean isActive = false;
 

@@ -12,6 +12,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LiteratureDTO {
 
+    // DB ieraksta ID (vajadzīgs rediģēšanai)
+    private int id;
+
+    // Literatūras tipa ID (vajadzīgs grupēšanai un rediģēšanai)
+    private int typeId;
+
     // Formatēts bibliogrāfisks ieraksts
     private String citation;
 

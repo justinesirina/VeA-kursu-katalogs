@@ -166,6 +166,8 @@ public class CourseInfoService {
 
         CourseDetailsDTO dto = new CourseDetailsDTO();
 
+        dto.setCourseInfoId(info.getId());
+
         dto.setVersionStatus(version.getStatus() != null ? version.getStatus().getName() : null);
         if (version.getApprovalDate() != null)
             dto.setApprovalDate(version.getApprovalDate().toString());
@@ -181,9 +183,10 @@ public class CourseInfoService {
         dto.setCredits(course.getCredits());
 
         dto.setAssessmentForm(info.getAssessmentForm() != null ? info.getAssessmentForm().getName() : null);
+        dto.setAssessmentFormId(info.getAssessmentForm() != null ? info.getAssessmentForm().getId() : null);
         dto.setAcademicHoursTotal(info.getAcademicHoursTotal());
-        dto.setLectureHours(info.getLectureHours());
-        dto.setPractClassesHours(info.getPractClassesHours());
+        dto.setLectureHours(info.getLectureHours() != null ? info.getLectureHours() : 0);
+        dto.setPractClassesHours(info.getPractClassesHours() != null ? info.getPractClassesHours() : 0);
 
         dto.setAcademicYear(version.getAcademicYear() != null ? version.getAcademicYear().getName() : null);
         dto.setSemester(version.getSemester() != null ? version.getSemester().getName() : null);
@@ -221,6 +224,8 @@ public class CourseInfoService {
         dto.setPrerequisites(prereqDtos);
 
         dto.setPrerequisitesDescription(info.getPrerequisitesDescription());
+        dto.setGoal(info.getGoal());
+        dto.setAnnotation(info.getAnnotation());
 
         // --- Piesaistītā studiju programma ---
         List<String> studyProgramNames = new ArrayList<>();
@@ -234,7 +239,7 @@ public class CourseInfoService {
         courseAssessmentRepo.findByCourseInfoIdOrderById(info.getId()).forEach(ad -> {
             String component = ad.getComponent().getName();
             int percent = ad.getPercentage();
-            assessmentDtos.add(new AssessmentComponentDTO(component, percent));
+            assessmentDtos.add(new AssessmentComponentDTO(ad.getId(), component, percent));
         });
         dto.setAssessmentDistribution(assessmentDtos);
 
@@ -254,7 +259,7 @@ public class CourseInfoService {
             String spsr = spsrLinks.isEmpty() ? null
                     : spsrLinks.get(0).getProgrammeResult().getLearningOutcome();
 
-            assessmentCriteriaDtos.add(new ResultAssessmentDTO(cr.getLearningOutcome(), spsr, components));
+            assessmentCriteriaDtos.add(new ResultAssessmentDTO(cr.getId(), cr.getLearningOutcome(), spsr, components));
         });
         dto.setResultAssessments(assessmentCriteriaDtos);
 
@@ -263,7 +268,7 @@ public class CourseInfoService {
         courseSelfStudyDistributionRepo.findByCourseInfo(info).forEach(ssd -> {
             String activity = ssd.getActivity().getName();
             int percent = ssd.getPercentage();
-            selfStudyDtos.add(new SelfStudyDTO(activity, percent));
+            selfStudyDtos.add(new SelfStudyDTO(ssd.getId(), activity, percent));
         });
         dto.setSelfStudyActivities(selfStudyDtos);
         dto.setIndependentWorkHours(info.getIndependentWorkHours());
@@ -273,6 +278,7 @@ public class CourseInfoService {
 
         contentRepo.findByCourseInfoOrderBySequenceNumberAsc(info).forEach(content -> {
             TopicDTO topic = new TopicDTO(
+                    content.getId(),
                     content.getSequenceNumber(),
                     content.getTopicTitle(),
                     content.getTopicDescription()
@@ -309,6 +315,8 @@ public class CourseInfoService {
             grouped.putIfAbsent(type, new ArrayList<>());
 
             grouped.get(type).add(new LiteratureDTO(
+                    source.getId(),
+                    source.getType().getId(),
                     source.getCitation(),
                     source.getUrl()
             ));

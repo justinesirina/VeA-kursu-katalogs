@@ -47,7 +47,15 @@ function AllCourses() {
 
     return (
         <div className="p-6 max-w-6xl mx-auto">
-            <h1 className="text-3xl font-bold mb-4">Visi studiju kursi</h1>
+            <div className="flex items-center justify-between mb-4">
+                <h1 className="text-3xl font-bold">Visi studiju kursi</h1>
+                <button
+                    onClick={() => navigate('/courses/new')}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                    + Pievienot kursu
+                </button>
+            </div>
 
             <div className="flex items-center justify-between mb-4">
                 <input
