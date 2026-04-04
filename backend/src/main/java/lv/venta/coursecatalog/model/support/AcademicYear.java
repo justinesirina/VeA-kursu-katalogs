@@ -1,5 +1,6 @@
 package lv.venta.coursecatalog.model.support;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.course.CourseVersion;
@@ -39,6 +40,7 @@ public class AcademicYear {
     /**
      * Kursu versijas, kas attiecināmas uz šo akadēmisko gadu.
      */
+    @JsonIgnore
     @OneToMany(mappedBy = "academicYear", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<CourseVersion> courseVersions;

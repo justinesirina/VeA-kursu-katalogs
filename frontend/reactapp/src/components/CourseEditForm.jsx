@@ -99,8 +99,9 @@ function CourseEditForm() {
                     });
                 }
 
-                setCourseDetails(detailsRes.data);
-                setCourseInfoId(detailsRes.data.courseInfoId || null);
+                const details = detailsRes.data || null;
+                setCourseDetails(details);
+                setCourseInfoId(details ? details.courseInfoId || null : null);
 
                 setLookups({
                     academicYears: ayRes.data,
@@ -115,7 +116,8 @@ function CourseEditForm() {
                 });
             } catch (err) {
                 console.error('Kļūda ielādējot rediģēšanas datus:', err);
-                setError('Neizdevās ielādēt kursa datus. Lūdzu, mēģini vēlreiz.');
+                console.error('Statuss:', err?.response?.status, 'URL:', err?.config?.url, 'Ziņojums:', err?.message);
+                setError(`Neizdevās ielādēt kursa datus. Kļūda: ${err?.response?.status ?? ''} ${err?.config?.url ?? err?.message}`);
             } finally {
                 setLoading(false);
             }
