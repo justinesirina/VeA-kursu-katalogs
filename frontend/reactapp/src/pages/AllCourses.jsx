@@ -4,6 +4,12 @@ import api from '../services/axiosConfig';
 import CourseCard from '../components/CourseCard';
 import ViewToggle from '../components/ViewToggle';
 
+/**
+ * Kursu saraksta skats — ielādē visus aktīvos kursus no GET /api/courses/filter/active.
+ * Atbalsta režģa un saraksta skatu (ViewToggle).
+ *
+ * @returns {JSX.Element} Kursu saraksts ar meklēšanu un skatu pārslēgšanu
+ */
 function AllCourses() {
     const [courses, setCourses] = useState([]);
     const [query, setQuery] = useState('');

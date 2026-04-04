@@ -11,6 +11,8 @@ import lv.venta.coursecatalog.repository.course.CourseRepository;
 import lv.venta.coursecatalog.repository.course.CourseTeacherRepository;
 import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
 import lv.venta.coursecatalog.repository.courseinfo.*;
+import lv.venta.coursecatalog.model.program.CourseToProgrammeResults;
+import lv.venta.coursecatalog.repository.program.CourseToProgrammeResultsRepository;
 import lv.venta.coursecatalog.repository.program.CourseToStudyProgramsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,9 @@ public class CourseInfoService {
 
     @Autowired
     private CourseToStudyProgramsRepository courseToProgramRepo;
+
+    @Autowired
+    private CourseToProgrammeResultsRepository courseToProgrammeResultsRepo;
 
     @Autowired
     private CourseAuthorRepository courseAuthorRepo;
@@ -233,7 +238,7 @@ public class CourseInfoService {
         });
         dto.setAssessmentDistribution(assessmentDtos);
 
-        // --- Studiju kursa rezultāti (SKR) – CourseResult + studiju programma ---
+        // --- Studiju kursa rezultāti (SKR) – CourseResult + SPSR + vērtēšanas komponentes ---
         List<ResultAssessmentDTO> assessmentCriteriaDtos = new ArrayList<>();
 
         courseResultRepo.findByCourseId(course.getId()).forEach(cr -> {
@@ -243,7 +248,13 @@ public class CourseInfoService {
                     components.add(ra.getComponent().getName());
                 }
             });
-            assessmentCriteriaDtos.add(new ResultAssessmentDTO(cr.getLearningOutcome(), components));
+
+            // Iegūst atbilstošo SPSR (studiju programmas studiju rezultātu), ja tāds ir piesaistīts
+            List<CourseToProgrammeResults> spsrLinks = courseToProgrammeResultsRepo.findByCourseResult(cr);
+            String spsr = spsrLinks.isEmpty() ? null
+                    : spsrLinks.get(0).getProgrammeResult().getLearningOutcome();
+
+            assessmentCriteriaDtos.add(new ResultAssessmentDTO(cr.getLearningOutcome(), spsr, components));
         });
         dto.setResultAssessments(assessmentCriteriaDtos);
 

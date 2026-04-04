@@ -1,5 +1,9 @@
-// Šī komponente pagaidām ļauj izveidot tikai studiju kursa pamatinformāciju.
-// Tas ir pirmais solis, lai pārbaudītu, ka frontend korekti saglabā datus backend pusē.
+/**
+ * Kursa izveides forma — POST /api/courses → izveido jaunu kursu.
+ * Pēc veiksmīgas iesniegšanas rāda saiti uz izveidoto kursu un atiestata formu.
+ *
+ * @returns {JSX.Element} Kursa izveides forma ar validāciju un kļūdu attēlošanu
+ */
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';

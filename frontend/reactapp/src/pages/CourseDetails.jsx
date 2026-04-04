@@ -2,6 +2,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../services/axiosConfig';
 
+/**
+ * Pilnais kursa detaļu skats — ielādē datus no GET /api/course-info/details/:id
+ * un attēlo visas kursa versijas sadaļas: mērķi, SKR, vērtēšanu, kalendāro plānu, literatūru.
+ *
+ * @returns {JSX.Element} Kursa detaļu lapa ar ielādes un kļūdas stāvokļiem
+ */
 function CourseDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -113,22 +119,34 @@ function CourseDetails() {
                 </section>
             )}
 
-            {/* Studiju kursa rezultāti */}
+            {/* Studiju kursa rezultāti (SKR) */}
             {d.resultAssessments && d.resultAssessments.length > 0 && (
                 <section className="bg-white p-4 shadow rounded">
                     <h2 className="text-xl font-semibold mb-2">Studiju kursa rezultāti</h2>
-                    <ul className="list-disc list-inside space-y-2">
-                        {d.resultAssessments.map((r, i) => (
-                            <li key={i}>
-                                {r.courseResult}
-                                {r.components && r.components.length > 0 && (
-                                    <span className="text-sm text-gray-500 ml-1">
-                                        ({r.components.join(', ')})
-                                    </span>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
+                    <table className="w-full border-collapse text-sm">
+                        <thead>
+                            <tr className="bg-gray-100 text-left">
+                                <th className="border border-gray-300 px-3 py-2 w-8">Nr.</th>
+                                <th className="border border-gray-300 px-3 py-2">SKR — studiju kursa rezultāts</th>
+                                <th className="border border-gray-300 px-3 py-2">SPSR — studiju programmas rezultāts</th>
+                                <th className="border border-gray-300 px-3 py-2">Vērtēšanas veids</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {d.resultAssessments.map((r, i) => (
+                                <tr key={i} className="align-top">
+                                    <td className="border border-gray-300 px-3 py-2 text-center">{i + 1}</td>
+                                    <td className="border border-gray-300 px-3 py-2">{r.courseResult}</td>
+                                    <td className="border border-gray-300 px-3 py-2 text-gray-600">{r.spsr || '—'}</td>
+                                    <td className="border border-gray-300 px-3 py-2">
+                                        {r.components && r.components.length > 0
+                                            ? r.components.join(', ')
+                                            : '—'}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </section>
             )}
 

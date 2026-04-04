@@ -1,5 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Kursa karte — kompakts kursa attēlojums režģa skatā.
+ *
+ * @param {Object} props
+ * @param {Object} props.course - kursa objekts
+ * @param {string} props.course.id - kursa UUID
+ * @param {string} props.course.titleLv - kursa nosaukums latviski
+ * @param {string} props.course.courseCode - kursa kods
+ * @param {number} props.course.credits - kredītpunktu skaits
+ */
 function CourseCard({ course }) {
     const navigate = useNavigate();
 
