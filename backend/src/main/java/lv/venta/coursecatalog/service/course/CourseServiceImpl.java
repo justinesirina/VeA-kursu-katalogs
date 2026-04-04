@@ -10,7 +10,11 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Servisa slāņa implementācija, kas satur loģiku darbībām ar kursiem.
+ * Servisa slāņa implementācija darbībām ar studiju kursiem.
+ *
+ * <p>Nodrošina CRUD operācijas, mīksto dzēšanu un aktīvo kursu filtrēšanu.
+ * Kursiem ar {@code deletedAt != null} tiek automātiski piemērota Hibernate
+ * {@code @SQLRestriction}, tāpēc tie neparādās nevienā {@code findAll()} rezultātā.</p>
  */
 @Service
 public class CourseServiceImpl implements ICourseService {

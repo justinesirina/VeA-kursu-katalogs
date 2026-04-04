@@ -1,5 +1,8 @@
 package lv.venta.coursecatalog.controller.course;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lv.venta.coursecatalog.model.course.Course;
 import lv.venta.coursecatalog.service.course.ICourseService;
 import jakarta.validation.Valid;
@@ -17,6 +20,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/courses")
+@Tag(name = "Kursi", description = "CRUD darbības ar studiju kursiem")
 public class CourseController {
 
     private final ICourseService courseService;
@@ -26,41 +30,31 @@ public class CourseController {
         this.courseService = courseService;
     }
 
-    /**
-     * Atgriež visus kursus sistēmā.
-     * @return saraksts ar kursiem
-     */
+    @Operation(summary = "Iegūt visus kursus", description = "Atgriež visus kursus; dzēstie automātiski filtrēti")
+    @ApiResponse(responseCode = "200", description = "Kursu saraksts")
     @GetMapping
     public List<Course> getAllCourses() {
         return courseService.getAllCourses();
     }
 
-    /**
-     * Atgriež tikai aktīvos kursus (kas nav dzēsti).
-     *
-     * @return saraksts ar aktīvajiem kursiem
-     */
+    @Operation(summary = "Iegūt aktīvos kursus", description = "Atgriež tikai aktīvos, nedzēstos kursus")
+    @ApiResponse(responseCode = "200", description = "Aktīvo kursu saraksts")
     @GetMapping("/filter/active")
     public List<Course> getAllActiveCourses() {
         return courseService.getAllActiveCourses();
     }
 
-    /**
-     * Izveido jaunu kursu.
-     * @param course kursa dati no lietotāja
-     * @return izveidotais kurss
-     */
+    @Operation(summary = "Izveidot kursu", description = "Izveido jaunu studiju kursu")
+    @ApiResponse(responseCode = "200", description = "Izveidotais kurss")
+    @ApiResponse(responseCode = "400", description = "Validācijas kļūda")
     @PostMapping
     public Course createCourse(@Valid @RequestBody Course course) {
         return courseService.createNewCourse(course);
     }
 
-    /**
-     * Atjaunina esošu kursu pēc ID.
-     * @param id kursa ID
-     * @param course kursa atjaunotie dati
-     * @return atjauninātais kurss vai kļūda
-     */
+    @Operation(summary = "Atjaunināt kursu", description = "Atjaunina esošu kursu pēc UUID")
+    @ApiResponse(responseCode = "200", description = "Atjauninātais kurss")
+    @ApiResponse(responseCode = "400", description = "Kurss nav atrasts vai validācijas kļūda")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCourse(@PathVariable String id, @Valid @RequestBody Course course) {
         try {
@@ -70,12 +64,9 @@ public class CourseController {
         }
     }
 
-    /**
-     * Veic kursa dzēšanu (mīksto dzēšanu) pēc ID.
-     *
-     * @param id kursa UUID
-     * @return 200 OK vai kļūda
-     */
+    @Operation(summary = "Dzēst kursu", description = "Veic mīksto dzēšanu — iestata deletedAt un active=false")
+    @ApiResponse(responseCode = "200", description = "Kurss dzēsts")
+    @ApiResponse(responseCode = "404", description = "Kurss nav atrasts")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCourse(@PathVariable UUID id) {
         try {
@@ -86,11 +77,9 @@ public class CourseController {
         }
     }
 
-    /**
-     * Atgriež vienu kursu pēc tā ID.
-     * @param id kursa UUID
-     * @return kurss vai kļūda
-     */
+    @Operation(summary = "Iegūt kursu pēc ID", description = "Atgriež vienu kursu pēc tā UUID")
+    @ApiResponse(responseCode = "200", description = "Kurss atrasts")
+    @ApiResponse(responseCode = "400", description = "Kurss nav atrasts")
     @GetMapping("/{id}")
     public ResponseEntity<?> getCourseById(@PathVariable String id) {
         try {

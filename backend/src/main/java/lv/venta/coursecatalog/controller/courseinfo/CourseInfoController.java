@@ -1,5 +1,8 @@
 package lv.venta.coursecatalog.controller.courseinfo;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lv.venta.coursecatalog.model.courseinfo.CourseInfo;
 import lv.venta.coursecatalog.model.dto.CourseDetailsDTO;
 import lv.venta.coursecatalog.service.courseinfo.CourseInfoService;
@@ -14,6 +17,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/course-info")
 @CrossOrigin(origins = "*")
+@Tag(name = "Kursa saturs", description = "Kursa detaļu un versiju satura pārvaldība")
 public class CourseInfoController {
 
     @Autowired
@@ -60,9 +64,13 @@ public class CourseInfoController {
         infoService.delete(id);
         return ResponseEntity.noContent().build();
     }
-    /**
-     * Atgriež informāaciju priekš CourseDetails.jsx skata.
-     */
+    @Operation(
+        summary = "Iegūt kursa detaļu skatu",
+        description = "Atgriež CourseDetailsDTO — agregēts skats kursa detaļu lapai (CourseDetails.jsx). " +
+                      "Ietver versijas statusu, stundu sadalījumu, tēmas, kalendāru, vērtēšanu un literatūru."
+    )
+    @ApiResponse(responseCode = "200", description = "Kursa detaļu DTO")
+    @ApiResponse(responseCode = "404", description = "Kurss vai aktīva versija nav atrasta")
     @GetMapping("/details/{courseId}")
     public ResponseEntity<CourseDetailsDTO> getCourseDetails(@PathVariable UUID courseId) {
         // Izsauc servisa metodi, kas atgriež detalizētu informāciju par kursu DTO formā
