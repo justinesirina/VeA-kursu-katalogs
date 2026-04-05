@@ -298,12 +298,19 @@ public class CourseInfoService {
             List<SessionDTO> sessionDtos = new ArrayList<>();
 
             calendarSessionRepo.findByTopic(topic).forEach(session -> {
-                String type = session.getSessionType().getName();
-                int hours = session.getAcademicHours();
-                sessionDtos.add(new SessionDTO(type, hours));
+                SessionDTO s = new SessionDTO();
+                s.setSessionId(session.getId());
+                s.setSessionTypeId(session.getSessionType().getId());
+                s.setSessionType(session.getSessionType().getName());
+                s.setAcademicHours(session.getAcademicHours());
+                sessionDtos.add(s);
             });
 
-            CalendarPlanDTO plan = new CalendarPlanDTO(topic.getCourseContent().getTopicTitle(), sessionDtos);
+            CalendarPlanDTO plan = new CalendarPlanDTO();
+            plan.setCalendarTopicId(topic.getId());
+            plan.setTopicTitle(topic.getCourseContent().getTopicTitle());
+            plan.setCourseContentId(topic.getCourseContent().getId());
+            plan.setSessions(sessionDtos);
             calendarPlanDtos.add(plan);
         });
 

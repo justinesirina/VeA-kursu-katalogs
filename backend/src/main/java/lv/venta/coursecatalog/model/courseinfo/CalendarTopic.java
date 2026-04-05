@@ -1,8 +1,10 @@
 package lv.venta.coursecatalog.model.courseinfo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
+@JsonIgnoreProperties(value = {"courseInfo"}, allowSetters = true)
 @Getter
 @Setter
 @NoArgsConstructor

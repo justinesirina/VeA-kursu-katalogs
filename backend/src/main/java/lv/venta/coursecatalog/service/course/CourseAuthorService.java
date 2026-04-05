@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Serviss kursa autoru apstrādei.
@@ -18,6 +19,10 @@ public class CourseAuthorService {
 
     public List<CourseAuthor> getAll() {
         return repository.findAll();
+    }
+
+    public List<CourseAuthor> getByCourseId(UUID courseId) {
+        return repository.findByCourseId(courseId);
     }
 
     public CourseAuthor create(CourseAuthor input) {

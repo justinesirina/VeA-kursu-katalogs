@@ -58,6 +58,15 @@ public class CourseVersionController {
     }
 
     /**
+     * Atjaunina esošu kursa versiju pēc tās ID.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<CourseVersion> updateVersion(@PathVariable UUID id, @Valid @RequestBody CourseVersion version) {
+        version.setId(id);
+        return ResponseEntity.ok(courseVersionService.saveCourseVersion(version));
+    }
+
+    /**
      * Dzēš kursa versiju pēc ID (pilnīga dzēšana no DB).
      * Nākotnē aizstājama ar "soft delete".
      */

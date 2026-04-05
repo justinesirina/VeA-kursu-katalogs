@@ -1,10 +1,12 @@
 package lv.venta.coursecatalog.model.courseinfo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
+@JsonIgnoreProperties(value = {"topic"}, allowSetters = true)
 @Getter
 @Setter
 @NoArgsConstructor

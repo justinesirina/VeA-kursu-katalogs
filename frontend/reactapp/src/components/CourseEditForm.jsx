@@ -6,6 +6,7 @@ import CourseTopicsSection from './courseinfo/CourseTopicsSection';
 import CourseAssessmentSection from './courseinfo/CourseAssessmentSection';
 import CourseLiteratureSection from './courseinfo/CourseLiteratureSection';
 import CourseSKRSection from './courseinfo/CourseSKRSection';
+import CourseCalendarSection from './courseinfo/CourseCalendarSection';
 
 const TABS = [
     { key: 'pamatdati',  label: 'Pamatdati' },
@@ -14,6 +15,7 @@ const TABS = [
     { key: 'vertesana',  label: 'Vērtēšana' },
     { key: 'skr',        label: 'SKR' },
     { key: 'literatura', label: 'Literatūra' },
+    { key: 'kalendars',  label: 'Kalendārs' },
 ];
 
 function CourseEditForm() {
@@ -25,6 +27,15 @@ function CourseEditForm() {
     const [versionData, setVersionData] = useState(null);
     const [versionId, setVersionId] = useState(null);
 
+    // Tab 0 — Autors un mācībspēks
+    const [authors, setAuthors] = useState([]);
+    const [teachers, setTeachers] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [newAuthorUserId, setNewAuthorUserId] = useState('');
+    const [newTeacherUserId, setNewTeacherUserId] = useState('');
+    const [staffSaving, setStaffSaving] = useState(false);
+    const [staffError, setStaffError] = useState(null);
+
     // Tabs 1–5 — CourseInfo state
     const [courseInfoId, setCourseInfoId] = useState(null);
     const [courseDetails, setCourseDetails] = useState(null);
@@ -33,7 +44,7 @@ function CourseEditForm() {
     const [lookups, setLookups] = useState({
         academicYears: [], semesters: [], faculties: [], versionStatuses: [],
         assessmentForms: [], assessmentComponents: [], selfStudyActivities: [],
-        literatureTypes: [], resultsCategories: []
+        literatureTypes: [], resultsCategories: [], sessionTypes: []
     });
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -47,7 +58,8 @@ function CourseEditForm() {
                 const [
                     courseRes, versionsRes, detailsRes,
                     ayRes, semRes, facRes, stRes,
-                    afRes, acRes, ssaRes, ltRes, rcRes
+                    afRes, acRes, ssaRes, ltRes, rcRes, sessionTypesRes,
+                    authorsRes, teachersRes, usersRes
                 ] = await Promise.all([
                     api.get(`/courses/${id}`),
                     api.get(`/course-versions/by-course/${id}`),
@@ -61,6 +73,10 @@ function CourseEditForm() {
                     api.get('/self-study-activities'),
                     api.get('/literature-types'),
                     api.get('/results-categories'),
+                    api.get('/session-types'),
+                    api.get(`/course-authors/by-course/${id}`),
+                    api.get(`/course-teachers/by-course/${id}`),
+                    api.get('/users'),
                 ]);
 
                 const course = courseRes.data;
@@ -113,7 +129,11 @@ function CourseEditForm() {
                     selfStudyActivities: ssaRes.data,
                     literatureTypes: ltRes.data,
                     resultsCategories: rcRes.data,
+                    sessionTypes: sessionTypesRes.data,
                 });
+                setAuthors(authorsRes.data || []);
+                setTeachers(teachersRes.data || []);
+                setUsers(usersRes.data || []);
             } catch (err) {
                 console.error('Kļūda ielādējot rediģēšanas datus:', err);
                 console.error('Statuss:', err?.response?.status, 'URL:', err?.config?.url, 'Ziņojums:', err?.message);
@@ -144,7 +164,6 @@ function CourseEditForm() {
             });
 
             const versionPayload = {
-                ...(versionId ? { id: versionId } : {}),
                 course: { id },
                 status: { id: Number(versionData.statusId) },
                 academicYear: { id: Number(versionData.academicYearId) },
@@ -156,7 +175,12 @@ function CourseEditForm() {
                 decisionNumber: versionData.decisionNumber || null,
                 decisionReference: versionData.decisionReference || null
             };
-            await api.post('/course-versions', versionPayload);
+            if (versionId) {
+                await api.put(`/course-versions/${versionId}`, versionPayload);
+            } else {
+                const res = await api.post('/course-versions', versionPayload);
+                setVersionId(res.data.id);
+            }
 
             setSuccessMsg('Izmaiņas saglabātas.');
         } catch (err) {
@@ -167,10 +191,64 @@ function CourseEditForm() {
         }
     };
 
+    const reloadStaff = async () => {
+        const [aRes, tRes] = await Promise.all([
+            api.get(`/course-authors/by-course/${id}`),
+            api.get(`/course-teachers/by-course/${id}`),
+        ]);
+        setAuthors(aRes.data || []);
+        setTeachers(tRes.data || []);
+    };
+
+    const handleAddAuthor = async () => {
+        if (!newAuthorUserId) return;
+        setStaffSaving(true);
+        setStaffError(null);
+        try {
+            await api.post('/course-authors', { course: { id }, user: { id: Number(newAuthorUserId) } });
+            setNewAuthorUserId('');
+            await reloadStaff();
+        } catch { setStaffError('Neizdevās pievienot autoru.'); }
+        finally { setStaffSaving(false); }
+    };
+
+    const handleDeleteAuthor = async (authorId) => {
+        setStaffSaving(true);
+        setStaffError(null);
+        try {
+            await api.delete(`/course-authors/${authorId}`);
+            await reloadStaff();
+        } catch { setStaffError('Neizdevās dzēst autoru.'); }
+        finally { setStaffSaving(false); }
+    };
+
+    const handleAddTeacher = async () => {
+        if (!newTeacherUserId) return;
+        setStaffSaving(true);
+        setStaffError(null);
+        try {
+            await api.post('/course-teachers', { course: { id }, user: { id: Number(newTeacherUserId) } });
+            setNewTeacherUserId('');
+            await reloadStaff();
+        } catch { setStaffError('Neizdevās pievienot mācībspēku.'); }
+        finally { setStaffSaving(false); }
+    };
+
+    const handleDeleteTeacher = async (teacherId) => {
+        setStaffSaving(true);
+        setStaffError(null);
+        try {
+            await api.delete(`/course-teachers/${teacherId}`);
+            await reloadStaff();
+        } catch { setStaffError('Neizdevās dzēst mācībspēku.'); }
+        finally { setStaffSaving(false); }
+    };
+
     const handleSectionSaved = () => {
         api.get(`/course-info/details/${id}`)
             .then(res => {
                 setCourseDetails(res.data);
+                setCourseInfoId(res.data?.courseInfoId || null);
                 setSuccessMsg('Izmaiņas saglabātas.');
                 setTimeout(() => setSuccessMsg(null), 3000);
             });
@@ -371,6 +449,90 @@ function CourseEditForm() {
                         </section>
                     )}
 
+                    {/* Autors un atbildīgais mācībspēks */}
+                    <section className="bg-white p-4 shadow rounded space-y-4">
+                        <h2 className="text-xl font-semibold">Autors un atbildīgais mācībspēks</h2>
+                        {staffError && <p className="text-red-600 text-sm">{staffError}</p>}
+
+                        <div>
+                            <p className="text-sm font-medium text-gray-700 mb-1">Autori</p>
+                            {authors.length > 0 ? (
+                                <ul className="space-y-1 mb-2">
+                                    {authors.map(a => (
+                                        <li key={a.id} className="flex items-center justify-between text-sm bg-gray-50 rounded px-3 py-1.5">
+                                            <span>{a.user ? `${a.user.name} ${a.user.surname}` : `ID: ${a.id}`}</span>
+                                            <button
+                                                onClick={() => handleDeleteAuthor(a.id)}
+                                                disabled={staffSaving}
+                                                className="text-red-500 hover:text-red-700 text-xs ml-3"
+                                            >✕</button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-400 text-xs mb-2">Nav pievienotu autoru</p>
+                            )}
+                            <div className="flex gap-2">
+                                <select
+                                    className="border rounded p-2 text-sm flex-1"
+                                    value={newAuthorUserId}
+                                    onChange={e => setNewAuthorUserId(e.target.value)}
+                                >
+                                    <option value="">— izvēlies lietotāju —</option>
+                                    {users.map(u => (
+                                        <option key={u.id} value={u.id}>{u.name} {u.surname}</option>
+                                    ))}
+                                </select>
+                                <button
+                                    onClick={handleAddAuthor}
+                                    disabled={staffSaving || !newAuthorUserId}
+                                    className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                                >
+                                    Pievienot
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p className="text-sm font-medium text-gray-700 mb-1">Atbildīgie mācībspēki</p>
+                            {teachers.length > 0 ? (
+                                <ul className="space-y-1 mb-2">
+                                    {teachers.map(t => (
+                                        <li key={t.id} className="flex items-center justify-between text-sm bg-gray-50 rounded px-3 py-1.5">
+                                            <span>{t.user ? `${t.user.name} ${t.user.surname}` : `ID: ${t.id}`}</span>
+                                            <button
+                                                onClick={() => handleDeleteTeacher(t.id)}
+                                                disabled={staffSaving}
+                                                className="text-red-500 hover:text-red-700 text-xs ml-3"
+                                            >✕</button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-400 text-xs mb-2">Nav pievienotu mācībspēku</p>
+                            )}
+                            <div className="flex gap-2">
+                                <select
+                                    className="border rounded p-2 text-sm flex-1"
+                                    value={newTeacherUserId}
+                                    onChange={e => setNewTeacherUserId(e.target.value)}
+                                >
+                                    <option value="">— izvēlies lietotāju —</option>
+                                    {users.map(u => (
+                                        <option key={u.id} value={u.id}>{u.name} {u.surname}</option>
+                                    ))}
+                                </select>
+                                <button
+                                    onClick={handleAddTeacher}
+                                    disabled={staffSaving || !newTeacherUserId}
+                                    className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                                >
+                                    Pievienot
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
                     {error && <p className="text-red-600 text-sm">{error}</p>}
 
                     <button
@@ -436,6 +598,15 @@ function CourseEditForm() {
                     lookups={lookups}
                     onSaved={handleSectionSaved}
                     onCancel={() => {}}
+                />
+            )}
+
+            {activeTab === 6 && courseInfoId && (
+                <CourseCalendarSection
+                    courseInfoId={courseInfoId}
+                    data={courseDetails}
+                    lookups={lookups}
+                    onSaved={handleSectionSaved}
                 />
             )}
         </div>

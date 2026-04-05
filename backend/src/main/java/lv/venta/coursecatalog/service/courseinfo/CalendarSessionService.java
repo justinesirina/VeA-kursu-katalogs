@@ -1,7 +1,11 @@
 package lv.venta.coursecatalog.service.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CalendarSession;
+import lv.venta.coursecatalog.model.courseinfo.CalendarTopic;
+import lv.venta.coursecatalog.model.courseinfo.SessionType;
 import lv.venta.coursecatalog.repository.courseinfo.CalendarSessionRepository;
+import lv.venta.coursecatalog.repository.courseinfo.CalendarTopicRepository;
+import lv.venta.coursecatalog.repository.courseinfo.SessionTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +18,12 @@ public class CalendarSessionService {
     @Autowired
     private CalendarSessionRepository sessionRepo;
 
+    @Autowired
+    private CalendarTopicRepository topicRepo;
+
+    @Autowired
+    private SessionTypeRepository sessionTypeRepo;
+
     public List<CalendarSession> getAll() {
         return sessionRepo.findAll();
     }
@@ -25,6 +35,11 @@ public class CalendarSessionService {
 
     @Transactional
     public CalendarSession create(CalendarSession session) {
+        int topicId = session.getTopic().getId();
+        session.setTopic(topicRepo.getReferenceById(topicId));
+        int sessionTypeId = session.getSessionType().getId();
+        session.setSessionType(sessionTypeRepo.findById(sessionTypeId)
+                .orElseThrow(() -> new RuntimeException("SessionType nav atrasts: " + sessionTypeId)));
         return sessionRepo.save(session);
     }
 
