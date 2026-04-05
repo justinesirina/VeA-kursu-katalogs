@@ -3,8 +3,6 @@ import api from '../../services/axiosConfig';
 
 /**
  * Rediģēšanas forma studiju kursa rezultātiem (SKR).
- * CourseResult: POST/PUT/DELETE /api/course-results
- * CourseResultAssessment: POST/DELETE /api/result-assessments
  *
  * @param {string}  courseId
  * @param {object}  data         - { resultAssessments: [{courseResultId, learningOutcome, spsr, components}] }
@@ -20,7 +18,6 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
             categoryId: '',
             language: 'lv',
             isNew: false,
-            // checkedComponents: set of component names that are in use
             checkedComponents: new Set(r.components || []),
         }))
     );
@@ -28,13 +25,12 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
 
+    const inputClass = "w-full border border-gray-300 rounded px-2 py-1 text-sm focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
+    const labelClass = "block text-sm font-medium text-vea-neutral mb-1";
+
     const addRow = () => {
         setRows(prev => [...prev, {
-            id: null,
-            learningOutcome: '',
-            categoryId: '',
-            language: 'lv',
-            isNew: true,
+            id: null, learningOutcome: '', categoryId: '', language: 'lv', isNew: true,
             checkedComponents: new Set(),
         }]);
     };
@@ -117,29 +113,30 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
 
             <div className="space-y-4">
                 {rows.map((row, idx) => (
-                    <div key={idx} className="border border-gray-200 rounded p-3 space-y-2">
-                        <div className="flex justify-between items-start gap-2">
+                    <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                        <div className="flex justify-between items-center">
                             <span className="text-sm font-medium text-gray-500">{idx + 1}.</span>
                             <button onClick={() => removeRow(idx)}
-                                    className="text-red-500 hover:text-red-700 text-lg leading-none ml-auto">×</button>
+                                    className="text-red-500 hover:text-red-700 text-lg leading-none"
+                                    aria-label="Dzēst SKR">×</button>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">
+                            <label className={labelClass}>
                                 Sasniedzamais rezultāts <span className="text-red-500">*</span>
                             </label>
                             <textarea value={row.learningOutcome} rows={2}
                                       onChange={e => updateRow(idx, 'learningOutcome', e.target.value)}
-                                      className="w-full border rounded px-2 py-1 text-sm"
+                                      className={inputClass}
                                       placeholder="Students prot / spēj / izprot..." />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-sm font-medium mb-1">
+                                <label className={labelClass}>
                                     Kategorija {row.isNew && <span className="text-red-500">*</span>}
                                 </label>
                                 <select value={row.categoryId}
                                         onChange={e => updateRow(idx, 'categoryId', e.target.value)}
-                                        className="w-full border rounded px-2 py-1 text-sm">
+                                        className={inputClass}>
                                     <option value="">— izvēlies —</option>
                                     {(lookups.resultsCategories || []).map(c => (
                                         <option key={c.id} value={c.id}>{c.name}</option>
@@ -147,10 +144,10 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Valoda</label>
+                                <label className={labelClass}>Valoda</label>
                                 <select value={row.language}
                                         onChange={e => updateRow(idx, 'language', e.target.value)}
-                                        className="w-full border rounded px-2 py-1 text-sm">
+                                        className={inputClass}>
                                     <option value="lv">Latviešu</option>
                                     <option value="en">Angļu</option>
                                 </select>
@@ -158,15 +155,14 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
                         </div>
                         {components.length > 0 && (
                             <div>
-                                <label className="block text-sm font-medium mb-1">Vērtēšanas komponentes</label>
+                                <label className={labelClass}>Vērtēšanas komponentes</label>
                                 <div className="flex flex-wrap gap-3">
                                     {components.map(comp => (
-                                        <label key={comp.id} className="flex items-center gap-1 text-sm">
-                                            <input
-                                                type="checkbox"
+                                        <label key={comp.id} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                                            <input type="checkbox"
                                                 checked={row.checkedComponents.has(comp.name)}
                                                 onChange={() => toggleComponent(idx, comp.name)}
-                                            />
+                                                className="accent-vea-green" />
                                             {comp.name}
                                         </label>
                                     ))}
@@ -177,17 +173,17 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
                 ))}
             </div>
 
-            <button onClick={addRow} className="text-blue-600 hover:underline text-sm">
+            <button onClick={addRow} className="text-vea-green hover:underline text-sm">
                 + Pievienot SKR
             </button>
 
             <div className="flex gap-2">
                 <button onClick={handleSave} disabled={saving}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
+                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50">
                     {saving ? 'Saglabā...' : 'Saglabāt'}
                 </button>
                 <button onClick={onCancel}
-                        className="border border-gray-400 px-4 py-2 rounded hover:bg-gray-100">
+                    className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral">
                     Atcelt
                 </button>
             </div>

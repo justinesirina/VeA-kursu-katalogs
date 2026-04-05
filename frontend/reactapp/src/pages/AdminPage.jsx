@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import LookupSection from '../components/admin/LookupSection';
 import AcademicYearSection from '../components/admin/AcademicYearSection';
 import UserSection from '../components/admin/UserSection';
@@ -123,19 +122,12 @@ function renderSection(key) {
 
 function AdminPage() {
     const [activeSection, setActiveSection] = useState('semesters');
-    const navigate = useNavigate();
 
     return (
-        <div className="flex min-h-screen bg-white">
-            <nav className="w-56 border-r border-gray-200 bg-gray-50 flex flex-col">
+        <div className="flex min-h-[calc(100vh-3.5rem)] bg-vea-bg">
+            <nav className="w-56 border-r border-gray-200 bg-white flex flex-col" aria-label="Administrācijas navigācija">
                 <div className="p-4 border-b border-gray-200">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="text-sm text-blue-600 hover:underline"
-                    >
-                        ← Atpakaļ uz kursiem
-                    </button>
-                    <h1 className="text-base font-bold mt-2 text-gray-800">Administrācija</h1>
+                    <h1 className="text-base font-bold font-heading text-vea-neutral">Administrācija</h1>
                 </div>
                 <div className="p-2 space-y-0.5 overflow-y-auto flex-1">
                     {SECTIONS.map(s => (
@@ -144,8 +136,8 @@ function AdminPage() {
                             onClick={() => setActiveSection(s.key)}
                             className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
                                 activeSection === s.key
-                                    ? 'bg-blue-600 text-white font-medium'
-                                    : 'text-gray-700 hover:bg-gray-100'
+                                    ? 'bg-vea-green text-white font-medium'
+                                    : 'text-vea-neutral hover:bg-vea-green-light'
                             }`}
                         >
                             {s.label}

@@ -3,7 +3,6 @@ import api from '../../services/axiosConfig';
 
 /**
  * Rediģēšanas forma vērtēšanas sadalījumam un patstāvīgā darba aktivitātēm.
- * Divas apakšsekcijas vienā komponentā.
  *
  * @param {string}  courseInfoId
  * @param {object}  data         - { assessmentDistribution, selfStudyActivities }
@@ -15,7 +14,7 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
     const [assessRows, setAssessRows] = useState(
         (data.assessmentDistribution || []).map(a => ({
             id: a.id,
-            componentId: '',   // not in DTO — will be matched by name or left empty for new rows
+            componentId: '',
             componentName: a.componentName,
             percentage: a.percentage,
             isNew: false,
@@ -37,7 +36,9 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
 
-    // --- Assessment helpers ---
+    const cellInput = "w-full border border-gray-300 rounded px-2 py-1 focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
+    const cellSelect = "w-full border border-gray-300 rounded px-2 py-1 focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
+
     const addAssessRow = () => {
         setAssessRows(prev => [...prev, { id: null, componentId: '', componentName: '', percentage: 0, isNew: true }]);
     };
@@ -50,7 +51,6 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
         setAssessRows(prev => prev.filter((_, i) => i !== idx));
     };
 
-    // --- Self-study helpers ---
     const addSelfStudyRow = () => {
         setSelfStudyRows(prev => [...prev, { id: null, activityId: '', activityName: '', percentage: 0, isNew: true }]);
     };
@@ -139,56 +139,61 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
         return found ? found.id : '';
     };
 
+    const thClass = "border-b border-gray-200 px-2 py-2 text-xs font-semibold text-vea-neutral uppercase tracking-wide text-left";
+
     return (
         <div className="space-y-6">
             {error && <p className="text-red-600 text-sm">{error}</p>}
 
             {/* Vērtēšanas sadalījums */}
             <div>
-                <h3 className="font-medium mb-2">Vērtēšanas sadalījums</h3>
-                <table className="w-full text-sm border border-gray-200">
-                    <thead className="bg-gray-50">
-                    <tr>
-                        <th className="border border-gray-200 px-2 py-1">Komponente</th>
-                        <th className="border border-gray-200 px-2 py-1 w-24 text-center">%</th>
-                        <th className="border border-gray-200 px-2 py-1 w-10"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {assessRows.map((row, idx) => (
-                        <tr key={idx}>
-                            <td className="border border-gray-200 px-1 py-1">
-                                {row.isNew ? (
-                                    <select value={row.componentId}
-                                            onChange={e => updateAssessRow(idx, 'componentId', e.target.value)}
-                                            className="w-full border rounded px-2 py-1">
-                                        <option value="">— izvēlies —</option>
-                                        {(lookups.assessmentComponents || []).map(c => (
-                                            <option key={c.id} value={c.id}>{c.name}</option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <span className="px-2">{row.componentName}</span>
-                                )}
-                            </td>
-                            <td className="border border-gray-200 px-1 py-1">
-                                <input type="number" min="0" max="100" value={row.percentage}
-                                       onChange={e => updateAssessRow(idx, 'percentage', e.target.value)}
-                                       className="w-full border rounded px-2 py-1 text-center" />
-                            </td>
-                            <td className="border border-gray-200 px-2 py-1 text-center">
-                                <button onClick={() => removeAssessRow(idx)}
-                                        className="text-red-500 hover:text-red-700 text-lg leading-none">×</button>
-                            </td>
+                <h3 className="font-medium font-heading text-vea-neutral mb-2">Vērtēšanas sadalījums</h3>
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <table className="w-full text-sm">
+                        <thead className="bg-vea-green-light">
+                        <tr>
+                            <th scope="col" className={thClass}>Komponente</th>
+                            <th scope="col" className={`${thClass} w-24 text-center`}>%</th>
+                            <th scope="col" aria-label="Darbības" className="border-b border-gray-200 px-2 py-2 w-10"></th>
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
-                <div className="flex items-center justify-between mt-1">
-                    <button onClick={addAssessRow} className="text-blue-600 hover:underline text-sm">
+                        </thead>
+                        <tbody>
+                        {assessRows.map((row, idx) => (
+                            <tr key={idx} className="border-t border-gray-100">
+                                <td className="px-1 py-1">
+                                    {row.isNew ? (
+                                        <select value={row.componentId}
+                                                onChange={e => updateAssessRow(idx, 'componentId', e.target.value)}
+                                                className={cellSelect}>
+                                            <option value="">— izvēlies —</option>
+                                            {(lookups.assessmentComponents || []).map(c => (
+                                                <option key={c.id} value={c.id}>{c.name}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <span className="px-2">{row.componentName}</span>
+                                    )}
+                                </td>
+                                <td className="px-1 py-1">
+                                    <input type="number" min="0" max="100" value={row.percentage}
+                                           onChange={e => updateAssessRow(idx, 'percentage', e.target.value)}
+                                           className={`${cellInput} text-center`} />
+                                </td>
+                                <td className="px-2 py-1 text-center">
+                                    <button onClick={() => removeAssessRow(idx)}
+                                            className="text-red-500 hover:text-red-700 text-lg leading-none"
+                                            aria-label="Dzēst">×</button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                    <button onClick={addAssessRow} className="text-vea-green hover:underline text-sm">
                         + Pievienot komponenti
                     </button>
-                    <span className={`text-sm font-medium ${assessSum === 100 ? 'text-green-600' : 'text-orange-600'}`}>
+                    <span className={`text-sm font-medium ${assessSum === 100 ? 'text-green-600' : 'text-vea-orange'}`}>
                         Kopā: {assessSum}%
                     </span>
                 </div>
@@ -196,50 +201,53 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
 
             {/* Patstāvīgā darba aktivitātes */}
             <div>
-                <h3 className="font-medium mb-2">Patstāvīgā darba sadalījums</h3>
-                <table className="w-full text-sm border border-gray-200">
-                    <thead className="bg-gray-50">
-                    <tr>
-                        <th className="border border-gray-200 px-2 py-1">Aktivitāte</th>
-                        <th className="border border-gray-200 px-2 py-1 w-24 text-center">%</th>
-                        <th className="border border-gray-200 px-2 py-1 w-10"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {selfStudyRows.map((row, idx) => (
-                        <tr key={idx}>
-                            <td className="border border-gray-200 px-1 py-1">
-                                {row.isNew ? (
-                                    <select value={row.activityId}
-                                            onChange={e => updateSelfStudyRow(idx, 'activityId', e.target.value)}
-                                            className="w-full border rounded px-2 py-1">
-                                        <option value="">— izvēlies —</option>
-                                        {(lookups.selfStudyActivities || []).map(a => (
-                                            <option key={a.id} value={a.id}>{a.name}</option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <span className="px-2">{row.activityName}</span>
-                                )}
-                            </td>
-                            <td className="border border-gray-200 px-1 py-1">
-                                <input type="number" min="0" max="100" value={row.percentage}
-                                       onChange={e => updateSelfStudyRow(idx, 'percentage', e.target.value)}
-                                       className="w-full border rounded px-2 py-1 text-center" />
-                            </td>
-                            <td className="border border-gray-200 px-2 py-1 text-center">
-                                <button onClick={() => removeSelfStudyRow(idx)}
-                                        className="text-red-500 hover:text-red-700 text-lg leading-none">×</button>
-                            </td>
+                <h3 className="font-medium font-heading text-vea-neutral mb-2">Patstāvīgā darba sadalījums</h3>
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <table className="w-full text-sm">
+                        <thead className="bg-vea-green-light">
+                        <tr>
+                            <th scope="col" className={thClass}>Aktivitāte</th>
+                            <th scope="col" className={`${thClass} w-24 text-center`}>%</th>
+                            <th scope="col" aria-label="Darbības" className="border-b border-gray-200 px-2 py-2 w-10"></th>
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
-                <div className="flex items-center justify-between mt-1">
-                    <button onClick={addSelfStudyRow} className="text-blue-600 hover:underline text-sm">
+                        </thead>
+                        <tbody>
+                        {selfStudyRows.map((row, idx) => (
+                            <tr key={idx} className="border-t border-gray-100">
+                                <td className="px-1 py-1">
+                                    {row.isNew ? (
+                                        <select value={row.activityId}
+                                                onChange={e => updateSelfStudyRow(idx, 'activityId', e.target.value)}
+                                                className={cellSelect}>
+                                            <option value="">— izvēlies —</option>
+                                            {(lookups.selfStudyActivities || []).map(a => (
+                                                <option key={a.id} value={a.id}>{a.name}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <span className="px-2">{row.activityName}</span>
+                                    )}
+                                </td>
+                                <td className="px-1 py-1">
+                                    <input type="number" min="0" max="100" value={row.percentage}
+                                           onChange={e => updateSelfStudyRow(idx, 'percentage', e.target.value)}
+                                           className={`${cellInput} text-center`} />
+                                </td>
+                                <td className="px-2 py-1 text-center">
+                                    <button onClick={() => removeSelfStudyRow(idx)}
+                                            className="text-red-500 hover:text-red-700 text-lg leading-none"
+                                            aria-label="Dzēst">×</button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                    <button onClick={addSelfStudyRow} className="text-vea-green hover:underline text-sm">
                         + Pievienot aktivitāti
                     </button>
-                    <span className={`text-sm font-medium ${selfStudySum === 100 ? 'text-green-600' : 'text-orange-600'}`}>
+                    <span className={`text-sm font-medium ${selfStudySum === 100 ? 'text-green-600' : 'text-vea-orange'}`}>
                         Kopā: {selfStudySum}%
                     </span>
                 </div>
@@ -247,11 +255,11 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
 
             <div className="flex gap-2">
                 <button onClick={handleSave} disabled={saving}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
+                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50">
                     {saving ? 'Saglabā...' : 'Saglabāt'}
                 </button>
                 <button onClick={onCancel}
-                        className="border border-gray-400 px-4 py-2 rounded hover:bg-gray-100">
+                    className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral">
                     Atcelt
                 </button>
             </div>

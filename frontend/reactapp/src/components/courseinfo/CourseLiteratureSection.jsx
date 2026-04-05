@@ -12,7 +12,6 @@ import api from '../../services/axiosConfig';
  * @param {Function} onCancel
  */
 function CourseLiteratureSection({ courseInfoId, data, lookups, onSaved, onCancel }) {
-    // Flatten grouped literature into a flat row list
     const flattenLiterature = () => {
         const rows = [];
         for (const group of (data.literature || [])) {
@@ -34,6 +33,8 @@ function CourseLiteratureSection({ courseInfoId, data, lookups, onSaved, onCance
     const [deletedIds, setDeletedIds] = useState([]);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
+
+    const cellInput = "w-full border border-gray-300 rounded px-2 py-1 text-sm focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
 
     const addRow = () => {
         setRows(prev => [...prev, { id: null, typeId: '', citation: '', url: '', language: 'lv', isNew: true }]);
@@ -90,73 +91,77 @@ function CourseLiteratureSection({ courseInfoId, data, lookups, onSaved, onCance
         }
     };
 
+    const thClass = "border-b border-gray-200 px-2 py-2 text-xs font-semibold text-vea-neutral uppercase tracking-wide text-left";
+
     return (
         <div className="space-y-3">
             {error && <p className="text-red-600 text-sm">{error}</p>}
 
-            <table className="w-full text-sm border border-gray-200">
-                <thead className="bg-gray-50">
-                <tr>
-                    <th className="border border-gray-200 px-2 py-1 w-36">Veids</th>
-                    <th className="border border-gray-200 px-2 py-1">Citāts <span className="text-red-500">*</span></th>
-                    <th className="border border-gray-200 px-2 py-1 w-40">URL</th>
-                    <th className="border border-gray-200 px-2 py-1 w-20">Valoda</th>
-                    <th className="border border-gray-200 px-2 py-1 w-10"></th>
-                </tr>
-                </thead>
-                <tbody>
-                {rows.map((row, idx) => (
-                    <tr key={idx}>
-                        <td className="border border-gray-200 px-1 py-1">
-                            <select value={row.typeId}
-                                    onChange={e => updateRow(idx, 'typeId', e.target.value)}
-                                    className="w-full border rounded px-1 py-1 text-sm">
-                                <option value="">— izvēlies —</option>
-                                {(lookups.literatureTypes || []).map(t => (
-                                    <option key={t.id} value={t.id}>{t.name}</option>
-                                ))}
-                            </select>
-                        </td>
-                        <td className="border border-gray-200 px-1 py-1">
-                            <textarea value={row.citation} rows={2}
-                                      onChange={e => updateRow(idx, 'citation', e.target.value)}
-                                      className="w-full border rounded px-2 py-1 text-sm"
-                                      placeholder="Autors, nosaukums, gads..." />
-                        </td>
-                        <td className="border border-gray-200 px-1 py-1">
-                            <input type="text" value={row.url}
-                                   onChange={e => updateRow(idx, 'url', e.target.value)}
-                                   className="w-full border rounded px-2 py-1 text-sm"
-                                   placeholder="https://..." />
-                        </td>
-                        <td className="border border-gray-200 px-1 py-1">
-                            <select value={row.language}
-                                    onChange={e => updateRow(idx, 'language', e.target.value)}
-                                    className="w-full border rounded px-1 py-1 text-sm">
-                                <option value="lv">LV</option>
-                                <option value="en">EN</option>
-                            </select>
-                        </td>
-                        <td className="border border-gray-200 px-2 py-1 text-center">
-                            <button onClick={() => removeRow(idx)}
-                                    className="text-red-500 hover:text-red-700 text-lg leading-none">×</button>
-                        </td>
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <table className="w-full text-sm">
+                    <thead className="bg-vea-green-light">
+                    <tr>
+                        <th scope="col" className={`${thClass} w-36`}>Veids</th>
+                        <th scope="col" className={thClass}>Citāts <span className="text-red-500">*</span></th>
+                        <th scope="col" className={`${thClass} w-40`}>URL</th>
+                        <th scope="col" className={`${thClass} w-20`}>Valoda</th>
+                        <th scope="col" aria-label="Darbības" className="border-b border-gray-200 px-2 py-2 w-10"></th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {rows.map((row, idx) => (
+                        <tr key={idx} className="border-t border-gray-100">
+                            <td className="px-1 py-1">
+                                <select value={row.typeId}
+                                        onChange={e => updateRow(idx, 'typeId', e.target.value)}
+                                        className={cellInput}>
+                                    <option value="">— izvēlies —</option>
+                                    {(lookups.literatureTypes || []).map(t => (
+                                        <option key={t.id} value={t.id}>{t.name}</option>
+                                    ))}
+                                </select>
+                            </td>
+                            <td className="px-1 py-1">
+                                <textarea value={row.citation} rows={2}
+                                          onChange={e => updateRow(idx, 'citation', e.target.value)}
+                                          className={cellInput}
+                                          placeholder="Autors, nosaukums, gads..." />
+                            </td>
+                            <td className="px-1 py-1">
+                                <input type="text" value={row.url}
+                                       onChange={e => updateRow(idx, 'url', e.target.value)}
+                                       className={cellInput} placeholder="https://..." />
+                            </td>
+                            <td className="px-1 py-1">
+                                <select value={row.language}
+                                        onChange={e => updateRow(idx, 'language', e.target.value)}
+                                        className={cellInput}>
+                                    <option value="lv">LV</option>
+                                    <option value="en">EN</option>
+                                </select>
+                            </td>
+                            <td className="px-2 py-1 text-center">
+                                <button onClick={() => removeRow(idx)}
+                                        className="text-red-500 hover:text-red-700 text-lg leading-none"
+                                        aria-label="Dzēst">×</button>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
 
-            <button onClick={addRow} className="text-blue-600 hover:underline text-sm">
+            <button onClick={addRow} className="text-vea-green hover:underline text-sm">
                 + Pievienot avotu
             </button>
 
             <div className="flex gap-2">
                 <button onClick={handleSave} disabled={saving}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
+                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50">
                     {saving ? 'Saglabā...' : 'Saglabāt'}
                 </button>
                 <button onClick={onCancel}
-                        className="border border-gray-400 px-4 py-2 rounded hover:bg-gray-100">
+                    className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral">
                     Atcelt
                 </button>
             </div>

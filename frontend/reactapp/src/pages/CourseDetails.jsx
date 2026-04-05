@@ -71,9 +71,9 @@ function CourseDetails() {
     // --- Palīgkomponents: sekcijas virsraksts ---
     const SectionTitle = ({ title, isEmpty }) => (
         <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+            <h2 className="text-lg font-semibold font-heading text-vea-neutral">{title}</h2>
             {isEmpty && (
-                <span title="Sadaļa nav aizpildīta" className="text-orange-400 text-base">⚠</span>
+                <span title="Sadaļa nav aizpildīta" className="text-vea-orange text-base" aria-label="Sadaļa nav aizpildīta">⚠</span>
             )}
         </div>
     );
@@ -82,7 +82,7 @@ function CourseDetails() {
     const InfoRow = ({ label, value }) => (
         <li className="flex gap-1 text-sm">
             <span className="text-gray-500 shrink-0">{label}:</span>
-            <span className="font-medium text-gray-900">
+            <span className="font-medium text-vea-text">
                 {value || <span className="text-gray-400 font-normal">Nav norādīts</span>}
             </span>
         </li>
@@ -92,45 +92,45 @@ function CourseDetails() {
     const HourStat = ({ label, value }) => (
         <div className="flex flex-col items-center text-center w-32 px-2 py-3 shrink-0">
             <span className="text-xs text-gray-500 mb-1 leading-tight">{label}</span>
-            <span className="text-2xl font-bold text-gray-800">{value ?? 0}</span>
+            <span className="text-2xl font-bold text-vea-neutral">{value ?? 0}</span>
             <span className="text-xs text-gray-400">ak. st.</span>
         </div>
     );
 
     // --- Palīgkomponents: sadaļas apakšvirsraksts ---
     const SubLabel = ({ children }) => (
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 border-l-2 border-blue-300 pl-2 mb-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 border-l-2 border-vea-green pl-2 mb-2">
             {children}
         </p>
     );
 
     return (
-        <div className="p-6 space-y-5 max-w-5xl mx-auto text-gray-900 print:text-black">
+        <div className="p-6 space-y-5 max-w-5xl mx-auto text-vea-text print:text-black">
 
-            <button onClick={() => navigate('/')} className="text-blue-600 hover:underline text-sm mb-1">
+            <button onClick={() => navigate('/')} className="text-vea-green hover:underline text-sm mb-1">
                 ← Atpakaļ uz kursiem
             </button>
 
             {/* ── 1. VIRSRAKSTS + DARBĪBAS + VERSIJAS STATUSS ── */}
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                    <h1 className="text-3xl font-bold leading-tight">{d.titleLv}</h1>
+                    <h1 className="text-3xl font-bold font-heading text-vea-neutral leading-tight">{d.titleLv}</h1>
                     {d.titleEn && (
                         <p className="text-base text-gray-500 italic mt-0.5">{d.titleEn}</p>
                     )}
                     <div className="flex gap-2 mt-3 flex-wrap">
-                        <button className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700">
+                        <button className="bg-vea-green text-white px-4 py-1.5 rounded text-sm hover:bg-vea-green-dark">
                             PDF
                         </button>
                         <button
                             onClick={() => navigate(`/courses/${id}/edit`)}
-                            className="bg-yellow-500 text-white px-4 py-1.5 rounded text-sm hover:bg-yellow-600"
+                            className="bg-vea-orange text-white px-4 py-1.5 rounded text-sm hover:opacity-90"
                         >
                             Rediģēt
                         </button>
                         <button
                             onClick={() => setShowDeleteConfirm(true)}
-                            className="bg-red-600 text-white px-4 py-1.5 rounded text-sm hover:bg-red-700"
+                            className="bg-red-600 text-white px-4 py-1.5 rounded text-sm hover:bg-red-700 ml-auto"
                         >
                             Dzēst
                         </button>
@@ -144,7 +144,7 @@ function CourseDetails() {
                             <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold mb-1
                                 ${d.versionStatus.toLowerCase().includes('apstip')
                                     ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-100 text-gray-600'}`}>
+                                    : 'bg-vea-orange-light text-vea-orange'}`}>
                                 {d.versionStatus}
                             </span>
                         )}
@@ -159,7 +159,7 @@ function CourseDetails() {
 
             {/* Dzēšanas apstiprinājums */}
             {showDeleteConfirm && (
-                <div className="bg-red-50 border border-red-300 rounded p-4 flex flex-wrap items-center gap-4">
+                <div className="bg-red-50 border border-red-300 rounded-lg p-4 flex flex-wrap items-center gap-4">
                     <p className="text-red-700 font-medium flex-1">
                         Vai tiešām vēlies dzēst šo kursu? Šo darbību nevar atsaukt.
                     </p>
@@ -171,7 +171,7 @@ function CourseDetails() {
                     </button>
                     <button
                         onClick={() => setShowDeleteConfirm(false)}
-                        className="border border-gray-400 px-3 py-1 rounded hover:bg-gray-100 text-sm"
+                        className="border border-gray-300 px-3 py-1 rounded hover:bg-gray-100 text-sm"
                     >
                         Atcelt
                     </button>
@@ -180,8 +180,8 @@ function CourseDetails() {
             )}
 
             {/* ── 3. PAMATA INFORMĀCIJA ── */}
-            <section className="bg-white p-5 shadow rounded">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Pamata informācija</h2>
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
+                <h2 className="text-lg font-semibold font-heading text-vea-neutral mb-4">Pamata informācija</h2>
 
                 {/* Divas kolonnas: Kurss | Pasniegšanas konteksts */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-1 mb-4">
@@ -216,7 +216,7 @@ function CourseDetails() {
                 {/* Stundu sadalījums — stat bloks */}
                 <div className="border-t border-gray-100 pt-4 mb-4">
                     <SubLabel>Stundu sadalījums</SubLabel>
-                    <div className="flex divide-x divide-gray-200 bg-gray-50 rounded border border-gray-200 w-fit">
+                    <div className="flex divide-x divide-gray-200 bg-vea-green-light rounded border border-gray-200 w-fit">
                         <HourStat label="Kontaktstundas kopā" value={d.academicHoursTotal} />
                         <HourStat label="Lekcijas" value={d.lectureHours} />
                         <HourStat label="Praktiskās nodarbības" value={d.practClassesHours} />
@@ -230,7 +230,7 @@ function CourseDetails() {
                     {d.prerequisitesDescription || (d.prerequisites && d.prerequisites.length > 0) ? (
                         <>
                             {d.prerequisitesDescription && (
-                                <p className="text-gray-800 mb-1">{d.prerequisitesDescription}</p>
+                                <p className="text-vea-text mb-1">{d.prerequisitesDescription}</p>
                             )}
                             {d.prerequisites && d.prerequisites.length > 0 && (
                                 <ul className="list-disc list-inside space-y-0.5 text-gray-700">
@@ -250,25 +250,25 @@ function CourseDetails() {
             </section>
 
             {/* ── 4. ANOTĀCIJA ── */}
-            <section className="bg-white p-5 shadow rounded">
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
                 <SectionTitle title="Studiju kursa anotācija" isEmpty={!d.annotation} />
                 {d.annotation
-                    ? <p className="text-sm text-gray-800 leading-relaxed">{d.annotation}</p>
+                    ? <p className="text-sm text-vea-text leading-relaxed">{d.annotation}</p>
                     : <p className="text-gray-400 text-sm">Nav aizpildīta</p>
                 }
             </section>
 
             {/* ── 5. MĒRĶIS ── */}
-            <section className="bg-white p-5 shadow rounded">
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
                 <SectionTitle title="Studiju kursa mērķis" isEmpty={!d.goal} />
                 {d.goal
-                    ? <p className="text-sm text-gray-800 leading-relaxed">{d.goal}</p>
+                    ? <p className="text-sm text-vea-text leading-relaxed">{d.goal}</p>
                     : <p className="text-gray-400 text-sm">Nav aizpildīts</p>
                 }
             </section>
 
             {/* ── 6. SKR ── */}
-            <section className="bg-white p-5 shadow rounded">
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
                 <SectionTitle
                     title="Studiju kursa rezultāti (SKR)"
                     isEmpty={skrCategories.length === 0}
@@ -277,8 +277,8 @@ function CourseDetails() {
                     <div className="space-y-4">
                         {skrCategories.map(cat => (
                             <div key={cat}>
-                                <p className="text-sm font-semibold text-blue-800 mb-1">{cat}</p>
-                                <ol className="list-decimal list-inside space-y-1 text-sm text-gray-800">
+                                <p className="text-sm font-semibold text-vea-green mb-1">{cat}</p>
+                                <ol className="list-decimal list-inside space-y-1 text-sm text-vea-text">
                                     {skrByCategory[cat].map((r, i) => (
                                         <li key={i}>{r.learningOutcome}</li>
                                     ))}
@@ -292,13 +292,13 @@ function CourseDetails() {
             </section>
 
             {/* ── 7. TĒMAS ── */}
-            <section className="bg-white p-5 shadow rounded">
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
                 <SectionTitle
                     title="Studiju kursa saturs"
                     isEmpty={!d.topics || d.topics.length === 0}
                 />
                 {d.topics && d.topics.length > 0 ? (
-                    <ol className="list-decimal list-inside space-y-1 text-sm text-gray-800">
+                    <ol className="list-decimal list-inside space-y-1 text-sm text-vea-text">
                         {d.topics.map((t, i) => (
                             <li key={i}>
                                 <span className="font-medium">{t.title}</span>
@@ -314,24 +314,24 @@ function CourseDetails() {
             </section>
 
             {/* ── 8. PATSTĀVĪGĀ DARBA ORGANIZĀCIJA ── */}
-            <section className="bg-white p-5 shadow rounded">
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
                 <SectionTitle
                     title="Studējošo individuālā patstāvīgā darba organizācija"
                     isEmpty={!d.selfStudyActivities || d.selfStudyActivities.length === 0}
                 />
                 {d.selfStudyActivities && d.selfStudyActivities.length > 0 ? (
-                    <table className="w-full border border-gray-300 text-sm">
-                        <thead className="bg-gray-50">
+                    <table className="w-full border border-gray-200 text-sm rounded overflow-hidden">
+                        <thead className="bg-vea-green-light">
                         <tr>
-                            <th className="p-2 text-left border-b">Darbības veids</th>
-                            <th className="p-2 text-center border-b w-20">%</th>
+                            <th scope="col" className="p-2 text-left border-b border-gray-200 text-xs font-semibold text-vea-neutral uppercase tracking-wide">Darbības veids</th>
+                            <th scope="col" className="p-2 text-center border-b border-gray-200 w-20 text-xs font-semibold text-vea-neutral uppercase tracking-wide">%</th>
                         </tr>
                         </thead>
                         <tbody>
                         {d.selfStudyActivities.map((s, i) => (
                             <tr key={i} className="even:bg-gray-50">
-                                <td className="p-2 border-b">{s.activityName}</td>
-                                <td className="p-2 border-b text-center">{s.percentage}</td>
+                                <td className="p-2 border-b border-gray-100">{s.activityName}</td>
+                                <td className="p-2 border-b border-gray-100 text-center">{s.percentage}</td>
                             </tr>
                         ))}
                         </tbody>
@@ -342,7 +342,7 @@ function CourseDetails() {
             </section>
 
             {/* ── 9. VĒRTĒŠANAS KRITĒRIJI ── */}
-            <section className="bg-white p-5 shadow rounded">
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
                 <SectionTitle
                     title="Studiju kursa rezultātu vērtēšanas kritēriji"
                     isEmpty={(!d.assessmentDistribution || d.assessmentDistribution.length === 0)
@@ -351,21 +351,21 @@ function CourseDetails() {
 
                 {d.assessmentDistribution && d.assessmentDistribution.length > 0 ? (
                     <div className="mb-5">
-                        <p className="text-sm font-medium text-gray-700 mb-2">
+                        <p className="text-sm font-medium text-vea-neutral mb-2">
                             Vērtēšanas sadalījums (kopā 100%)
                         </p>
-                        <table className="w-full border border-gray-300 text-sm">
-                            <thead className="bg-gray-50">
+                        <table className="w-full border border-gray-200 text-sm">
+                            <thead className="bg-vea-green-light">
                             <tr>
-                                <th className="p-2 text-left border-b">Komponente</th>
-                                <th className="p-2 text-center border-b w-20">%</th>
+                                <th scope="col" className="p-2 text-left border-b border-gray-200 text-xs font-semibold text-vea-neutral uppercase tracking-wide">Komponente</th>
+                                <th scope="col" className="p-2 text-center border-b border-gray-200 w-20 text-xs font-semibold text-vea-neutral uppercase tracking-wide">%</th>
                             </tr>
                             </thead>
                             <tbody>
                             {d.assessmentDistribution.map((a, i) => (
                                 <tr key={i} className="even:bg-gray-50">
-                                    <td className="p-2 border-b">{a.componentName}</td>
-                                    <td className="p-2 border-b text-center">{a.percentage}</td>
+                                    <td className="p-2 border-b border-gray-100">{a.componentName}</td>
+                                    <td className="p-2 border-b border-gray-100 text-center">{a.percentage}</td>
                                 </tr>
                             ))}
                             </tbody>
@@ -377,15 +377,15 @@ function CourseDetails() {
 
                 {skrCategories.length > 0 && allComponents.length > 0 && (
                     <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">SKR × Vērtēšanas kritēriji</p>
+                        <p className="text-sm font-medium text-vea-neutral mb-2">SKR × Vērtēšanas kritēriji</p>
                         <div className="overflow-x-auto">
                             <table className="border-collapse text-sm w-full">
                                 <thead>
-                                <tr className="bg-gray-100">
-                                    <th className="border border-gray-300 px-3 py-2 text-left">SKR</th>
+                                <tr className="bg-vea-green-light">
+                                    <th scope="col" className="border border-gray-200 px-3 py-2 text-left text-xs font-semibold text-vea-neutral">SKR</th>
                                     {allComponents.map(c => (
-                                        <th key={c}
-                                            className="border border-gray-300 px-2 py-2 text-center font-normal text-xs whitespace-nowrap">
+                                        <th key={c} scope="col"
+                                            className="border border-gray-200 px-2 py-2 text-center font-normal text-xs whitespace-nowrap text-vea-neutral">
                                             {c}
                                         </th>
                                     ))}
@@ -395,15 +395,15 @@ function CourseDetails() {
                                 {skrCategories.map(cat =>
                                     skrByCategory[cat].map((r, i) => (
                                         <tr key={r.courseResultId} className="even:bg-gray-50">
-                                            <td className="border border-gray-300 px-3 py-2 text-xs">
+                                            <td className="border border-gray-200 px-3 py-2 text-xs">
                                                 {i === 0 && (
-                                                    <span className="font-semibold text-blue-800 block mb-0.5">{cat}</span>
+                                                    <span className="font-semibold text-vea-green block mb-0.5">{cat}</span>
                                                 )}
                                                 {r.learningOutcome}
                                             </td>
                                             {allComponents.map(c => (
                                                 <td key={c}
-                                                    className="border border-gray-300 px-2 py-2 text-center text-green-600">
+                                                    className="border border-gray-200 px-2 py-2 text-center text-vea-green">
                                                     {r.components && r.components.includes(c) ? '✓' : ''}
                                                 </td>
                                             ))}
@@ -418,15 +418,15 @@ function CourseDetails() {
             </section>
 
             {/* ── 10. KALENDĀRAIS PLĀNS ── */}
-            <section className="bg-white p-5 shadow rounded">
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">Studiju kursa kalendārais plāns</h2>
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
+                <h2 className="text-lg font-semibold font-heading text-vea-neutral mb-3">Studiju kursa kalendārais plāns</h2>
                 {d.calendarPlan && d.calendarPlan.length > 0 ? (
-                    <table className="w-full border border-gray-300 text-sm">
-                        <thead className="bg-gray-50">
+                    <table className="w-full border border-gray-200 text-sm">
+                        <thead className="bg-vea-green-light">
                         <tr>
-                            <th className="p-2 text-left border-b">Tēma</th>
-                            <th className="p-2 border-b">Nodarbības veids</th>
-                            <th className="p-2 text-center border-b w-24">Ak. st.</th>
+                            <th className="p-2 text-left border-b border-gray-200 text-xs font-semibold text-vea-neutral uppercase tracking-wide">Tēma</th>
+                            <th className="p-2 border-b border-gray-200 text-xs font-semibold text-vea-neutral uppercase tracking-wide">Nodarbības veids</th>
+                            <th className="p-2 text-center border-b border-gray-200 w-24 text-xs font-semibold text-vea-neutral uppercase tracking-wide">Ak. st.</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -434,19 +434,19 @@ function CourseDetails() {
                             (plan.sessions || []).map((session, si) => (
                                 <tr key={`${pi}-${si}`} className="even:bg-gray-50">
                                     {si === 0 && (
-                                        <td className="p-2 border-b font-medium align-top"
+                                        <td className="p-2 border-b border-gray-100 font-medium align-top"
                                             rowSpan={(plan.sessions || []).length}>
                                             {plan.topicTitle}
                                         </td>
                                     )}
-                                    <td className="p-2 border-b">{session.sessionType}</td>
-                                    <td className="p-2 border-b text-center">{session.academicHours}</td>
+                                    <td className="p-2 border-b border-gray-100">{session.sessionType}</td>
+                                    <td className="p-2 border-b border-gray-100 text-center">{session.academicHours}</td>
                                 </tr>
                             ))
                         )}
-                        <tr className="font-semibold bg-gray-100">
-                            <td colSpan={2} className="p-2 border-t">Kopā:</td>
-                            <td className="p-2 border-t text-center">{calendarTotalHours}</td>
+                        <tr className="font-semibold bg-vea-green-light">
+                            <td colSpan={2} className="p-2 border-t border-gray-200">Kopā:</td>
+                            <td className="p-2 border-t border-gray-200 text-center">{calendarTotalHours}</td>
                         </tr>
                         </tbody>
                     </table>
@@ -458,7 +458,7 @@ function CourseDetails() {
             </section>
 
             {/* ── 11. LITERATŪRA ── */}
-            <section className="bg-white p-5 shadow rounded">
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
                 <SectionTitle
                     title="Literatūra un materiāli"
                     isEmpty={!d.literature || d.literature.length === 0}
@@ -467,13 +467,13 @@ function CourseDetails() {
                     <div className="space-y-4">
                         {d.literature.map((group, i) => (
                             <div key={i}>
-                                <p className="text-sm font-semibold text-blue-800 mb-1">{group.type}</p>
-                                <ul className="list-disc list-inside space-y-1 text-sm text-gray-800">
+                                <p className="text-sm font-semibold text-vea-green mb-1">{group.type}</p>
+                                <ul className="list-disc list-inside space-y-1 text-sm text-vea-text">
                                     {(group.sources || []).map((src, j) => (
                                         <li key={j}>
                                             {src.url
                                                 ? <a href={src.url} target="_blank" rel="noreferrer"
-                                                     className="text-blue-600 hover:underline">{src.citation}</a>
+                                                     className="text-vea-green hover:underline">{src.citation}</a>
                                                 : src.citation
                                             }
                                         </li>

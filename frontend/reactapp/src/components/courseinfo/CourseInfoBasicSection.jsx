@@ -26,6 +26,9 @@ function CourseInfoBasicSection({ courseInfoId, data, lookups, onSaved, onCancel
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
 
+    const inputClass = "w-full border border-gray-300 rounded p-2 focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
+    const labelClass = "block text-sm font-medium text-vea-neutral mb-1";
+
     const handleChange = e => {
         const { name, value } = e.target;
         setForm(prev => ({ ...prev, [name]: value }));
@@ -65,62 +68,48 @@ function CourseInfoBasicSection({ courseInfoId, data, lookups, onSaved, onCancel
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className={labelClass}>
                         Kopējās ak. stundas <span className="text-red-500">*</span>
                     </label>
-                    <input
-                        type="number" name="academicHoursTotal" min="0"
-                        value={form.academicHoursTotal}
-                        onChange={handleChange}
-                        className="w-full border rounded p-2"
-                    />
+                    <input type="number" name="academicHoursTotal" min="0"
+                        value={form.academicHoursTotal} onChange={handleChange}
+                        className={inputClass} />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1">Lekciju stundas</label>
-                    <input
-                        type="number" name="lectureHours" min="0"
-                        value={form.lectureHours}
-                        onChange={handleChange}
-                        className="w-full border rounded p-2"
-                    />
+                    <label className={labelClass}>Lekciju stundas</label>
+                    <input type="number" name="lectureHours" min="0"
+                        value={form.lectureHours} onChange={handleChange}
+                        className={inputClass} />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1">Praktisko nodarbību stundas</label>
-                    <input
-                        type="number" name="practClassesHours" min="0"
-                        value={form.practClassesHours}
-                        onChange={handleChange}
-                        className="w-full border rounded p-2"
-                    />
+                    <label className={labelClass}>Praktisko nodarbību stundas</label>
+                    <input type="number" name="practClassesHours" min="0"
+                        value={form.practClassesHours} onChange={handleChange}
+                        className={inputClass} />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className={labelClass}>
                         Patstāvīgā darba stundas <span className="text-red-500">*</span>
                     </label>
-                    <input
-                        type="number" name="independentWorkHours" min="0"
-                        value={form.independentWorkHours}
-                        onChange={handleChange}
-                        className="w-full border rounded p-2"
-                    />
+                    <input type="number" name="independentWorkHours" min="0"
+                        value={form.independentWorkHours} onChange={handleChange}
+                        className={inputClass} />
                 </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium mb-1">
+                    <label className={labelClass}>
                         Mācību valoda <span className="text-red-500">*</span>
                     </label>
-                    <select name="language" value={form.language} onChange={handleChange}
-                            className="w-full border rounded p-2">
+                    <select name="language" value={form.language} onChange={handleChange} className={inputClass}>
                         <option value="lv">Latviešu</option>
                         <option value="en">Angļu</option>
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1">Pārbaudes forma</label>
-                    <select name="assessmentFormId" value={form.assessmentFormId} onChange={handleChange}
-                            className="w-full border rounded p-2">
+                    <label className={labelClass}>Pārbaudes forma</label>
+                    <select name="assessmentFormId" value={form.assessmentFormId} onChange={handleChange} className={inputClass}>
                         <option value="">— nav norādīta —</option>
                         {(lookups.assessmentForms || []).map(af => (
                             <option key={af.id} value={af.id}>{af.name}</option>
@@ -130,35 +119,30 @@ function CourseInfoBasicSection({ courseInfoId, data, lookups, onSaved, onCancel
             </div>
 
             <div>
-                <label className="block text-sm font-medium mb-1">Kursa mērķis</label>
+                <label className={labelClass}>Kursa mērķis</label>
                 <textarea name="goal" value={form.goal} onChange={handleChange} rows={3}
-                          className="w-full border rounded p-2" />
+                          className={inputClass} />
             </div>
 
             <div>
-                <label className="block text-sm font-medium mb-1">Anotācija</label>
+                <label className={labelClass}>Anotācija</label>
                 <textarea name="annotation" value={form.annotation} onChange={handleChange} rows={3}
-                          className="w-full border rounded p-2" />
+                          className={inputClass} />
             </div>
 
             <div>
-                <label className="block text-sm font-medium mb-1">Priekšnosacījumu apraksts</label>
+                <label className={labelClass}>Priekšnosacījumu apraksts</label>
                 <textarea name="prerequisitesDescription" value={form.prerequisitesDescription}
-                          onChange={handleChange} rows={2}
-                          className="w-full border rounded p-2" />
+                          onChange={handleChange} rows={2} className={inputClass} />
             </div>
 
             <div className="flex gap-2">
-                <button
-                    onClick={handleSave} disabled={saving}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                >
+                <button onClick={handleSave} disabled={saving}
+                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50">
                     {saving ? 'Saglabā...' : 'Saglabāt'}
                 </button>
-                <button
-                    onClick={onCancel}
-                    className="border border-gray-400 px-4 py-2 rounded hover:bg-gray-100"
-                >
+                <button onClick={onCancel}
+                    className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral">
                     Atcelt
                 </button>
             </div>

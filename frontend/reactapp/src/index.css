@@ -1,3 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-vea-bg text-vea-text font-body;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-heading;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-vea-green ring-offset-2;
+  }
+
+  html {
+    scroll-padding-top: 56px;
+  }
+}
+
+@layer utilities {
+  @media print {
+    .print-hide {
+      display: none !important;
+    }
+  }
+}

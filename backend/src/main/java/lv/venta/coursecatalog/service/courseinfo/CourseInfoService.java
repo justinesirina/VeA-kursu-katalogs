@@ -11,6 +11,7 @@ import lv.venta.coursecatalog.repository.course.CourseRepository;
 import lv.venta.coursecatalog.repository.course.CourseTeacherRepository;
 import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
 import lv.venta.coursecatalog.repository.courseinfo.*;
+import lv.venta.coursecatalog.repository.support.LanguageRepository;
 import lv.venta.coursecatalog.model.program.CourseToProgrammeResults;
 import lv.venta.coursecatalog.repository.program.CourseToProgrammeResultsRepository;
 import lv.venta.coursecatalog.repository.program.CourseToStudyProgramsRepository;
@@ -70,6 +71,9 @@ public class CourseInfoService {
 
     @Autowired
     private LiteratureSourceRepository literatureRepo;
+
+    @Autowired
+    private LanguageRepository languageRepo;
 
     /**
      * Veido docētāja pilno nosaukumu ar grādu un amatu.
@@ -190,7 +194,11 @@ public class CourseInfoService {
 
         dto.setAcademicYear(version.getAcademicYear() != null ? version.getAcademicYear().getName() : null);
         dto.setSemester(version.getSemester() != null ? version.getSemester().getName() : null);
-        dto.setLanguage(info.getLanguage());
+        String languageCode = info.getLanguage();
+        String languageName = languageCode != null
+                ? languageRepo.findByCode(languageCode).map(l -> l.getName()).orElse(languageCode)
+                : null;
+        dto.setLanguage(languageName);
 
         dto.setFacultyName(version.getFaculty() != null ? version.getFaculty().getName() : null);
 

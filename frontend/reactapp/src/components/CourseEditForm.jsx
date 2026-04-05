@@ -264,28 +264,31 @@ function CourseEditForm() {
         || !versionData.semesterId
         || !versionData.statusId;
 
+    const inputClass = "w-full p-2 border border-gray-300 rounded focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
+    const labelClass = "block text-sm font-medium text-vea-neutral mb-1";
+
     return (
         <div className="p-6 max-w-5xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Kursa rediģēšana</h1>
+                <h1 className="text-2xl font-bold font-heading text-vea-neutral">Kursa rediģēšana</h1>
                 <button
                     onClick={() => navigate(`/courses/${id}`)}
-                    className="text-blue-600 hover:underline text-sm"
+                    className="text-vea-green hover:underline text-sm"
                 >
                     ← Atpakaļ uz kursu
                 </button>
             </div>
 
             {/* Tab navigation */}
-            <nav className="flex border-b border-gray-300 overflow-x-auto">
+            <nav className="flex border-b border-gray-200 overflow-x-auto" aria-label="Rediģēšanas sadaļas">
                 {TABS.map((tab, idx) => (
                     <button
                         key={tab.key}
                         onClick={() => setActiveTab(idx)}
                         className={`px-4 py-2 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
                             activeTab === idx
-                                ? 'border-blue-600 text-blue-600'
-                                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-400'
+                                ? 'border-vea-green text-vea-green'
+                                : 'border-transparent text-gray-600 hover:text-vea-neutral hover:border-gray-300'
                         }`}
                     >
                         {tab.label}
@@ -302,170 +305,118 @@ function CourseEditForm() {
             {/* Tab 0 — Course + Version */}
             {activeTab === 0 && courseData && (
                 <div className="space-y-6">
-                    <section className="bg-white p-4 shadow rounded space-y-3">
-                        <h2 className="text-xl font-semibold">Pamata informācija</h2>
+                    <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-3">
+                        <h2 className="text-lg font-semibold font-heading text-vea-neutral">Pamata informācija</h2>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Nosaukums latviski *</label>
-                            <input
-                                type="text"
-                                className="w-full p-2 border rounded"
+                            <label className={labelClass}>Nosaukums latviski <span className="text-red-500">*</span></label>
+                            <input type="text" className={inputClass}
                                 value={courseData.titleLv}
-                                onChange={e => setCourseData({ ...courseData, titleLv: e.target.value })}
-                            />
+                                onChange={e => setCourseData({ ...courseData, titleLv: e.target.value })} />
                         </div>
-
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Nosaukums angliski</label>
-                            <input
-                                type="text"
-                                className="w-full p-2 border rounded"
+                            <label className={labelClass}>Nosaukums angliski</label>
+                            <input type="text" className={inputClass}
                                 value={courseData.titleEn}
-                                onChange={e => setCourseData({ ...courseData, titleEn: e.target.value })}
-                            />
+                                onChange={e => setCourseData({ ...courseData, titleEn: e.target.value })} />
                         </div>
-
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Kursa kods *</label>
-                            <input
-                                type="text"
-                                className="w-full p-2 border rounded"
+                            <label className={labelClass}>Kursa kods <span className="text-red-500">*</span></label>
+                            <input type="text" className={inputClass}
                                 value={courseData.courseCode}
-                                onChange={e => setCourseData({ ...courseData, courseCode: e.target.value })}
-                            />
+                                onChange={e => setCourseData({ ...courseData, courseCode: e.target.value })} />
                         </div>
-
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                            <input
-                                type="text"
-                                className="w-full p-2 border rounded"
+                            <label className={labelClass}>Slug</label>
+                            <input type="text" className={inputClass}
                                 value={courseData.slug}
-                                onChange={e => setCourseData({ ...courseData, slug: e.target.value })}
-                            />
+                                onChange={e => setCourseData({ ...courseData, slug: e.target.value })} />
                         </div>
-
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Kredītpunkti</label>
-                            <input
-                                type="number"
-                                className="w-full p-2 border rounded"
+                            <label className={labelClass}>Kredītpunkti</label>
+                            <input type="number" className={inputClass}
                                 value={courseData.credits}
                                 onChange={e => setCourseData({ ...courseData, credits: e.target.value })}
-                                min={1}
-                            />
+                                min={1} />
                         </div>
                     </section>
 
                     {versionData && (
-                        <section className="bg-white p-4 shadow rounded space-y-3">
-                            <h2 className="text-xl font-semibold">Versijas informācija</h2>
+                        <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-3">
+                            <h2 className="text-lg font-semibold font-heading text-vea-neutral">Versijas informācija</h2>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Akadēmiskais gads *</label>
-                                <select
-                                    className="w-full p-2 border rounded"
-                                    value={versionData.academicYearId}
-                                    onChange={e => setVersionData({ ...versionData, academicYearId: e.target.value })}
-                                >
+                                <label className={labelClass}>Akadēmiskais gads <span className="text-red-500">*</span></label>
+                                <select className={inputClass} value={versionData.academicYearId}
+                                    onChange={e => setVersionData({ ...versionData, academicYearId: e.target.value })}>
                                     <option value="">— izvēlies —</option>
                                     {lookups.academicYears.map(ay => (
                                         <option key={ay.id} value={ay.id}>{ay.name}</option>
                                     ))}
                                 </select>
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Semestris *</label>
-                                <select
-                                    className="w-full p-2 border rounded"
-                                    value={versionData.semesterId}
-                                    onChange={e => setVersionData({ ...versionData, semesterId: e.target.value })}
-                                >
+                                <label className={labelClass}>Semestris <span className="text-red-500">*</span></label>
+                                <select className={inputClass} value={versionData.semesterId}
+                                    onChange={e => setVersionData({ ...versionData, semesterId: e.target.value })}>
                                     <option value="">— izvēlies —</option>
                                     {lookups.semesters.map(s => (
                                         <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
                                 </select>
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Statuss *</label>
-                                <select
-                                    className="w-full p-2 border rounded"
-                                    value={versionData.statusId}
-                                    onChange={e => setVersionData({ ...versionData, statusId: e.target.value })}
-                                >
+                                <label className={labelClass}>Statuss <span className="text-red-500">*</span></label>
+                                <select className={inputClass} value={versionData.statusId}
+                                    onChange={e => setVersionData({ ...versionData, statusId: e.target.value })}>
                                     <option value="">— izvēlies —</option>
                                     {lookups.versionStatuses.map(s => (
                                         <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
                                 </select>
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Fakultāte</label>
-                                <select
-                                    className="w-full p-2 border rounded"
-                                    value={versionData.facultyId}
-                                    onChange={e => setVersionData({ ...versionData, facultyId: e.target.value })}
-                                >
+                                <label className={labelClass}>Fakultāte</label>
+                                <select className={inputClass} value={versionData.facultyId}
+                                    onChange={e => setVersionData({ ...versionData, facultyId: e.target.value })}>
                                     <option value="">— nav norādīts —</option>
                                     {lookups.faculties.map(f => (
                                         <option key={f.id} value={f.id}>{f.name}</option>
                                     ))}
                                 </select>
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Apstiprināšanas datums</label>
-                                <input
-                                    type="date"
-                                    className="w-full p-2 border rounded"
-                                    value={versionData.approvalDate}
-                                    onChange={e => setVersionData({ ...versionData, approvalDate: e.target.value })}
-                                />
+                                <label className={labelClass}>Apstiprināšanas datums</label>
+                                <input type="date" className={inputClass} value={versionData.approvalDate}
+                                    onChange={e => setVersionData({ ...versionData, approvalDate: e.target.value })} />
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Lēmuma numurs</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded"
-                                    value={versionData.decisionNumber}
-                                    onChange={e => setVersionData({ ...versionData, decisionNumber: e.target.value })}
-                                />
+                                <label className={labelClass}>Lēmuma numurs</label>
+                                <input type="text" className={inputClass} value={versionData.decisionNumber}
+                                    onChange={e => setVersionData({ ...versionData, decisionNumber: e.target.value })} />
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Atsauce</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded"
-                                    value={versionData.decisionReference}
-                                    onChange={e => setVersionData({ ...versionData, decisionReference: e.target.value })}
-                                />
+                                <label className={labelClass}>Atsauce</label>
+                                <input type="text" className={inputClass} value={versionData.decisionReference}
+                                    onChange={e => setVersionData({ ...versionData, decisionReference: e.target.value })} />
                             </div>
                         </section>
                     )}
 
                     {/* Autors un atbildīgais mācībspēks */}
-                    <section className="bg-white p-4 shadow rounded space-y-4">
-                        <h2 className="text-xl font-semibold">Autors un atbildīgais mācībspēks</h2>
+                    <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-4">
+                        <h2 className="text-lg font-semibold font-heading text-vea-neutral">Autors un atbildīgais mācībspēks</h2>
                         {staffError && <p className="text-red-600 text-sm">{staffError}</p>}
 
                         <div>
-                            <p className="text-sm font-medium text-gray-700 mb-1">Autori</p>
+                            <p className="text-sm font-medium text-vea-neutral mb-1">Autori</p>
                             {authors.length > 0 ? (
                                 <ul className="space-y-1 mb-2">
                                     {authors.map(a => (
-                                        <li key={a.id} className="flex items-center justify-between text-sm bg-gray-50 rounded px-3 py-1.5">
+                                        <li key={a.id} className="flex items-center justify-between text-sm bg-vea-green-light rounded px-3 py-1.5">
                                             <span>{a.user ? `${a.user.name} ${a.user.surname}` : `ID: ${a.id}`}</span>
-                                            <button
-                                                onClick={() => handleDeleteAuthor(a.id)}
-                                                disabled={staffSaving}
-                                                className="text-red-500 hover:text-red-700 text-xs ml-3"
-                                            >✕</button>
+                                            <button onClick={() => handleDeleteAuthor(a.id)} disabled={staffSaving}
+                                                className="text-red-500 hover:text-red-700 text-xs ml-3" aria-label="Noņemt autoru">✕</button>
                                         </li>
                                     ))}
                                 </ul>
@@ -473,38 +424,29 @@ function CourseEditForm() {
                                 <p className="text-gray-400 text-xs mb-2">Nav pievienotu autoru</p>
                             )}
                             <div className="flex gap-2">
-                                <select
-                                    className="border rounded p-2 text-sm flex-1"
-                                    value={newAuthorUserId}
-                                    onChange={e => setNewAuthorUserId(e.target.value)}
-                                >
+                                <select className={`${inputClass} flex-1`} value={newAuthorUserId}
+                                    onChange={e => setNewAuthorUserId(e.target.value)}>
                                     <option value="">— izvēlies lietotāju —</option>
                                     {users.map(u => (
                                         <option key={u.id} value={u.id}>{u.name} {u.surname}</option>
                                     ))}
                                 </select>
-                                <button
-                                    onClick={handleAddAuthor}
-                                    disabled={staffSaving || !newAuthorUserId}
-                                    className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 disabled:opacity-50"
-                                >
+                                <button onClick={handleAddAuthor} disabled={staffSaving || !newAuthorUserId}
+                                    className="bg-vea-green text-white px-3 py-2 rounded text-sm hover:bg-vea-green-dark disabled:opacity-50">
                                     Pievienot
                                 </button>
                             </div>
                         </div>
 
                         <div>
-                            <p className="text-sm font-medium text-gray-700 mb-1">Atbildīgie mācībspēki</p>
+                            <p className="text-sm font-medium text-vea-neutral mb-1">Atbildīgie mācībspēki</p>
                             {teachers.length > 0 ? (
                                 <ul className="space-y-1 mb-2">
                                     {teachers.map(t => (
-                                        <li key={t.id} className="flex items-center justify-between text-sm bg-gray-50 rounded px-3 py-1.5">
+                                        <li key={t.id} className="flex items-center justify-between text-sm bg-vea-green-light rounded px-3 py-1.5">
                                             <span>{t.user ? `${t.user.name} ${t.user.surname}` : `ID: ${t.id}`}</span>
-                                            <button
-                                                onClick={() => handleDeleteTeacher(t.id)}
-                                                disabled={staffSaving}
-                                                className="text-red-500 hover:text-red-700 text-xs ml-3"
-                                            >✕</button>
+                                            <button onClick={() => handleDeleteTeacher(t.id)} disabled={staffSaving}
+                                                className="text-red-500 hover:text-red-700 text-xs ml-3" aria-label="Noņemt mācībspēku">✕</button>
                                         </li>
                                     ))}
                                 </ul>
@@ -512,21 +454,15 @@ function CourseEditForm() {
                                 <p className="text-gray-400 text-xs mb-2">Nav pievienotu mācībspēku</p>
                             )}
                             <div className="flex gap-2">
-                                <select
-                                    className="border rounded p-2 text-sm flex-1"
-                                    value={newTeacherUserId}
-                                    onChange={e => setNewTeacherUserId(e.target.value)}
-                                >
+                                <select className={`${inputClass} flex-1`} value={newTeacherUserId}
+                                    onChange={e => setNewTeacherUserId(e.target.value)}>
                                     <option value="">— izvēlies lietotāju —</option>
                                     {users.map(u => (
                                         <option key={u.id} value={u.id}>{u.name} {u.surname}</option>
                                     ))}
                                 </select>
-                                <button
-                                    onClick={handleAddTeacher}
-                                    disabled={staffSaving || !newTeacherUserId}
-                                    className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 disabled:opacity-50"
-                                >
+                                <button onClick={handleAddTeacher} disabled={staffSaving || !newTeacherUserId}
+                                    className="bg-vea-green text-white px-3 py-2 rounded text-sm hover:bg-vea-green-dark disabled:opacity-50">
                                     Pievienot
                                 </button>
                             </div>
@@ -535,11 +471,8 @@ function CourseEditForm() {
 
                     {error && <p className="text-red-600 text-sm">{error}</p>}
 
-                    <button
-                        onClick={handleSave}
-                        disabled={saveDisabled}
-                        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                    <button onClick={handleSave} disabled={saveDisabled}
+                        className="bg-vea-green text-white px-6 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 disabled:cursor-not-allowed">
                         {saving ? 'Saglabā...' : 'Saglabāt izmaiņas'}
                     </button>
                 </div>
@@ -553,61 +486,45 @@ function CourseEditForm() {
             )}
 
             {activeTab === 1 && courseInfoId && (
-                <CourseInfoBasicSection
-                    courseInfoId={courseInfoId}
-                    data={courseDetails}
-                    lookups={lookups}
-                    onSaved={handleSectionSaved}
-                    onCancel={() => {}}
-                />
+                <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <CourseInfoBasicSection courseInfoId={courseInfoId} data={courseDetails}
+                        lookups={lookups} onSaved={handleSectionSaved} onCancel={() => {}} />
+                </div>
             )}
 
             {activeTab === 2 && courseInfoId && (
-                <CourseTopicsSection
-                    courseInfoId={courseInfoId}
-                    data={courseDetails}
-                    onSaved={handleSectionSaved}
-                    onCancel={() => {}}
-                />
+                <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <CourseTopicsSection courseInfoId={courseInfoId} data={courseDetails}
+                        onSaved={handleSectionSaved} onCancel={() => {}} />
+                </div>
             )}
 
             {activeTab === 3 && courseInfoId && (
-                <CourseAssessmentSection
-                    courseInfoId={courseInfoId}
-                    data={courseDetails}
-                    lookups={lookups}
-                    onSaved={handleSectionSaved}
-                    onCancel={() => {}}
-                />
+                <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <CourseAssessmentSection courseInfoId={courseInfoId} data={courseDetails}
+                        lookups={lookups} onSaved={handleSectionSaved} onCancel={() => {}} />
+                </div>
             )}
 
             {activeTab === 4 && courseInfoId && (
-                <CourseSKRSection
-                    courseId={id}
-                    data={courseDetails}
-                    lookups={lookups}
-                    onSaved={handleSectionSaved}
-                    onCancel={() => {}}
-                />
+                <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <CourseSKRSection courseId={id} data={courseDetails}
+                        lookups={lookups} onSaved={handleSectionSaved} onCancel={() => {}} />
+                </div>
             )}
 
             {activeTab === 5 && courseInfoId && (
-                <CourseLiteratureSection
-                    courseInfoId={courseInfoId}
-                    data={courseDetails}
-                    lookups={lookups}
-                    onSaved={handleSectionSaved}
-                    onCancel={() => {}}
-                />
+                <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <CourseLiteratureSection courseInfoId={courseInfoId} data={courseDetails}
+                        lookups={lookups} onSaved={handleSectionSaved} onCancel={() => {}} />
+                </div>
             )}
 
             {activeTab === 6 && courseInfoId && (
-                <CourseCalendarSection
-                    courseInfoId={courseInfoId}
-                    data={courseDetails}
-                    lookups={lookups}
-                    onSaved={handleSectionSaved}
-                />
+                <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <CourseCalendarSection courseInfoId={courseInfoId} data={courseDetails}
+                        lookups={lookups} onSaved={handleSectionSaved} />
+                </div>
             )}
         </div>
     );

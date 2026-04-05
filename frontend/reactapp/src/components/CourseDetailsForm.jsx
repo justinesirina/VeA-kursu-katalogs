@@ -164,90 +164,113 @@ function CourseDetailsForm() {
         setVersionError(null);
     };
 
+    const inputClass = "w-full p-2 border border-gray-300 rounded focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
+    const labelClass = "block text-sm font-medium text-vea-neutral mb-1";
     const step2Valid = versionData.academicYearId && versionData.semesterId && versionData.statusId;
 
     return (
         <div className="p-6 max-w-3xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Jauna kursa izveide</h1>
-                <button
-                    onClick={() => navigate('/')}
-                    className="text-blue-600 hover:underline text-sm"
-                >
-                    ← Atpakaļ uz kursiem
-                </button>
-            </div>
+            <h1 className="text-2xl font-bold font-heading text-vea-neutral">Jauna kursa izveide</h1>
 
             <StepIndicator currentStep={step} steps={['Kursa dati', 'Versijas dati', 'Gatavs']} />
 
             {/* SOLIS 1 — Kursa pamata informācija */}
             {step === 1 && (
-                <section className="space-y-3 bg-white p-4 shadow rounded">
-                    <h2 className="text-xl font-semibold">Kursa pamata informācija</h2>
+                <section className="space-y-3 bg-white rounded-lg p-5 border border-gray-200">
+                    <h2 className="text-lg font-semibold font-heading text-vea-neutral">Kursa pamata informācija</h2>
 
-                    <input
-                        type="text"
-                        placeholder="Nosaukums latviski *"
-                        className="w-full p-2 border rounded"
-                        value={course.titleLv}
-                        onChange={e => setCourse({ ...course, titleLv: e.target.value })}
-                    />
+                    <div>
+                        <label className={labelClass} htmlFor="titleLv">Nosaukums latviski <span className="text-red-500">*</span></label>
+                        <input
+                            id="titleLv"
+                            type="text"
+                            placeholder="Piemēram: Datoru tīkli"
+                            className={inputClass}
+                            value={course.titleLv}
+                            onChange={e => setCourse({ ...course, titleLv: e.target.value })}
+                        />
+                    </div>
 
-                    <input
-                        type="text"
-                        placeholder="Nosaukums angliski"
-                        className="w-full p-2 border rounded"
-                        value={course.titleEn}
-                        onChange={e => setCourse({ ...course, titleEn: e.target.value })}
-                    />
+                    <div>
+                        <label className={labelClass} htmlFor="titleEn">Nosaukums angliski</label>
+                        <input
+                            id="titleEn"
+                            type="text"
+                            placeholder="Piemēram: Computer Networks"
+                            className={inputClass}
+                            value={course.titleEn}
+                            onChange={e => setCourse({ ...course, titleEn: e.target.value })}
+                        />
+                    </div>
 
-                    <input
-                        type="text"
-                        placeholder="Kursa kods *"
-                        className="w-full p-2 border rounded"
-                        value={course.courseCode}
-                        onChange={e => setCourse({ ...course, courseCode: e.target.value })}
-                    />
+                    <div>
+                        <label className={labelClass} htmlFor="courseCode">Kursa kods <span className="text-red-500">*</span></label>
+                        <input
+                            id="courseCode"
+                            type="text"
+                            placeholder="Piemēram: DT101"
+                            className={inputClass}
+                            value={course.courseCode}
+                            onChange={e => setCourse({ ...course, courseCode: e.target.value })}
+                        />
+                    </div>
 
-                    <input
-                        type="text"
-                        placeholder="Slug (piemēram: datu-strukturas)"
-                        className="w-full p-2 border rounded"
-                        value={course.slug}
-                        onChange={e => setCourse({ ...course, slug: e.target.value })}
-                    />
+                    <div>
+                        <label className={labelClass} htmlFor="slug">Slug</label>
+                        <input
+                            id="slug"
+                            type="text"
+                            placeholder="Piemēram: datu-strukturas"
+                            className={inputClass}
+                            value={course.slug}
+                            onChange={e => setCourse({ ...course, slug: e.target.value })}
+                        />
+                    </div>
 
-                    <input
-                        type="number"
-                        placeholder="Kredītpunkti"
-                        className="w-full p-2 border rounded"
-                        value={course.credits}
-                        onChange={e => setCourse({ ...course, credits: e.target.value })}
-                        min={1}
-                    />
+                    <div>
+                        <label className={labelClass} htmlFor="credits">Kredītpunkti</label>
+                        <input
+                            id="credits"
+                            type="number"
+                            className={inputClass}
+                            value={course.credits}
+                            onChange={e => setCourse({ ...course, credits: e.target.value })}
+                            min={1}
+                        />
+                    </div>
 
                     {error && <p className="text-red-600 text-sm">{error}</p>}
 
-                    <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={handleCreateCourse}
-                        disabled={submitting || lookupsLoading || !course.titleLv.trim() || !course.courseCode.trim()}
-                    >
-                        {submitting || lookupsLoading ? 'Saglabā...' : 'Tālāk →'}
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleCreateCourse}
+                            disabled={submitting || lookupsLoading || !course.titleLv.trim() || !course.courseCode.trim()}
+                        >
+                            {submitting || lookupsLoading ? 'Saglabā...' : 'Tālāk →'}
+                        </button>
+                        <button
+                            type="button"
+                            className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral"
+                            onClick={() => navigate('/')}
+                        >
+                            Atcelt
+                        </button>
+                    </div>
                 </section>
             )}
 
             {/* SOLIS 2 — Versijas informācija */}
             {step === 2 && (
-                <section className="space-y-3 bg-white p-4 shadow rounded">
-                    <h2 className="text-xl font-semibold">Versijas informācija</h2>
+                <section className="space-y-3 bg-white rounded-lg p-5 border border-gray-200">
+                    <h2 className="text-lg font-semibold font-heading text-vea-neutral">Versijas informācija</h2>
                     <p className="text-sm text-gray-500">Kurss: <strong>{createdCourseTitle}</strong></p>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Akadēmiskais gads *</label>
+                        <label className={labelClass} htmlFor="academicYear">Akadēmiskais gads <span className="text-red-500">*</span></label>
                         <select
-                            className="w-full p-2 border rounded"
+                            id="academicYear"
+                            className={inputClass}
                             value={versionData.academicYearId}
                             onChange={e => setVersionData({ ...versionData, academicYearId: e.target.value })}
                         >
@@ -259,9 +282,10 @@ function CourseDetailsForm() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Semestris *</label>
+                        <label className={labelClass} htmlFor="semester">Semestris <span className="text-red-500">*</span></label>
                         <select
-                            className="w-full p-2 border rounded"
+                            id="semester"
+                            className={inputClass}
                             value={versionData.semesterId}
                             onChange={e => setVersionData({ ...versionData, semesterId: e.target.value })}
                         >
@@ -273,9 +297,10 @@ function CourseDetailsForm() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Statuss *</label>
+                        <label className={labelClass} htmlFor="status">Statuss <span className="text-red-500">*</span></label>
                         <select
-                            className="w-full p-2 border rounded"
+                            id="status"
+                            className={inputClass}
                             value={versionData.statusId}
                             onChange={e => setVersionData({ ...versionData, statusId: e.target.value })}
                         >
@@ -287,9 +312,10 @@ function CourseDetailsForm() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Fakultāte</label>
+                        <label className={labelClass} htmlFor="faculty">Fakultāte</label>
                         <select
-                            className="w-full p-2 border rounded"
+                            id="faculty"
+                            className={inputClass}
                             value={versionData.facultyId}
                             onChange={e => setVersionData({ ...versionData, facultyId: e.target.value })}
                         >
@@ -301,40 +327,60 @@ function CourseDetailsForm() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Apstiprināšanas datums</label>
+                        <label className={labelClass} htmlFor="approvalDate">Apstiprināšanas datums</label>
                         <input
+                            id="approvalDate"
                             type="date"
-                            className="w-full p-2 border rounded"
+                            className={inputClass}
                             value={versionData.approvalDate}
                             onChange={e => setVersionData({ ...versionData, approvalDate: e.target.value })}
                         />
                     </div>
 
-                    <input
-                        type="text"
-                        placeholder="Lēmuma numurs (piemēram: Nr. 22-04-12)"
-                        className="w-full p-2 border rounded"
-                        value={versionData.decisionNumber}
-                        onChange={e => setVersionData({ ...versionData, decisionNumber: e.target.value })}
-                    />
+                    <div>
+                        <label className={labelClass} htmlFor="decisionNumber">Lēmuma numurs</label>
+                        <input
+                            id="decisionNumber"
+                            type="text"
+                            placeholder="Piemēram: Nr. 22-04-12"
+                            className={inputClass}
+                            value={versionData.decisionNumber}
+                            onChange={e => setVersionData({ ...versionData, decisionNumber: e.target.value })}
+                        />
+                    </div>
 
-                    <input
-                        type="text"
-                        placeholder="Atsauce (piemēram: Senāta lēmums)"
-                        className="w-full p-2 border rounded"
-                        value={versionData.decisionReference}
-                        onChange={e => setVersionData({ ...versionData, decisionReference: e.target.value })}
-                    />
+                    <div>
+                        <label className={labelClass} htmlFor="decisionReference">Atsauce</label>
+                        <input
+                            id="decisionReference"
+                            type="text"
+                            placeholder="Piemēram: Senāta lēmums"
+                            className={inputClass}
+                            value={versionData.decisionReference}
+                            onChange={e => setVersionData({ ...versionData, decisionReference: e.target.value })}
+                        />
+                    </div>
 
                     {versionError && <p className="text-red-600 text-sm">{versionError}</p>}
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                         <button
-                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={handleCreateVersion}
                             disabled={versionSubmitting || !step2Valid}
                         >
                             {versionSubmitting ? 'Saglabā...' : 'Izveidot versiju →'}
+                        </button>
+                        <button
+                            type="button"
+                            className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral"
+                            onClick={() => {
+                                if (window.confirm('Kurss ir saglabāts, bet versija nav izveidota. Vai tiešām vēlies atcelt?')) {
+                                    navigate('/');
+                                }
+                            }}
+                        >
+                            Atcelt
                         </button>
                     </div>
                 </section>
@@ -342,10 +388,10 @@ function CourseDetailsForm() {
 
             {/* SOLIS 3 — Apstiprinājums */}
             {step === 3 && (
-                <section className="bg-green-50 border border-green-200 p-6 rounded space-y-3">
-                    <p className="text-2xl">✓</p>
-                    <p className="text-xl font-semibold text-green-800">Kurss veiksmīgi izveidots!</p>
-                    <div className="text-sm text-gray-700 space-y-1">
+                <section className="bg-vea-green-light border border-vea-green rounded-lg p-6 space-y-3">
+                    <p className="text-2xl text-vea-green">✓</p>
+                    <p className="text-xl font-semibold font-heading text-vea-green">Kurss veiksmīgi izveidots!</p>
+                    <div className="text-sm text-vea-text space-y-1">
                         <p><strong>Nosaukums:</strong> {createdCourseTitle}</p>
                         {createdVersionInfo && (
                             <>
@@ -356,13 +402,13 @@ function CourseDetailsForm() {
                     </div>
                     <div className="flex gap-3 pt-2">
                         <button
-                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                            className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark"
                             onClick={() => navigate(`/courses/${createdCourseId}`)}
                         >
                             Skatīt kursu →
                         </button>
                         <button
-                            className="border border-gray-400 px-4 py-2 rounded hover:bg-gray-50"
+                            className="border border-gray-300 px-4 py-2 rounded hover:bg-white text-vea-neutral"
                             onClick={handleReset}
                         >
                             Izveidot jaunu kursu

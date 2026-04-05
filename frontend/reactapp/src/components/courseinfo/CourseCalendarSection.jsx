@@ -3,7 +3,6 @@ import api from '../../services/axiosConfig';
 
 /**
  * Rediģēšanas forma kalendārajam plānam.
- * CalendarTopic ir saistīts ar CourseContent (tēmu), CalendarSession — ar SessionType.
  *
  * @param {string} courseInfoId - CourseInfo UUID
  * @param {object} data         - CourseDetailsDTO (satur calendarPlan[] un topics[])
@@ -14,15 +13,13 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
     const [error, setError] = useState(null);
     const [saving, setSaving] = useState(false);
 
-    // Tēmas, kurām vēl nav CalendarTopic ieraksta
     const existingContentIds = new Set((data.calendarPlan || []).map(p => p.courseContentId));
     const availableTopics = (data.topics || []).filter(t => !existingContentIds.has(t.id));
 
-    // Jauna tēmas rinda veidlapa
     const [newTopicContentId, setNewTopicContentId] = useState('');
-
-    // Jauna sesijas veidlapa — { calendarTopicId, sessionTypeId, academicHours }
     const [newSession, setNewSession] = useState({ calendarTopicId: '', sessionTypeId: '', academicHours: 1 });
+
+    const selectClass = "border border-gray-300 rounded p-2 text-sm focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
 
     const handleAddTopic = async () => {
         if (!newTopicContentId) return;
@@ -93,90 +90,88 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
     const calendarPlan = data.calendarPlan || [];
     const sessionTypes = lookups.sessionTypes || [];
 
+    const thClass = "p-2 text-left border-b border-gray-200 text-xs font-semibold text-vea-neutral uppercase tracking-wide";
+
     return (
         <div className="space-y-5">
             {error && <p className="text-red-600 text-sm">{error}</p>}
 
             {/* Esošais kalendārais plāns */}
             {calendarPlan.length > 0 ? (
-                <table className="w-full border border-gray-300 text-sm">
-                    <thead className="bg-gray-50">
-                    <tr>
-                        <th className="p-2 text-left border-b">Tēma</th>
-                        <th className="p-2 text-left border-b">Nodarbības veids</th>
-                        <th className="p-2 text-center border-b w-20">Ak. st.</th>
-                        <th className="p-2 border-b w-16"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {calendarPlan.map(plan => (
-                        plan.sessions && plan.sessions.length > 0
-                            ? plan.sessions.map((session, si) => (
-                                <tr key={session.sessionId} className="even:bg-gray-50">
-                                    {si === 0 && (
-                                        <td className="p-2 border-b align-top font-medium"
-                                            rowSpan={plan.sessions.length}>
-                                            <div className="flex items-start justify-between gap-2">
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <table className="w-full text-sm">
+                        <thead className="bg-vea-green-light">
+                        <tr>
+                            <th scope="col" className={thClass}>Tēma</th>
+                            <th scope="col" className={thClass}>Nodarbības veids</th>
+                            <th scope="col" className={`${thClass} text-center w-20`}>Ak. st.</th>
+                            <th scope="col" aria-label="Darbības" className="p-2 border-b border-gray-200 w-16"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {calendarPlan.map(plan => (
+                            plan.sessions && plan.sessions.length > 0
+                                ? plan.sessions.map((session, si) => (
+                                    <tr key={session.sessionId} className="border-t border-gray-100 even:bg-gray-50">
+                                        {si === 0 && (
+                                            <td className="p-2 align-top font-medium"
+                                                rowSpan={plan.sessions.length}>
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <span>{plan.topicTitle}</span>
+                                                    <button
+                                                        onClick={() => handleDeleteTopic(plan.calendarTopicId)}
+                                                        disabled={saving}
+                                                        className="text-red-500 hover:text-red-700 text-xs shrink-0 mt-0.5"
+                                                        aria-label="Dzēst tēmu ar visām nodarbībām"
+                                                    >✕</button>
+                                                </div>
+                                            </td>
+                                        )}
+                                        <td className="p-2">{session.sessionType}</td>
+                                        <td className="p-2 text-center">{session.academicHours}</td>
+                                        <td className="p-2 text-center">
+                                            <button
+                                                onClick={() => handleDeleteSession(session.sessionId)}
+                                                disabled={saving}
+                                                className="text-red-500 hover:text-red-700 text-xs"
+                                                aria-label="Dzēst nodarbību"
+                                            >✕</button>
+                                        </td>
+                                    </tr>
+                                ))
+                                : (
+                                    <tr key={plan.calendarTopicId} className="border-t border-gray-100">
+                                        <td className="p-2 font-medium">
+                                            <div className="flex items-center justify-between gap-2">
                                                 <span>{plan.topicTitle}</span>
                                                 <button
                                                     onClick={() => handleDeleteTopic(plan.calendarTopicId)}
                                                     disabled={saving}
-                                                    className="text-red-500 hover:text-red-700 text-xs shrink-0 mt-0.5"
-                                                    title="Dzēst tēmu ar visām nodarbībām"
-                                                >
-                                                    ✕
-                                                </button>
+                                                    className="text-red-500 hover:text-red-700 text-xs"
+                                                    aria-label="Dzēst tēmu"
+                                                >✕</button>
                                             </div>
                                         </td>
-                                    )}
-                                    <td className="p-2 border-b">{session.sessionType}</td>
-                                    <td className="p-2 border-b text-center">{session.academicHours}</td>
-                                    <td className="p-2 border-b text-center">
-                                        <button
-                                            onClick={() => handleDeleteSession(session.sessionId)}
-                                            disabled={saving}
-                                            className="text-red-500 hover:text-red-700 text-xs"
-                                            title="Dzēst nodarbību"
-                                        >
-                                            ✕
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                            : (
-                                <tr key={plan.calendarTopicId}>
-                                    <td className="p-2 border-b font-medium">
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span>{plan.topicTitle}</span>
-                                            <button
-                                                onClick={() => handleDeleteTopic(plan.calendarTopicId)}
-                                                disabled={saving}
-                                                className="text-red-500 hover:text-red-700 text-xs"
-                                                title="Dzēst tēmu"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td colSpan={3} className="p-2 border-b text-gray-400 text-xs">
-                                        Nav nodarbību
-                                    </td>
-                                </tr>
-                            )
-                    ))}
-                    </tbody>
-                </table>
+                                        <td colSpan={3} className="p-2 text-gray-400 text-xs">
+                                            Nav nodarbību
+                                        </td>
+                                    </tr>
+                                )
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
             ) : (
                 <p className="text-gray-400 text-sm">Kalendārais plāns vēl nav izveidots.</p>
             )}
 
             {/* Pievienot nodarbību esošai tēmai */}
             {calendarPlan.length > 0 && (
-                <div className="bg-gray-50 border border-gray-200 rounded p-3 space-y-2">
-                    <p className="text-sm font-medium text-gray-700">Pievienot nodarbību</p>
+                <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
+                    <p className="text-sm font-medium text-vea-neutral">Pievienot nodarbību</p>
                     <div className="flex gap-2 flex-wrap">
                         <select
-                            className="border rounded p-2 text-sm flex-1 min-w-40"
+                            className={`${selectClass} flex-1 min-w-40`}
                             value={newSession.calendarTopicId}
                             onChange={e => setNewSession({ ...newSession, calendarTopicId: e.target.value })}
                         >
@@ -188,7 +183,7 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
                             ))}
                         </select>
                         <select
-                            className="border rounded p-2 text-sm flex-1 min-w-36"
+                            className={`${selectClass} flex-1 min-w-36`}
                             value={newSession.sessionTypeId}
                             onChange={e => setNewSession({ ...newSession, sessionTypeId: e.target.value })}
                         >
@@ -198,9 +193,8 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
                             ))}
                         </select>
                         <input
-                            type="number"
-                            min="1"
-                            className="border rounded p-2 text-sm w-24"
+                            type="number" min="1"
+                            className={`${selectClass} w-24`}
                             value={newSession.academicHours}
                             onChange={e => setNewSession({ ...newSession, academicHours: e.target.value })}
                             placeholder="Ak. st."
@@ -208,7 +202,7 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
                         <button
                             onClick={handleAddSession}
                             disabled={saving || !newSession.calendarTopicId || !newSession.sessionTypeId}
-                            className="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                            className="bg-vea-green text-white px-3 py-2 rounded text-sm hover:bg-vea-green-dark disabled:opacity-50"
                         >
                             Pievienot
                         </button>
@@ -218,11 +212,11 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
 
             {/* Pievienot jaunu tēmu */}
             {availableTopics.length > 0 && (
-                <div className="bg-gray-50 border border-gray-200 rounded p-3 space-y-2">
-                    <p className="text-sm font-medium text-gray-700">Pievienot tēmu kalendāram</p>
+                <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
+                    <p className="text-sm font-medium text-vea-neutral">Pievienot tēmu kalendāram</p>
                     <div className="flex gap-2">
                         <select
-                            className="border rounded p-2 text-sm flex-1"
+                            className={`${selectClass} flex-1`}
                             value={newTopicContentId}
                             onChange={e => setNewTopicContentId(e.target.value)}
                         >
@@ -234,7 +228,7 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
                         <button
                             onClick={handleAddTopic}
                             disabled={saving || !newTopicContentId}
-                            className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                            className="bg-vea-green text-white px-3 py-2 rounded text-sm hover:bg-vea-green-dark disabled:opacity-50"
                         >
                             Pievienot
                         </button>
@@ -243,7 +237,7 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
             )}
 
             {availableTopics.length === 0 && calendarPlan.length === 0 && (
-                <p className="text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-3 py-2 text-sm">
+                <p className="text-vea-orange bg-vea-orange-light border border-vea-orange rounded-lg px-3 py-2 text-sm">
                     Vispirms pievienojiet tēmas cilnē "Tēmas", tad varēsiet veidot kalendāro plānu.
                 </p>
             )}

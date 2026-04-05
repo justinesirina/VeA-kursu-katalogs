@@ -17,20 +17,20 @@ function StepIndicator({ currentStep, steps }) {
                     <div key={stepNumber} className="flex items-center flex-1 last:flex-none">
                         <div className="flex flex-col items-center">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold
-                                ${isDone ? 'bg-green-500 text-white' : ''}
-                                ${isActive ? 'bg-blue-600 text-white' : ''}
+                                ${isDone ? 'bg-vea-green text-white' : ''}
+                                ${isActive ? 'bg-vea-green text-white ring-2 ring-vea-green ring-offset-2' : ''}
                                 ${!isDone && !isActive ? 'bg-gray-200 text-gray-500' : ''}
                             `}>
                                 {isDone ? '✓' : stepNumber}
                             </div>
                             <span className={`text-xs mt-1 whitespace-nowrap
-                                ${isActive ? 'text-blue-600 font-medium' : 'text-gray-500'}
+                                ${isActive ? 'text-vea-green font-medium' : 'text-gray-500'}
                             `}>
                                 {label}
                             </span>
                         </div>
                         {index < steps.length - 1 && (
-                            <div className={`flex-1 h-px mx-2 mb-4 ${isDone ? 'bg-green-400' : 'bg-gray-300'}`} />
+                            <div className={`flex-1 h-px mx-2 mb-4 ${isDone ? 'bg-vea-green' : 'bg-gray-300'}`} />
                         )}
                     </div>
                 );
