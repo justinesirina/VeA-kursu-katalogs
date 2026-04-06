@@ -33,8 +33,9 @@ public class CalendarSessionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CalendarSession> update(@PathVariable int id, @Valid @RequestBody CalendarSession obj) {
-        return ResponseEntity.ok(service.update(id, obj));
+    public ResponseEntity<Void> update(@PathVariable int id, @Valid @RequestBody CalendarSession obj) {
+        service.update(id, obj);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

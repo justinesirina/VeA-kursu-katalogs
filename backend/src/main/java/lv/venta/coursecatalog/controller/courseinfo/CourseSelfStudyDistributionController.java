@@ -45,9 +45,10 @@ public class CourseSelfStudyDistributionController {
      * Atjauno esošu sadalījumu.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CourseSelfStudyDistribution> update(@PathVariable int id,
-                                                              @Valid @RequestBody CourseSelfStudyDistribution obj) {
-        return ResponseEntity.ok(distService.update(id, obj));
+    public ResponseEntity<Void> update(@PathVariable int id,
+                                       @Valid @RequestBody CourseSelfStudyDistribution obj) {
+        distService.update(id, obj);
+        return ResponseEntity.noContent().build();
     }
 
     /**
