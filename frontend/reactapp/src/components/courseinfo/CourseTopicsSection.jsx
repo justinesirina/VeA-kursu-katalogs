@@ -1,29 +1,39 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import api from '../../services/axiosConfig';
 import { useToast } from '../ui/ToastProvider';
 import StickyBar from '../ui/StickyBar';
+import RichTextEditor from '../ui/RichTextEditor';
+import EditableCard from '../ui/EditableCard';
 
 function CourseTopicsSection({ courseInfoId, data, onSaved, onCancel }) {
     const showToast = useToast();
+    const nextTempId = useRef(0);
+
     const [rows, setRows] = useState(
         (data.topics || []).map(t => ({
             id: t.id,
+            tempId: null,
             title: t.title ?? '',
             description: t.description ?? '',
             isNew: false,
         }))
     );
-    const [deletedIds, setDeletedIds] = useState([]);
-    const [saving, setSaving] = useState(false);
+    const [deletedIds, setDeletedIds]             = useState([]);
+    const [saving, setSaving]                     = useState(false);
     const [emptyTitleIndices, setEmptyTitleIndices] = useState(new Set());
+    const [dragRowIdx, setDragRowIdx]             = useState(null);
 
-    const cellBase = "w-full border rounded px-2 py-1 focus:ring-1 outline-none text-sm";
-    const cellOk  = `${cellBase} border-gray-300 focus:border-vea-green focus:ring-vea-green`;
-    const cellErr = `${cellBase} border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-300`;
-    const cellClass = (idx) => emptyTitleIndices.has(idx) ? cellErr : cellOk;
-
+    // -----------------------------------------------------------------------
+    // Row operations
+    // -----------------------------------------------------------------------
     const addRow = () => {
-        setRows(prev => [...prev, { id: null, title: '', description: '', isNew: true }]);
+        setRows(prev => [...prev, {
+            id: null,
+            tempId: `new-${nextTempId.current++}`,
+            title: '',
+            description: '',
+            isNew: true,
+        }]);
     };
 
     const updateRow = (idx, field, value) => {
@@ -44,6 +54,40 @@ function CourseTopicsSection({ courseInfoId, data, onSaved, onCancel }) {
         });
     };
 
+    const duplicateRow = (idx) => {
+        const row = rows[idx];
+        setRows(prev => {
+            const next = [...prev];
+            next.splice(idx + 1, 0, {
+                id: null,
+                tempId: `new-${nextTempId.current++}`,
+                title: row.title,
+                description: row.description,
+                isNew: true,
+            });
+            return next;
+        });
+    };
+
+    // -----------------------------------------------------------------------
+    // Drag-and-drop
+    // -----------------------------------------------------------------------
+    const handleDragOver = (e) => e.preventDefault();
+    const handleDrop = (dropIdx) => {
+        if (dragRowIdx === null || dragRowIdx === dropIdx) { setDragRowIdx(null); return; }
+        setRows(prev => {
+            const next = [...prev];
+            const [moved] = next.splice(dragRowIdx, 1);
+            next.splice(dropIdx, 0, moved);
+            return next;
+        });
+        setEmptyTitleIndices(new Set());
+        setDragRowIdx(null);
+    };
+
+    // -----------------------------------------------------------------------
+    // Save
+    // -----------------------------------------------------------------------
     const handleSave = async () => {
         const empty = new Set(
             rows.map((r, i) => (!r.title.trim() ? i : null)).filter(i => i !== null)
@@ -63,11 +107,11 @@ function CourseTopicsSection({ courseInfoId, data, onSaved, onCancel }) {
                     courseInfo: { id: courseInfoId },
                     sequenceNumber: i + 1,
                     topicTitle: row.title.trim(),
-                    topicDescription: row.description.trim() || null,
+                    topicDescription: row.description || null,
                     language: 'lv',
                 };
                 if (row.isNew) await api.post('/course-content', payload);
-                else await api.put(`/course-content/${row.id}`, payload);
+                else           await api.put(`/course-content/${row.id}`, payload);
             }
             showToast('Tēmas saglabātas veiksmīgi!');
             onSaved();
@@ -78,49 +122,66 @@ function CourseTopicsSection({ courseInfoId, data, onSaved, onCancel }) {
         }
     };
 
+    // -----------------------------------------------------------------------
+    // Render
+    // -----------------------------------------------------------------------
     return (
         <div className="space-y-3 pb-20">
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <table className="w-full text-sm">
-                    <thead className="bg-vea-green-light">
-                    <tr>
-                        <th scope="col" className="border-b border-gray-200 px-2 py-2 w-10 text-center text-xs font-semibold text-vea-neutral uppercase tracking-wide">Nr.</th>
-                        <th scope="col" className="border-b border-gray-200 px-2 py-2 text-xs font-semibold text-vea-neutral uppercase tracking-wide text-left">Tēmas nosaukums <span className="text-red-500">*</span></th>
-                        <th scope="col" className="border-b border-gray-200 px-2 py-2 text-xs font-semibold text-vea-neutral uppercase tracking-wide text-left">Apraksts</th>
-                        <th scope="col" aria-label="Darbības" className="border-b border-gray-200 px-2 py-2 w-10"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {rows.map((row, idx) => (
-                        <tr key={idx} className="border-t border-gray-100">
-                            <td className="px-2 py-1 text-center text-gray-500 align-top pt-2">{idx + 1}</td>
-                            <td className="px-1 py-1">
-                                <input type="text" value={row.title}
-                                    onChange={e => updateRow(idx, 'title', e.target.value)}
-                                    className={cellClass(idx)} placeholder="Tēmas nosaukums" />
-                                {emptyTitleIndices.has(idx) && (
-                                    <p className="text-red-500 text-xs mt-0.5">Nosaukums ir obligāts</p>
-                                )}
-                            </td>
-                            <td className="px-1 py-1">
-                                <input type="text" value={row.description}
-                                    onChange={e => updateRow(idx, 'description', e.target.value)}
-                                    className={cellOk} placeholder="(neobligāts)" />
-                            </td>
-                            <td className="px-2 py-1 text-center align-top pt-2">
-                                <button onClick={() => removeRow(idx)}
-                                        className="text-red-500 hover:text-red-700 text-lg leading-none"
-                                        aria-label="Dzēst tēmu">×</button>
-                            </td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
 
-            <button onClick={addRow} className="text-vea-green hover:underline text-sm">
-                + Pievienot tēmu
-            </button>
+            {rows.length === 0 ? (
+                <div className="bg-white rounded-lg border border-dashed border-gray-300 py-12 text-center">
+                    <p className="text-sm text-gray-400 mb-3">Nav pievienotu tēmu</p>
+                    <button onClick={addRow} className="text-vea-green hover:underline text-sm font-medium">
+                        + Pievienot pirmo tēmu
+                    </button>
+                </div>
+            ) : (
+                <>
+                    <div className="space-y-2">
+                        {rows.map((row, idx) => (
+                            <EditableCard
+                                key={row.id ?? row.tempId}
+                                index={idx + 1}
+                                isDragging={dragRowIdx === idx}
+                                onDragStart={() => setDragRowIdx(idx)}
+                                onDragOver={handleDragOver}
+                                onDrop={() => handleDrop(idx)}
+                                onDragEnd={() => setDragRowIdx(null)}
+                                onDuplicate={() => duplicateRow(idx)}
+                                onRemove={() => removeRow(idx)}
+                            >
+                                {/* Title */}
+                                <div>
+                                    <input
+                                        type="text"
+                                        value={row.title}
+                                        onChange={e => updateRow(idx, 'title', e.target.value)}
+                                        placeholder="Tēmas nosaukums"
+                                        className={`w-full border rounded px-2 py-1.5 text-sm outline-none focus:ring-1 ${
+                                            emptyTitleIndices.has(idx)
+                                                ? 'border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-300'
+                                                : 'border-gray-300 focus:border-vea-green focus:ring-vea-green'
+                                        }`}
+                                    />
+                                    {emptyTitleIndices.has(idx) && (
+                                        <p className="text-red-500 text-xs mt-0.5">Nosaukums ir obligāts</p>
+                                    )}
+                                </div>
+
+                                {/* Description */}
+                                <RichTextEditor
+                                    initialValue={row.description}
+                                    onChange={val => updateRow(idx, 'description', val)}
+                                />
+                            </EditableCard>
+                        ))}
+                    </div>
+
+                    <button onClick={addRow} className="text-vea-green hover:underline text-sm">
+                        + Pievienot tēmu
+                    </button>
+                </>
+            )}
 
             <StickyBar>
                 <button onClick={onCancel}

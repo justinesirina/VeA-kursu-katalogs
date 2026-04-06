@@ -300,13 +300,19 @@ function CourseDetails() {
                     isEmpty={!d.topics || d.topics.length === 0}
                 />
                 {d.topics && d.topics.length > 0 ? (
-                    <ol className="list-decimal list-inside space-y-1 text-sm text-vea-text">
+                    <ol className="space-y-4 text-sm">
                         {d.topics.map((t, i) => (
-                            <li key={i}>
-                                <span className="font-medium">{t.title}</span>
-                                {t.description && (
-                                    <span className="text-gray-500 ml-1">— {t.description}</span>
-                                )}
+                            <li key={i} className="flex gap-3">
+                                <span className="text-vea-green font-bold shrink-0 w-5">{i + 1}.</span>
+                                <div className="min-w-0">
+                                    <span className="font-semibold text-vea-neutral">{t.title}</span>
+                                    {t.description && (
+                                        <div
+                                            className="mt-1.5 pl-3 border-l-2 border-vea-green-light text-gray-500 text-sm [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:my-1 [&_strong]:font-semibold [&_em]:italic [&_u]:underline [&_p]:my-0"
+                                            dangerouslySetInnerHTML={{ __html: t.description }}
+                                        />
+                                    )}
+                                </div>
                             </li>
                         ))}
                     </ol>
