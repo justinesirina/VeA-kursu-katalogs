@@ -523,17 +523,25 @@ function CourseDetails() {
                 />
                 {d.literature && d.literature.length > 0 ? (
                     <div className="space-y-4">
-                        {d.literature.map((group, i) => (
+                        {[...d.literature]
+                            .sort((a, b) => {
+                                const order = ['Pamatliteratūra', 'Papildliteratūra', 'Citi avoti'];
+                                return order.indexOf(a.type) - order.indexOf(b.type);
+                            })
+                            .map((group, i) => (
                             <div key={i}>
                                 <p className="text-sm font-semibold text-vea-green mb-1">{group.type}</p>
                                 <ul className="list-disc list-inside space-y-1 text-sm text-vea-text">
                                     {(group.sources || []).map((src, j) => (
                                         <li key={j}>
-                                            {src.url
-                                                ? <a href={src.url} target="_blank" rel="noreferrer"
-                                                     className="text-vea-green hover:underline">{src.citation}</a>
-                                                : src.citation
-                                            }
+                                            {src.citation}
+                                            {src.language && (
+                                                <span className="text-gray-400 ml-1">({src.language.toUpperCase()})</span>
+                                            )}
+                                            {src.url && (
+                                                <span>. Pieejams: <a href={src.url} target="_blank" rel="noreferrer"
+                                                     className="text-vea-green hover:underline">{src.url}</a></span>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>

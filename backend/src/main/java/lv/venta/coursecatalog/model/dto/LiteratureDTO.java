@@ -23,4 +23,7 @@ public class LiteratureDTO {
 
     // Hipersaite uz resursu (ja pieejams), var būt null
     private String url;
+
+    // Valodas kods ('lv' vai 'en'), neobligāts
+    private String language;
 }

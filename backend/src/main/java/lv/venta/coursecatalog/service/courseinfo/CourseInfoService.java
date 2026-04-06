@@ -357,7 +357,8 @@ public class CourseInfoService {
                     source.getId(),
                     source.getType().getId(),
                     source.getCitation(),
-                    source.getUrl()
+                    source.getUrl(),
+                    source.getLanguage()
             ));
         });
 
