@@ -90,7 +90,7 @@ function CourseDetails() {
 
     // --- Palīgkomponents: stundu stat bloks ---
     const HourStat = ({ label, value }) => (
-        <div className="flex flex-col items-center text-center w-32 px-2 py-3 shrink-0">
+        <div className="flex flex-col items-center text-center px-2 py-3 bg-vea-green-light rounded border border-gray-200">
             <span className="text-xs text-gray-500 mb-1 leading-tight">{label}</span>
             <span className="text-2xl font-bold text-vea-neutral">{value ?? 0}</span>
             <span className="text-xs text-gray-400">ak. st.</span>
@@ -111,35 +111,30 @@ function CourseDetails() {
                 ← Atpakaļ uz kursiem
             </button>
 
-            {/* ── 1. VIRSRAKSTS + DARBĪBAS + VERSIJAS STATUSS ── */}
-            <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                    <h1 className="text-3xl font-bold font-heading text-vea-neutral leading-tight">{d.titleLv}</h1>
-                    {d.titleEn && (
-                        <p className="text-base text-gray-500 italic mt-0.5">{d.titleEn}</p>
-                    )}
-                    <div className="flex gap-2 mt-3 flex-wrap">
-                        <button className="bg-vea-green text-white px-4 py-1.5 rounded text-sm hover:bg-vea-green-dark">
-                            PDF
-                        </button>
-                        <button
-                            onClick={() => navigate(`/courses/${id}/edit`)}
-                            className="bg-vea-orange text-white px-4 py-1.5 rounded text-sm hover:opacity-90"
-                        >
-                            Rediģēt
-                        </button>
-                        <button
-                            onClick={() => setShowDeleteConfirm(true)}
-                            className="bg-red-600 text-white px-4 py-1.5 rounded text-sm hover:bg-red-700 ml-auto"
-                        >
-                            Dzēst
-                        </button>
-                    </div>
-                </div>
+            {/* ── 1. DARBĪBAS POGAS ── */}
+            <div className="flex gap-2 flex-wrap">
+                <button className="bg-vea-green text-white px-4 py-1.5 rounded text-sm hover:bg-vea-green-dark">
+                    PDF
+                </button>
+                <button
+                    onClick={() => navigate(`/courses/${id}/edit`)}
+                    className="bg-vea-orange text-white px-4 py-1.5 rounded text-sm hover:opacity-90"
+                >
+                    Rediģēt
+                </button>
+                <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="bg-red-600 text-white px-4 py-1.5 rounded text-sm hover:bg-red-700 ml-auto"
+                >
+                    Dzēst
+                </button>
+            </div>
 
-                {/* ── 2. VERSIJAS APSTIPRINĀŠANA ── */}
+            {/* ── 2. VIRSRAKSTS + VERSIJAS STATUSS ── */}
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                {/* Apstiprināšanas bloks — virs nosaukuma mobilā, labajā pusē desktop */}
                 {(d.versionStatus || d.approvalDate || d.decisionNumber || d.decisionReference) && (
-                    <div className="text-right text-sm shrink-0">
+                    <div className="text-left md:text-right text-sm md:shrink-0 md:order-2">
                         {d.versionStatus && (
                             <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold mb-1
                                 ${d.versionStatus.toLowerCase().includes('apstip')
@@ -155,6 +150,13 @@ function CourseDetails() {
                         </div>
                     </div>
                 )}
+                {/* Nosaukums */}
+                <div className="flex-1 min-w-0 md:order-1">
+                    <h1 className="text-3xl font-bold font-heading text-vea-neutral leading-tight">{d.titleLv}</h1>
+                    {d.titleEn && (
+                        <p className="text-base text-gray-500 italic mt-0.5">{d.titleEn}</p>
+                    )}
+                </div>
             </div>
 
             {/* Dzēšanas apstiprinājums */}
@@ -216,7 +218,7 @@ function CourseDetails() {
                 {/* Stundu sadalījums — stat bloks */}
                 <div className="border-t border-gray-100 pt-4 mb-4">
                     <SubLabel>Stundu sadalījums</SubLabel>
-                    <div className="flex divide-x divide-gray-200 bg-vea-green-light rounded border border-gray-200 w-fit">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <HourStat label="Kontaktstundas kopā" value={d.academicHoursTotal} />
                         <HourStat label="Lekcijas" value={d.lectureHours} />
                         <HourStat label="Praktiskās nodarbības" value={d.practClassesHours} />

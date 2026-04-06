@@ -196,9 +196,10 @@ public class CourseInfoService {
         dto.setSemester(version.getSemester() != null ? version.getSemester().getName() : null);
         String languageCode = info.getLanguage();
         String languageName = languageCode != null
-                ? languageRepo.findByCode(languageCode).map(l -> l.getName()).orElse(languageCode)
+                ? languageRepo.findByCodeIgnoreCase(languageCode).map(l -> l.getName()).orElse(languageCode)
                 : null;
         dto.setLanguage(languageName);
+        dto.setLanguageCode(languageCode);
 
         dto.setFacultyName(version.getFaculty() != null ? version.getFaculty().getName() : null);
 

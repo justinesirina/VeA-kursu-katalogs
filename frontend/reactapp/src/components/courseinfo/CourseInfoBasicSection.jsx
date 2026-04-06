@@ -17,7 +17,7 @@ function CourseInfoBasicSection({ courseInfoId, data, lookups, onSaved, onCancel
         lectureHours: data.lectureHours ?? 0,
         practClassesHours: data.practClassesHours ?? 0,
         independentWorkHours: data.independentWorkHours ?? 0,
-        language: data.language ?? 'lv',
+        language: data.languageCode ?? 'lv',
         assessmentFormId: data.assessmentFormId ?? '',
         goal: data.goal ?? '',
         annotation: data.annotation ?? '',

@@ -49,7 +49,8 @@ public class CourseDetailsDTO {
     private List<String> studyPrograms;
     private String academicYear;
     private String semester;
-    private String language;
+    private String language;     // Pilnais nosaukums (skatam): "Latviešu"
+    private String languageCode; // ISO kods (rediģēšanai): "lv"
     private String facultyName; // no CourseVersion → Faculty
 
     // --- Anotācija un mērķis ---
