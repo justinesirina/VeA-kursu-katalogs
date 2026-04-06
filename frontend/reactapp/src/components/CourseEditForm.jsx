@@ -632,36 +632,36 @@ function CourseEditForm() {
 
             {activeTab === 2 && courseInfoId && (
                 <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <CourseSKRSection courseId={id} data={courseDetails}
+                        lookups={lookups} onSaved={handleSectionSaved} onCancel={() => {}} />
+                </div>
+            )}
+
+            {activeTab === 3 && courseInfoId && (
+                <div className="bg-white rounded-lg p-5 border border-gray-200">
                     <CourseTopicsSection courseInfoId={courseInfoId} data={courseDetails}
                         onSaved={handleSectionSaved} onCancel={() => {}} />
                 </div>
             )}
 
-            {activeTab === 3 && courseInfoId && (
+            {activeTab === 4 && courseInfoId && (
+                <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <CourseCalendarSection courseInfoId={courseInfoId} data={courseDetails}
+                        lookups={lookups} onSaved={handleSectionSaved} />
+                </div>
+            )}
+
+            {activeTab === 5 && courseInfoId && (
                 <div className="bg-white rounded-lg p-5 border border-gray-200">
                     <CourseAssessmentSection courseInfoId={courseInfoId} data={courseDetails}
                         lookups={lookups} onSaved={handleSectionSaved} onCancel={() => {}} />
                 </div>
             )}
 
-            {activeTab === 4 && courseInfoId && (
-                <div className="bg-white rounded-lg p-5 border border-gray-200">
-                    <CourseSKRSection courseId={id} data={courseDetails}
-                        lookups={lookups} onSaved={handleSectionSaved} onCancel={() => {}} />
-                </div>
-            )}
-
-            {activeTab === 5 && courseInfoId && (
+            {activeTab === 6 && courseInfoId && (
                 <div className="bg-white rounded-lg p-5 border border-gray-200">
                     <CourseLiteratureSection courseInfoId={courseInfoId} data={courseDetails}
                         lookups={lookups} onSaved={handleSectionSaved} onCancel={() => {}} />
-                </div>
-            )}
-
-            {activeTab === 6 && courseInfoId && (
-                <div className="bg-white rounded-lg p-5 border border-gray-200">
-                    <CourseCalendarSection courseInfoId={courseInfoId} data={courseDetails}
-                        lookups={lookups} onSaved={handleSectionSaved} />
                 </div>
             )}
         </div>
