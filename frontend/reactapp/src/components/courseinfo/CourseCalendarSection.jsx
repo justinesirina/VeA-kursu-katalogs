@@ -1,17 +1,14 @@
 import { useState } from 'react';
 import api from '../../services/axiosConfig';
+import { useToast } from '../ui/ToastProvider';
 
-/**
- * Rediģēšanas forma kalendārajam plānam.
- *
- * @param {string} courseInfoId - CourseInfo UUID
- * @param {object} data         - CourseDetailsDTO (satur calendarPlan[] un topics[])
- * @param {object} lookups      - { sessionTypes: [{id, name}] }
- * @param {Function} onSaved    - izsaucam pēc veiksmīgas saglabāšanas
- */
 function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
-    const [error, setError] = useState(null);
+    const showToast = useToast();
     const [saving, setSaving] = useState(false);
+
+    const blockNonNumeric = e => {
+        if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault();
+    };
 
     const existingContentIds = new Set((data.calendarPlan || []).map(p => p.courseContentId));
     const availableTopics = (data.topics || []).filter(t => !existingContentIds.has(t.id));
@@ -24,7 +21,6 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
     const handleAddTopic = async () => {
         if (!newTopicContentId) return;
         setSaving(true);
-        setError(null);
         try {
             const topic = (data.topics || []).find(t => t.id === Number(newTopicContentId));
             await api.post('/calendar-topics', {
@@ -34,9 +30,10 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
                 language: 'lv',
             });
             setNewTopicContentId('');
+            showToast('Tēma pievienota kalendāram.');
             onSaved();
         } catch {
-            setError('Neizdevās pievienot tēmu.');
+            showToast('Neizdevās pievienot tēmu.', 'error');
         } finally {
             setSaving(false);
         }
@@ -44,31 +41,36 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
 
     const handleDeleteTopic = async (calendarTopicId) => {
         setSaving(true);
-        setError(null);
         try {
             await api.delete(`/calendar-topics/${calendarTopicId}`);
+            showToast('Tēma dzēsta no kalendāra.');
             onSaved();
         } catch {
-            setError('Neizdevās dzēst tēmu.');
+            showToast('Neizdevās dzēst tēmu.', 'error');
         } finally {
             setSaving(false);
         }
     };
 
     const handleAddSession = async () => {
-        if (!newSession.calendarTopicId || !newSession.sessionTypeId || !newSession.academicHours) return;
+        if (!newSession.calendarTopicId || !newSession.sessionTypeId) return;
+        const hours = Number(newSession.academicHours);
+        if (!hours || hours < 1) {
+            showToast('Nodarbības stundu skaitam jābūt vismaz 1.', 'error');
+            return;
+        }
         setSaving(true);
-        setError(null);
         try {
             await api.post('/calendar-sessions', {
                 topic: { id: Number(newSession.calendarTopicId) },
                 sessionType: { id: Number(newSession.sessionTypeId) },
-                academicHours: Number(newSession.academicHours),
+                academicHours: hours,
             });
             setNewSession({ calendarTopicId: '', sessionTypeId: '', academicHours: 1 });
+            showToast('Nodarbība pievienota.');
             onSaved();
         } catch {
-            setError('Neizdevās pievienot nodarbību.');
+            showToast('Neizdevās pievienot nodarbību.', 'error');
         } finally {
             setSaving(false);
         }
@@ -76,12 +78,12 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
 
     const handleDeleteSession = async (sessionId) => {
         setSaving(true);
-        setError(null);
         try {
             await api.delete(`/calendar-sessions/${sessionId}`);
+            showToast('Nodarbība dzēsta.');
             onSaved();
         } catch {
-            setError('Neizdevās dzēst nodarbību.');
+            showToast('Neizdevās dzēst nodarbību.', 'error');
         } finally {
             setSaving(false);
         }
@@ -94,9 +96,6 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
 
     return (
         <div className="space-y-5">
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-
-            {/* Esošais kalendārais plāns */}
             {calendarPlan.length > 0 ? (
                 <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <table className="w-full text-sm">
@@ -165,7 +164,6 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
                 <p className="text-gray-400 text-sm">Kalendārais plāns vēl nav izveidots.</p>
             )}
 
-            {/* Pievienot nodarbību esošai tēmai */}
             {calendarPlan.length > 0 && (
                 <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
                     <p className="text-sm font-medium text-vea-neutral">Pievienot nodarbību</p>
@@ -197,6 +195,7 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
                             className={`${selectClass} w-24`}
                             value={newSession.academicHours}
                             onChange={e => setNewSession({ ...newSession, academicHours: e.target.value })}
+                            onKeyDown={blockNonNumeric}
                             placeholder="Ak. st."
                         />
                         <button
@@ -210,7 +209,6 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved }) {
                 </div>
             )}
 
-            {/* Pievienot jaunu tēmu */}
             {availableTopics.length > 0 && (
                 <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
                     <p className="text-sm font-medium text-vea-neutral">Pievienot tēmu kalendāram</p>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/axiosConfig';
+import { useToast } from './ui/ToastProvider';
+import StickyBar from './ui/StickyBar';
 import CourseInfoBasicSection from './courseinfo/CourseInfoBasicSection';
 import CourseTopicsSection from './courseinfo/CourseTopicsSection';
 import CourseAssessmentSection from './courseinfo/CourseAssessmentSection';
@@ -21,6 +23,7 @@ const TABS = [
 function CourseEditForm() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const showToast = useToast();
 
     // Tab 0 — Course + Version state
     const [courseData, setCourseData] = useState(null);
@@ -34,7 +37,6 @@ function CourseEditForm() {
     const [newAuthorUserId, setNewAuthorUserId] = useState('');
     const [newTeacherUserId, setNewTeacherUserId] = useState('');
     const [staffSaving, setStaffSaving] = useState(false);
-    const [staffError, setStaffError] = useState(null);
 
     // Tabs 1–5 — CourseInfo state
     const [courseInfoId, setCourseInfoId] = useState(null);
@@ -49,8 +51,7 @@ function CourseEditForm() {
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState(null);
-    const [successMsg, setSuccessMsg] = useState(null);
+    const [fieldErrors, setFieldErrors] = useState({});
 
     useEffect(() => {
         const load = async () => {
@@ -136,8 +137,7 @@ function CourseEditForm() {
                 setUsers(usersRes.data || []);
             } catch (err) {
                 console.error('Kļūda ielādējot rediģēšanas datus:', err);
-                console.error('Statuss:', err?.response?.status, 'URL:', err?.config?.url, 'Ziņojums:', err?.message);
-                setError(`Neizdevās ielādēt kursa datus. Kļūda: ${err?.response?.status ?? ''} ${err?.config?.url ?? err?.message}`);
+                showToast(`Neizdevās ielādēt kursa datus.`, 'error');
             } finally {
                 setLoading(false);
             }
@@ -146,16 +146,46 @@ function CourseEditForm() {
         load();
     }, [id]);
 
-    const handleSave = async () => {
-        setSaving(true);
-        setError(null);
-        setSuccessMsg(null);
+    const blockNonNumeric = e => {
+        if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault();
+    };
 
+    // Atļauj tikai kursam atbilstošas rakstzīmes nosaukuma laukos
+    const sanitizeTitle = (val) =>
+        val.replace(/[<>"';`\\={}[\]]/g, '').replace(/https?:\/\/\S*/gi, '');
+
+    const isUrl = (val) => /https?:\/\//i.test(val);
+
+    const handleSave = async () => {
+        const errors = {};
+        if (!courseData.titleLv.trim())
+            errors.titleLv = 'Nosaukums latviski ir obligāts';
+        else if (isUrl(courseData.titleLv))
+            errors.titleLv = 'Nosaukums nevar būt URL adrese';
+        if (courseData.titleEn && isUrl(courseData.titleEn))
+            errors.titleEn = 'Nosaukums nevar būt URL adrese';
+        if (!courseData.courseCode.trim())
+            errors.courseCode = 'Kursa kods ir obligāts';
+        else if (!/^[A-Za-z0-9]{1,10}$/.test(courseData.courseCode.trim()))
+            errors.courseCode = 'Kods var saturēt tikai burtus un ciparus (maks. 10 zīmes)';
+        if (!courseData.credits || Number(courseData.credits) < 1)
+            errors.credits = 'Kredītpunkti ir obligāti (min. 1)';
+        if (!versionData.academicYearId) errors.academicYearId = 'Akadēmiskais gads ir obligāts';
+        if (!versionData.semesterId) errors.semesterId = 'Semestris ir obligāts';
+        if (!versionData.statusId) errors.statusId = 'Statuss ir obligāts';
+
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            showToast('Pārbaudi iezīmētos obligātos laukus.', 'error');
+            return;
+        }
+        setFieldErrors({});
+        setSaving(true);
         try {
             await api.put(`/courses/${id}`, {
-                titleLv: courseData.titleLv,
-                titleEn: courseData.titleEn,
-                courseCode: courseData.courseCode,
+                titleLv: sanitizeTitle(courseData.titleLv.trim()),
+                titleEn: courseData.titleEn ? sanitizeTitle(courseData.titleEn.trim()) || null : null,
+                courseCode: courseData.courseCode.trim().toUpperCase(),
                 slug: courseData.slug || null,
                 credits: Number(courseData.credits),
                 active: courseData.active,
@@ -181,11 +211,10 @@ function CourseEditForm() {
                 const res = await api.post('/course-versions', versionPayload);
                 setVersionId(res.data.id);
             }
-
-            setSuccessMsg('Izmaiņas saglabātas.');
+            showToast('Pamatdati saglabāti veiksmīgi!');
         } catch (err) {
             console.error('Kļūda saglabājot izmaiņas:', err);
-            setError('Neizdevās saglabāt izmaiņas. Lūdzu, pārbaudi ievades datus un mēģini vēlreiz.');
+            showToast('Neizdevās saglabāt izmaiņas. Pārbaudi ievades datus un mēģini vēlreiz.', 'error');
         } finally {
             setSaving(false);
         }
@@ -203,44 +232,40 @@ function CourseEditForm() {
     const handleAddAuthor = async () => {
         if (!newAuthorUserId) return;
         setStaffSaving(true);
-        setStaffError(null);
         try {
             await api.post('/course-authors', { course: { id }, user: { id: Number(newAuthorUserId) } });
             setNewAuthorUserId('');
             await reloadStaff();
-        } catch { setStaffError('Neizdevās pievienot autoru.'); }
+        } catch { showToast('Neizdevās pievienot autoru.', 'error'); }
         finally { setStaffSaving(false); }
     };
 
     const handleDeleteAuthor = async (authorId) => {
         setStaffSaving(true);
-        setStaffError(null);
         try {
             await api.delete(`/course-authors/${authorId}`);
             await reloadStaff();
-        } catch { setStaffError('Neizdevās dzēst autoru.'); }
+        } catch { showToast('Neizdevās dzēst autoru.', 'error'); }
         finally { setStaffSaving(false); }
     };
 
     const handleAddTeacher = async () => {
         if (!newTeacherUserId) return;
         setStaffSaving(true);
-        setStaffError(null);
         try {
             await api.post('/course-teachers', { course: { id }, user: { id: Number(newTeacherUserId) } });
             setNewTeacherUserId('');
             await reloadStaff();
-        } catch { setStaffError('Neizdevās pievienot mācībspēku.'); }
+        } catch { showToast('Neizdevās pievienot mācībspēku.', 'error'); }
         finally { setStaffSaving(false); }
     };
 
     const handleDeleteTeacher = async (teacherId) => {
         setStaffSaving(true);
-        setStaffError(null);
         try {
             await api.delete(`/course-teachers/${teacherId}`);
             await reloadStaff();
-        } catch { setStaffError('Neizdevās dzēst mācībspēku.'); }
+        } catch { showToast('Neizdevās dzēst mācībspēku.', 'error'); }
         finally { setStaffSaving(false); }
     };
 
@@ -249,23 +274,20 @@ function CourseEditForm() {
             .then(res => {
                 setCourseDetails(res.data);
                 setCourseInfoId(res.data?.courseInfoId || null);
-                setSuccessMsg('Izmaiņas saglabātas.');
-                setTimeout(() => setSuccessMsg(null), 3000);
             });
     };
 
     if (loading) return <div className="p-8 text-center text-gray-500">Ielādē datus...</div>;
-    if (error && !courseData) return <div className="p-8 text-red-600">{error}</div>;
 
-    const saveDisabled = saving
-        || !courseData.titleLv.trim()
-        || !courseData.courseCode.trim()
-        || !versionData.academicYearId
-        || !versionData.semesterId
-        || !versionData.statusId;
-
-    const inputClass = "w-full p-2 border border-gray-300 rounded focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
+    const inputBase = "w-full p-2 border rounded focus:ring-1 outline-none";
+    const inputOk  = `${inputBase} border-gray-300 focus:border-vea-green focus:ring-vea-green`;
+    const inputErr = `${inputBase} border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-300`;
+    const inputClass = (field) => fieldErrors[field] ? inputErr : inputOk;
+    const inputClassPlain = inputOk;
     const labelClass = "block text-sm font-medium text-vea-neutral mb-1";
+    // fieldErrors satur kļūdas ziņojumu kā tekstu
+    const FieldError = ({ field }) =>
+        fieldErrors[field] ? <p className="text-red-500 text-xs mt-0.5">{fieldErrors[field]}</p> : null;
 
     return (
         <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -296,48 +318,63 @@ function CourseEditForm() {
                 ))}
             </nav>
 
-            {successMsg && (
-                <p className="text-green-600 text-sm font-medium bg-green-50 border border-green-200 rounded px-3 py-2">
-                    {successMsg}
-                </p>
-            )}
-
             {/* Tab 0 — Course + Version */}
             {activeTab === 0 && courseData && (
-                <div className="space-y-6">
+                <div className="space-y-6 pb-20">
                     <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-3">
                         <h2 className="text-lg font-semibold font-heading text-vea-neutral">Pamata informācija</h2>
 
                         <div>
                             <label className={labelClass}>Nosaukums latviski <span className="text-red-500">*</span></label>
-                            <input type="text" className={inputClass}
-                                value={courseData.titleLv}
-                                onChange={e => setCourseData({ ...courseData, titleLv: e.target.value })} />
+                            <input type="text" className={inputClass('titleLv')}
+                                value={courseData.titleLv} maxLength={200}
+                                onChange={e => {
+                                    const v = sanitizeTitle(e.target.value);
+                                    setCourseData({ ...courseData, titleLv: v });
+                                    if (fieldErrors.titleLv) setFieldErrors(p => { const n={...p}; delete n.titleLv; return n; });
+                                }} />
+                            <FieldError field="titleLv" />
                         </div>
                         <div>
                             <label className={labelClass}>Nosaukums angliski</label>
-                            <input type="text" className={inputClass}
-                                value={courseData.titleEn}
-                                onChange={e => setCourseData({ ...courseData, titleEn: e.target.value })} />
+                            <input type="text" className={inputClass('titleEn')}
+                                value={courseData.titleEn} maxLength={200}
+                                onChange={e => {
+                                    setCourseData({ ...courseData, titleEn: sanitizeTitle(e.target.value) });
+                                    if (fieldErrors.titleEn) setFieldErrors(p => { const n={...p}; delete n.titleEn; return n; });
+                                }} />
+                            <FieldError field="titleEn" />
                         </div>
                         <div>
                             <label className={labelClass}>Kursa kods <span className="text-red-500">*</span></label>
-                            <input type="text" className={inputClass}
-                                value={courseData.courseCode}
-                                onChange={e => setCourseData({ ...courseData, courseCode: e.target.value })} />
+                            <input type="text" className={inputClass('courseCode')}
+                                value={courseData.courseCode} maxLength={10}
+                                placeholder="Piem.: ITB101"
+                                onChange={e => {
+                                    const v = e.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 10);
+                                    setCourseData({ ...courseData, courseCode: v });
+                                    if (fieldErrors.courseCode) setFieldErrors(p => { const n={...p}; delete n.courseCode; return n; });
+                                }} />
+                            <FieldError field="courseCode" />
                         </div>
                         <div>
                             <label className={labelClass}>Slug</label>
-                            <input type="text" className={inputClass}
+                            <input type="text" className={inputClassPlain}
                                 value={courseData.slug}
                                 onChange={e => setCourseData({ ...courseData, slug: e.target.value })} />
                         </div>
                         <div>
-                            <label className={labelClass}>Kredītpunkti</label>
-                            <input type="number" className={inputClass}
+                            <label className={labelClass}>Kredītpunkti <span className="text-red-500">*</span></label>
+                            <input type="number" className={inputClass('credits')}
                                 value={courseData.credits}
-                                onChange={e => setCourseData({ ...courseData, credits: e.target.value })}
-                                min={1} />
+                                onKeyDown={blockNonNumeric}
+                                onChange={e => {
+                                    const v = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+                                    setCourseData({ ...courseData, credits: v });
+                                    if (fieldErrors.credits) setFieldErrors(p => { const n={...p}; delete n.credits; return n; });
+                                }}
+                                min={1} max={9999} />
+                            <FieldError field="credits" />
                         </div>
                     </section>
 
@@ -347,37 +384,40 @@ function CourseEditForm() {
 
                             <div>
                                 <label className={labelClass}>Akadēmiskais gads <span className="text-red-500">*</span></label>
-                                <select className={inputClass} value={versionData.academicYearId}
-                                    onChange={e => setVersionData({ ...versionData, academicYearId: e.target.value })}>
+                                <select className={inputClass('academicYearId')} value={versionData.academicYearId}
+                                    onChange={e => { setVersionData({ ...versionData, academicYearId: e.target.value }); if (fieldErrors.academicYearId) setFieldErrors(p => { const n={...p}; delete n.academicYearId; return n; }); }}>
                                     <option value="">— izvēlies —</option>
                                     {lookups.academicYears.map(ay => (
                                         <option key={ay.id} value={ay.id}>{ay.name}</option>
                                     ))}
                                 </select>
+                                <FieldError field="academicYearId" />
                             </div>
                             <div>
                                 <label className={labelClass}>Semestris <span className="text-red-500">*</span></label>
-                                <select className={inputClass} value={versionData.semesterId}
-                                    onChange={e => setVersionData({ ...versionData, semesterId: e.target.value })}>
+                                <select className={inputClass('semesterId')} value={versionData.semesterId}
+                                    onChange={e => { setVersionData({ ...versionData, semesterId: e.target.value }); if (fieldErrors.semesterId) setFieldErrors(p => { const n={...p}; delete n.semesterId; return n; }); }}>
                                     <option value="">— izvēlies —</option>
                                     {lookups.semesters.map(s => (
                                         <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
                                 </select>
+                                <FieldError field="semesterId" />
                             </div>
                             <div>
                                 <label className={labelClass}>Statuss <span className="text-red-500">*</span></label>
-                                <select className={inputClass} value={versionData.statusId}
-                                    onChange={e => setVersionData({ ...versionData, statusId: e.target.value })}>
+                                <select className={inputClass('statusId')} value={versionData.statusId}
+                                    onChange={e => { setVersionData({ ...versionData, statusId: e.target.value }); if (fieldErrors.statusId) setFieldErrors(p => { const n={...p}; delete n.statusId; return n; }); }}>
                                     <option value="">— izvēlies —</option>
                                     {lookups.versionStatuses.map(s => (
                                         <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
                                 </select>
+                                <FieldError field="statusId" />
                             </div>
                             <div>
                                 <label className={labelClass}>Fakultāte</label>
-                                <select className={inputClass} value={versionData.facultyId}
+                                <select className={inputClassPlain} value={versionData.facultyId}
                                     onChange={e => setVersionData({ ...versionData, facultyId: e.target.value })}>
                                     <option value="">— nav norādīts —</option>
                                     {lookups.faculties.map(f => (
@@ -387,17 +427,17 @@ function CourseEditForm() {
                             </div>
                             <div>
                                 <label className={labelClass}>Apstiprināšanas datums</label>
-                                <input type="date" className={inputClass} value={versionData.approvalDate}
+                                <input type="date" className={inputClassPlain} value={versionData.approvalDate}
                                     onChange={e => setVersionData({ ...versionData, approvalDate: e.target.value })} />
                             </div>
                             <div>
                                 <label className={labelClass}>Lēmuma numurs</label>
-                                <input type="text" className={inputClass} value={versionData.decisionNumber}
+                                <input type="text" className={inputClassPlain} value={versionData.decisionNumber}
                                     onChange={e => setVersionData({ ...versionData, decisionNumber: e.target.value })} />
                             </div>
                             <div>
                                 <label className={labelClass}>Atsauce</label>
-                                <input type="text" className={inputClass} value={versionData.decisionReference}
+                                <input type="text" className={inputClassPlain} value={versionData.decisionReference}
                                     onChange={e => setVersionData({ ...versionData, decisionReference: e.target.value })} />
                             </div>
                         </section>
@@ -406,7 +446,6 @@ function CourseEditForm() {
                     {/* Autors un atbildīgais mācībspēks */}
                     <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-4">
                         <h2 className="text-lg font-semibold font-heading text-vea-neutral">Autors un atbildīgais mācībspēks</h2>
-                        {staffError && <p className="text-red-600 text-sm">{staffError}</p>}
 
                         <div>
                             <p className="text-sm font-medium text-vea-neutral mb-1">Autori</p>
@@ -469,12 +508,17 @@ function CourseEditForm() {
                         </div>
                     </section>
 
-                    {error && <p className="text-red-600 text-sm">{error}</p>}
-
-                    <button onClick={handleSave} disabled={saveDisabled}
-                        className="bg-vea-green text-white px-6 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 disabled:cursor-not-allowed">
-                        {saving ? 'Saglabā...' : 'Saglabāt izmaiņas'}
-                    </button>
+                    {/* Fiksētā saglabāšanas josla */}
+                    <StickyBar>
+                        <button onClick={() => navigate(`/courses/${id}`)}
+                            className="bg-white border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral text-sm">
+                            Atcelt
+                        </button>
+                        <button onClick={handleSave} disabled={saving}
+                            className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 text-sm">
+                            {saving ? 'Saglabā...' : 'Saglabāt'}
+                        </button>
+                    </StickyBar>
                 </div>
             )}
 

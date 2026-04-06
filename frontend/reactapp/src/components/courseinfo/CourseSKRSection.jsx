@@ -1,16 +1,10 @@
 import { useState } from 'react';
 import api from '../../services/axiosConfig';
+import { useToast } from '../ui/ToastProvider';
+import StickyBar from '../ui/StickyBar';
 
-/**
- * Rediģēšanas forma studiju kursa rezultātiem (SKR).
- *
- * @param {string}  courseId
- * @param {object}  data         - { resultAssessments: [{courseResultId, learningOutcome, spsr, components}] }
- * @param {object}  lookups      - { resultsCategories: [{id,name}], assessmentComponents: [{id,name}] }
- * @param {Function} onSaved
- * @param {Function} onCancel
- */
 function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
+    const showToast = useToast();
     const [rows, setRows] = useState(
         (data.resultAssessments || []).map(r => ({
             id: r.courseResultId,
@@ -23,9 +17,13 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
     );
     const [deletedIds, setDeletedIds] = useState([]);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState(null);
+    const [rowErrors, setRowErrors] = useState({});
 
-    const inputClass = "w-full border border-gray-300 rounded px-2 py-1 text-sm focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
+    const inputBase = "w-full border rounded px-2 py-1 text-sm focus:ring-1 outline-none";
+    const inputOk  = `${inputBase} border-gray-300 focus:border-vea-green focus:ring-vea-green`;
+    const inputErr = `${inputBase} border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-300`;
+    const fieldClass = (idx, field) => rowErrors[idx]?.[field] ? inputErr : inputOk;
+
     const labelClass = "block text-sm font-medium text-vea-neutral mb-1";
 
     const addRow = () => {
@@ -37,6 +35,13 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
 
     const updateRow = (idx, field, value) => {
         setRows(prev => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
+        if (rowErrors[idx]?.[field]) {
+            setRowErrors(prev => {
+                const n = { ...prev };
+                if (n[idx]) { n[idx] = { ...n[idx] }; delete n[idx][field]; }
+                return n;
+            });
+        }
     };
 
     const toggleComponent = (idx, componentName) => {
@@ -53,23 +58,34 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
         const row = rows[idx];
         if (!row.isNew && row.id) setDeletedIds(prev => [...prev, row.id]);
         setRows(prev => prev.filter((_, i) => i !== idx));
+        setRowErrors(prev => {
+            const n = {};
+            Object.entries(prev).forEach(([k, v]) => {
+                const ki = Number(k);
+                if (ki < idx) n[ki] = v;
+                else if (ki > idx) n[ki - 1] = v;
+            });
+            return n;
+        });
     };
 
     const handleSave = async () => {
-        if (rows.some(r => !r.learningOutcome.trim())) {
-            setError('Katram SKR jābūt sasniedzamā rezultāta tekstam.');
+        const errors = {};
+        rows.forEach((r, i) => {
+            const e = {};
+            if (!r.learningOutcome.trim()) e.learningOutcome = true;
+            if (r.isNew && !r.categoryId) e.categoryId = true;
+            if (Object.keys(e).length > 0) errors[i] = e;
+        });
+        if (Object.keys(errors).length > 0) {
+            setRowErrors(errors);
+            showToast('Pārbaudi iezīmētos laukus — tie ir obligāti.', 'error');
             return;
         }
-        if (rows.filter(r => r.isNew).some(r => !r.categoryId)) {
-            setError('Katram jaunam SKR jānorāda kategorija.');
-            return;
-        }
+        setRowErrors({});
         setSaving(true);
-        setError(null);
         try {
-            for (const id of deletedIds) {
-                await api.delete(`/course-results/${id}`);
-            }
+            for (const id of deletedIds) await api.delete(`/course-results/${id}`);
             for (const row of rows) {
                 if (row.isNew) {
                     const res = await api.post('/course-results', {
@@ -97,9 +113,10 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
                     });
                 }
             }
+            showToast('SKR saglabāti veiksmīgi!');
             onSaved();
-        } catch (err) {
-            setError('Saglabāšana neizdevās. Pārbaudi datus un mēģini vēlreiz.');
+        } catch {
+            showToast('Saglabāšana neizdevās. Pārbaudi datus un mēģini vēlreiz.', 'error');
         } finally {
             setSaving(false);
         }
@@ -108,9 +125,7 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
     const components = lookups.assessmentComponents || [];
 
     return (
-        <div className="space-y-3">
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-
+        <div className="space-y-3 pb-20">
             <div className="space-y-4">
                 {rows.map((row, idx) => (
                     <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
@@ -126,8 +141,11 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
                             </label>
                             <textarea value={row.learningOutcome} rows={2}
                                       onChange={e => updateRow(idx, 'learningOutcome', e.target.value)}
-                                      className={inputClass}
+                                      className={fieldClass(idx, 'learningOutcome')}
                                       placeholder="Students prot / spēj / izprot..." />
+                            {rowErrors[idx]?.learningOutcome && (
+                                <p className="text-red-500 text-xs mt-0.5">Rezultāta teksts ir obligāts</p>
+                            )}
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             <div>
@@ -136,18 +154,21 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
                                 </label>
                                 <select value={row.categoryId}
                                         onChange={e => updateRow(idx, 'categoryId', e.target.value)}
-                                        className={inputClass}>
+                                        className={fieldClass(idx, 'categoryId')}>
                                     <option value="">— izvēlies —</option>
                                     {(lookups.resultsCategories || []).map(c => (
                                         <option key={c.id} value={c.id}>{c.name}</option>
                                     ))}
                                 </select>
+                                {rowErrors[idx]?.categoryId && (
+                                    <p className="text-red-500 text-xs mt-0.5">Kategorija ir obligāta jaunam SKR</p>
+                                )}
                             </div>
                             <div>
                                 <label className={labelClass}>Valoda</label>
                                 <select value={row.language}
                                         onChange={e => updateRow(idx, 'language', e.target.value)}
-                                        className={inputClass}>
+                                        className={inputOk}>
                                     <option value="lv">Latviešu</option>
                                     <option value="en">Angļu</option>
                                 </select>
@@ -177,16 +198,16 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
                 + Pievienot SKR
             </button>
 
-            <div className="flex gap-2">
-                <button onClick={handleSave} disabled={saving}
-                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50">
-                    {saving ? 'Saglabā...' : 'Saglabāt'}
-                </button>
+            <StickyBar>
                 <button onClick={onCancel}
-                    className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral">
+                    className="bg-white border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral text-sm">
                     Atcelt
                 </button>
-            </div>
+                <button onClick={handleSave} disabled={saving}
+                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 text-sm">
+                    {saving ? 'Saglabā...' : 'Saglabāt'}
+                </button>
+            </StickyBar>
         </div>
     );
 }

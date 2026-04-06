@@ -1,49 +1,47 @@
 import { useState } from 'react';
 import api from '../../services/axiosConfig';
+import { useToast } from '../ui/ToastProvider';
+import StickyBar from '../ui/StickyBar';
 
-/**
- * Rediģēšanas forma vērtēšanas sadalījumam un patstāvīgā darba aktivitātēm.
- *
- * @param {string}  courseInfoId
- * @param {object}  data         - { assessmentDistribution, selfStudyActivities }
- * @param {object}  lookups      - { assessmentComponents: [{id,name}], selfStudyActivities: [{id,name}] }
- * @param {Function} onSaved
- * @param {Function} onCancel
- */
 function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCancel }) {
+    const showToast = useToast();
+
     const [assessRows, setAssessRows] = useState(
         (data.assessmentDistribution || []).map(a => ({
-            id: a.id,
-            componentId: '',
-            componentName: a.componentName,
-            percentage: a.percentage,
-            isNew: false,
+            id: a.id, componentId: '', componentName: a.componentName,
+            percentage: a.percentage, isNew: false,
         }))
     );
     const [deletedAssessIds, setDeletedAssessIds] = useState([]);
 
     const [selfStudyRows, setSelfStudyRows] = useState(
         (data.selfStudyActivities || []).map(s => ({
-            id: s.id,
-            activityId: '',
-            activityName: s.activityName,
-            percentage: s.percentage,
-            isNew: false,
+            id: s.id, activityId: '', activityName: s.activityName,
+            percentage: s.percentage, isNew: false,
         }))
     );
     const [deletedSelfStudyIds, setDeletedSelfStudyIds] = useState([]);
 
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState(null);
+    const [missingComponentIdx, setMissingComponentIdx] = useState(new Set());
+    const [missingActivityIdx, setMissingActivityIdx] = useState(new Set());
 
-    const cellInput = "w-full border border-gray-300 rounded px-2 py-1 focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
-    const cellSelect = "w-full border border-gray-300 rounded px-2 py-1 focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
+    const blockNonNumeric = e => {
+        if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault();
+    };
+
+    const cellBase = "w-full border rounded px-2 py-1 focus:ring-1 outline-none text-sm";
+    const cellOk  = `${cellBase} border-gray-300 focus:border-vea-green focus:ring-vea-green`;
+    const cellErr = `${cellBase} border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-300`;
 
     const addAssessRow = () => {
         setAssessRows(prev => [...prev, { id: null, componentId: '', componentName: '', percentage: 0, isNew: true }]);
     };
     const updateAssessRow = (idx, field, value) => {
         setAssessRows(prev => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
+        if (field === 'componentId' && missingComponentIdx.has(idx)) {
+            setMissingComponentIdx(prev => { const n = new Set(prev); n.delete(idx); return n; });
+        }
     };
     const removeAssessRow = (idx) => {
         const row = assessRows[idx];
@@ -56,6 +54,9 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
     };
     const updateSelfStudyRow = (idx, field, value) => {
         setSelfStudyRows(prev => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
+        if (field === 'activityId' && missingActivityIdx.has(idx)) {
+            setMissingActivityIdx(prev => { const n = new Set(prev); n.delete(idx); return n; });
+        }
     };
     const removeSelfStudyRow = (idx) => {
         const row = selfStudyRows[idx];
@@ -66,29 +67,41 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
     const assessSum = assessRows.reduce((s, r) => s + Number(r.percentage), 0);
     const selfStudySum = selfStudyRows.reduce((s, r) => s + Number(r.percentage), 0);
 
+    const getComponentIdByName = (name) =>
+        (lookups.assessmentComponents || []).find(c => c.name === name)?.id ?? '';
+    const getActivityIdByName = (name) =>
+        (lookups.selfStudyActivities || []).find(a => a.name === name)?.id ?? '';
+
     const handleSave = async () => {
+        const missingComp = new Set(
+            assessRows.map((r, i) => (r.isNew && !r.componentId ? i : null)).filter(i => i !== null)
+        );
+        const missingAct = new Set(
+            selfStudyRows.map((r, i) => (r.isNew && !r.activityId ? i : null)).filter(i => i !== null)
+        );
+        if (missingComp.size > 0) {
+            setMissingComponentIdx(missingComp);
+            showToast('Izvēlies vērtēšanas komponenti katrai jaunajai rindai.', 'error');
+            return;
+        }
+        if (missingAct.size > 0) {
+            setMissingActivityIdx(missingAct);
+            showToast('Izvēlies aktivitātes veidu katrai jaunajai rindai.', 'error');
+            return;
+        }
         if (assessRows.length > 0 && assessSum !== 100) {
-            setError(`Vērtēšanas sadalījuma summai jābūt 100% (šobrīd: ${assessSum}%).`);
+            showToast(`Vērtēšanas sadalījuma summai jābūt 100% (šobrīd: ${assessSum}%).`, 'error');
             return;
         }
         if (selfStudyRows.length > 0 && selfStudySum !== 100) {
-            setError(`Patstāvīgā darba summai jābūt 100% (šobrīd: ${selfStudySum}%).`);
+            showToast(`Patstāvīgā darba summai jābūt 100% (šobrīd: ${selfStudySum}%).`, 'error');
             return;
         }
-        if (assessRows.some(r => !r.componentId && r.isNew)) {
-            setError('Izvēlies vērtēšanas komponenti katrai jaunajai rindai.');
-            return;
-        }
-        if (selfStudyRows.some(r => !r.activityId && r.isNew)) {
-            setError('Izvēlies aktivitātes veidu katrai jaunajai rindai.');
-            return;
-        }
+        setMissingComponentIdx(new Set());
+        setMissingActivityIdx(new Set());
         setSaving(true);
-        setError(null);
         try {
-            for (const id of deletedAssessIds) {
-                await api.delete(`/assessment-distribution/${id}`);
-            }
+            for (const id of deletedAssessIds) await api.delete(`/assessment-distribution/${id}`);
             for (const row of assessRows) {
                 if (row.isNew) {
                     await api.post('/assessment-distribution', {
@@ -104,9 +117,7 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
                     });
                 }
             }
-            for (const id of deletedSelfStudyIds) {
-                await api.delete(`/self-study-distribution/${id}`);
-            }
+            for (const id of deletedSelfStudyIds) await api.delete(`/self-study-distribution/${id}`);
             for (const row of selfStudyRows) {
                 if (row.isNew) {
                     await api.post('/self-study-distribution', {
@@ -122,28 +133,19 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
                     });
                 }
             }
+            showToast('Vērtēšana saglabāta veiksmīgi!');
             onSaved();
-        } catch (err) {
-            setError('Saglabāšana neizdevās. Pārbaudi datus un mēģini vēlreiz.');
+        } catch {
+            showToast('Saglabāšana neizdevās. Pārbaudi datus un mēģini vēlreiz.', 'error');
         } finally {
             setSaving(false);
         }
     };
 
-    const getComponentIdByName = (name) => {
-        const found = (lookups.assessmentComponents || []).find(c => c.name === name);
-        return found ? found.id : '';
-    };
-    const getActivityIdByName = (name) => {
-        const found = (lookups.selfStudyActivities || []).find(a => a.name === name);
-        return found ? found.id : '';
-    };
-
     const thClass = "border-b border-gray-200 px-2 py-2 text-xs font-semibold text-vea-neutral uppercase tracking-wide text-left";
 
     return (
-        <div className="space-y-6">
-            {error && <p className="text-red-600 text-sm">{error}</p>}
+        <div className="space-y-6 pb-20">
 
             {/* Vērtēšanas sadalījums */}
             <div>
@@ -162,14 +164,19 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
                             <tr key={idx} className="border-t border-gray-100">
                                 <td className="px-1 py-1">
                                     {row.isNew ? (
-                                        <select value={row.componentId}
-                                                onChange={e => updateAssessRow(idx, 'componentId', e.target.value)}
-                                                className={cellSelect}>
-                                            <option value="">— izvēlies —</option>
-                                            {(lookups.assessmentComponents || []).map(c => (
-                                                <option key={c.id} value={c.id}>{c.name}</option>
-                                            ))}
-                                        </select>
+                                        <>
+                                            <select value={row.componentId}
+                                                    onChange={e => updateAssessRow(idx, 'componentId', e.target.value)}
+                                                    className={missingComponentIdx.has(idx) ? cellErr : cellOk}>
+                                                <option value="">— izvēlies —</option>
+                                                {(lookups.assessmentComponents || []).map(c => (
+                                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                                ))}
+                                            </select>
+                                            {missingComponentIdx.has(idx) && (
+                                                <p className="text-red-500 text-xs mt-0.5">Komponente ir obligāta</p>
+                                            )}
+                                        </>
                                     ) : (
                                         <span className="px-2">{row.componentName}</span>
                                     )}
@@ -177,7 +184,8 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
                                 <td className="px-1 py-1">
                                     <input type="number" min="0" max="100" value={row.percentage}
                                            onChange={e => updateAssessRow(idx, 'percentage', e.target.value)}
-                                           className={`${cellInput} text-center`} />
+                                           onKeyDown={blockNonNumeric}
+                                           className={`${cellOk} text-center`} />
                                 </td>
                                 <td className="px-2 py-1 text-center">
                                     <button onClick={() => removeAssessRow(idx)}
@@ -216,14 +224,19 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
                             <tr key={idx} className="border-t border-gray-100">
                                 <td className="px-1 py-1">
                                     {row.isNew ? (
-                                        <select value={row.activityId}
-                                                onChange={e => updateSelfStudyRow(idx, 'activityId', e.target.value)}
-                                                className={cellSelect}>
-                                            <option value="">— izvēlies —</option>
-                                            {(lookups.selfStudyActivities || []).map(a => (
-                                                <option key={a.id} value={a.id}>{a.name}</option>
-                                            ))}
-                                        </select>
+                                        <>
+                                            <select value={row.activityId}
+                                                    onChange={e => updateSelfStudyRow(idx, 'activityId', e.target.value)}
+                                                    className={missingActivityIdx.has(idx) ? cellErr : cellOk}>
+                                                <option value="">— izvēlies —</option>
+                                                {(lookups.selfStudyActivities || []).map(a => (
+                                                    <option key={a.id} value={a.id}>{a.name}</option>
+                                                ))}
+                                            </select>
+                                            {missingActivityIdx.has(idx) && (
+                                                <p className="text-red-500 text-xs mt-0.5">Aktivitāte ir obligāta</p>
+                                            )}
+                                        </>
                                     ) : (
                                         <span className="px-2">{row.activityName}</span>
                                     )}
@@ -231,7 +244,8 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
                                 <td className="px-1 py-1">
                                     <input type="number" min="0" max="100" value={row.percentage}
                                            onChange={e => updateSelfStudyRow(idx, 'percentage', e.target.value)}
-                                           className={`${cellInput} text-center`} />
+                                           onKeyDown={blockNonNumeric}
+                                           className={`${cellOk} text-center`} />
                                 </td>
                                 <td className="px-2 py-1 text-center">
                                     <button onClick={() => removeSelfStudyRow(idx)}
@@ -253,16 +267,16 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
                 </div>
             </div>
 
-            <div className="flex gap-2">
-                <button onClick={handleSave} disabled={saving}
-                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50">
-                    {saving ? 'Saglabā...' : 'Saglabāt'}
-                </button>
+            <StickyBar>
                 <button onClick={onCancel}
-                    className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral">
+                    className="bg-white border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral text-sm">
                     Atcelt
                 </button>
-            </div>
+                <button onClick={handleSave} disabled={saving}
+                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 text-sm">
+                    {saving ? 'Saglabā...' : 'Saglabāt'}
+                </button>
+            </StickyBar>
         </div>
     );
 }

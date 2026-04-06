@@ -4,6 +4,7 @@ import CourseDetails from './pages/CourseDetails';
 import CourseDetailsForm from "./components/CourseDetailsForm";
 import CourseEditForm from "./components/CourseEditForm";
 import AdminPage from "./pages/AdminPage";
+import { ToastProvider } from './components/ui/ToastProvider';
 import veaLogo from './assets/vea-logo.svg';
 
 function NavBar() {
@@ -54,6 +55,7 @@ function NavBar() {
 function App() {
     return (
         <Router>
+            <ToastProvider>
             <div className="min-h-screen bg-vea-bg flex flex-col">
                 <a
                     href="#main-content"
@@ -72,6 +74,7 @@ function App() {
                     </Routes>
                 </main>
             </div>
+            </ToastProvider>
         </Router>
     );
 }
