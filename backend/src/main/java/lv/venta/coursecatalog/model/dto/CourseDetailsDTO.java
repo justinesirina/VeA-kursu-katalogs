@@ -30,6 +30,8 @@ public class CourseDetailsDTO {
     private String titleEn;
     private String authorFullTitle;    // Kursa autors: "Mg.sc.comp., docents Kārlis Immers"
     private String teacherFullTitle;   // Atbildīgais mācībspēks (var mainīties katru gadu)
+    private List<StaffMemberDTO> authors;   // Visi autori ar lomām
+    private List<StaffMemberDTO> teachers;  // Visi mācībspēki ar lomām
     private String courseCode;
     private String assessmentForm;      // Piemēram: "Eksāmens"
     private Integer assessmentFormId;   // ID rediģēšanai

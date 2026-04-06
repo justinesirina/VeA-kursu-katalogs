@@ -203,21 +203,41 @@ public class CourseInfoService {
 
         dto.setFacultyName(version.getFaculty() != null ? version.getFaculty().getName() : null);
 
-        // --- Kursa autors ---
+        // --- Kursa autori ---
         List<CourseAuthor> authors = courseAuthorRepo.findByCourseId(course.getId());
-        if (!authors.isEmpty()) {
-            var user = authors.get(0).getUser();
-            dto.setAuthorFullTitle(buildAuthorTitle(user.getAcademicDegree(), user.getPosition(),
-                    user.getName(), user.getSurname()));
-        }
+        List<StaffMemberDTO> authorDtos = authors.stream()
+                .filter(a -> a.getUser() != null)
+                .map(a -> {
+                    var u = a.getUser();
+                    return new StaffMemberDTO(
+                            buildAuthorTitle(u.getAcademicDegree(), u.getPosition(), u.getName(), u.getSurname()),
+                            a.getRole());
+                })
+                .collect(java.util.stream.Collectors.toList());
+        dto.setAuthors(authorDtos);
+        authorDtos.stream()
+                .filter(a -> "Autors".equals(a.getRole()))
+                .findFirst()
+                .or(() -> authorDtos.stream().findFirst())
+                .ifPresent(a -> dto.setAuthorFullTitle(a.getFullTitle()));
 
-        // --- Atbildīgais mācībspēks (var atšķirties no autora) ---
+        // --- Kursa mācībspēki ---
         List<CourseTeacher> teachers = courseTeacherRepo.findByCourseId(course.getId());
-        if (!teachers.isEmpty()) {
-            var user = teachers.get(0).getUser();
-            dto.setTeacherFullTitle(buildAuthorTitle(user.getAcademicDegree(), user.getPosition(),
-                    user.getName(), user.getSurname()));
-        }
+        List<StaffMemberDTO> teacherDtos = teachers.stream()
+                .filter(t -> t.getUser() != null)
+                .map(t -> {
+                    var u = t.getUser();
+                    return new StaffMemberDTO(
+                            buildAuthorTitle(u.getAcademicDegree(), u.getPosition(), u.getName(), u.getSurname()),
+                            t.getRole());
+                })
+                .collect(java.util.stream.Collectors.toList());
+        dto.setTeachers(teacherDtos);
+        teacherDtos.stream()
+                .filter(t -> "Atbildīgais mācībspēks".equals(t.getRole()))
+                .findFirst()
+                .or(() -> teacherDtos.stream().findFirst())
+                .ifPresent(t -> dto.setTeacherFullTitle(t.getFullTitle()));
 
         // --- Studiju kursa priekšnosacījumi ---
         List<PrerequisiteDTO> prereqDtos = new ArrayList <>();

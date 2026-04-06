@@ -10,14 +10,18 @@ import CourseLiteratureSection from './courseinfo/CourseLiteratureSection';
 import CourseSKRSection from './courseinfo/CourseSKRSection';
 import CourseCalendarSection from './courseinfo/CourseCalendarSection';
 
+const AUTHOR_ROLES = ['Autors', 'Līdzautors'];
+const TEACHER_ROLES = ['Atbildīgais mācībspēks', 'Mācībspēks'];
+const STAFF_ROLE_FILTER = ['Pasniedzējs', 'Programmas direktors'];
+
 const TABS = [
     { key: 'pamatdati',  label: 'Pamatdati' },
     { key: 'apraksts',   label: 'Apraksts' },
-    { key: 'temas',      label: 'Tēmas' },
-    { key: 'vertesana',  label: 'Vērtēšana' },
     { key: 'skr',        label: 'Kursa rezultāti' },
-    { key: 'literatura', label: 'Literatūra' },
+    { key: 'temas',      label: 'Tēmas' },
     { key: 'kalendars',  label: 'Kalendārs' },
+    { key: 'vertesana',  label: 'Vērtēšana' },
+    { key: 'literatura', label: 'Literatūra' },
 ];
 
 function CourseEditForm() {
@@ -34,8 +38,10 @@ function CourseEditForm() {
     const [authors, setAuthors] = useState([]);
     const [teachers, setTeachers] = useState([]);
     const [users, setUsers] = useState([]);
-    const [newAuthorUserId, setNewAuthorUserId] = useState('');
-    const [newTeacherUserId, setNewTeacherUserId] = useState('');
+    const [authorSearch, setAuthorSearch] = useState('');
+    const [teacherSearch, setTeacherSearch] = useState('');
+    const [selectedAuthorRole, setSelectedAuthorRole] = useState('Autors');
+    const [selectedTeacherRole, setSelectedTeacherRole] = useState('Mācībspēks');
     const [staffSaving, setStaffSaving] = useState(false);
 
     // Tabs 1–5 — CourseInfo state
@@ -229,12 +235,28 @@ function CourseEditForm() {
         setTeachers(tRes.data || []);
     };
 
-    const handleAddAuthor = async () => {
-        if (!newAuthorUserId) return;
+    const filterUsers = (query, excluded) => {
+        if (!query.trim()) return [];
+        const q = query.toLowerCase();
+        const excludedIds = new Set(excluded.map(a => a.user?.id));
+        return users
+            .filter(u => STAFF_ROLE_FILTER.includes(u.role?.roleName))
+            .filter(u => !excludedIds.has(u.id))
+            .filter(u => u.name.toLowerCase().includes(q) || u.surname.toLowerCase().includes(q))
+            .slice(0, 8);
+    };
+
+    const personLabel = (u) => {
+        const name = [u.name, u.surname].filter(Boolean).join(' ');
+        const extra = [u.position, u.academicDegree].filter(Boolean).join(', ');
+        return extra ? `${name}, ${extra}` : name;
+    };
+
+    const handleAddAuthor = async (userId) => {
         setStaffSaving(true);
         try {
-            await api.post('/course-authors', { course: { id }, user: { id: Number(newAuthorUserId) } });
-            setNewAuthorUserId('');
+            await api.post('/course-authors', { course: { id }, user: { id: Number(userId) }, role: selectedAuthorRole });
+            setAuthorSearch('');
             await reloadStaff();
         } catch { showToast('Neizdevās pievienot autoru.', 'error'); }
         finally { setStaffSaving(false); }
@@ -249,12 +271,13 @@ function CourseEditForm() {
         finally { setStaffSaving(false); }
     };
 
-    const handleAddTeacher = async () => {
-        if (!newTeacherUserId) return;
+    const handleAddTeacher = async (userId) => {
+        const hasAtbildigais = teachers.some(t => t.role === 'Atbildīgais mācībspēks');
         setStaffSaving(true);
         try {
-            await api.post('/course-teachers', { course: { id }, user: { id: Number(newTeacherUserId) } });
-            setNewTeacherUserId('');
+            await api.post('/course-teachers', { course: { id }, user: { id: Number(userId) }, role: selectedTeacherRole });
+            setTeacherSearch('');
+            setSelectedTeacherRole('Mācībspēks');
             await reloadStaff();
         } catch { showToast('Neizdevās pievienot mācībspēku.', 'error'); }
         finally { setStaffSaving(false); }
@@ -378,6 +401,142 @@ function CourseEditForm() {
                         </div>
                     </section>
 
+                    {/* Autors un kursa mācībspēks */}
+                    <section className="bg-white rounded-lg p-5 border border-gray-200">
+                        <h2 className="text-lg font-semibold font-heading text-vea-neutral mb-4">Autors un kursa mācībspēks</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                            {/* Autors */}
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium text-vea-neutral">Autors</p>
+                                {authors.length > 0 ? (
+                                    <ul className="space-y-1.5">
+                                        {authors.map(a => (
+                                            <li key={a.id} className="flex items-center justify-between border border-gray-200 rounded px-3 py-2 text-sm">
+                                                <span className="text-vea-text min-w-0">
+                                                    {a.user ? personLabel(a.user) : `ID: ${a.id}`}
+                                                    {a.role && (
+                                                        <span className="ml-2 text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full">{a.role}</span>
+                                                    )}
+                                                </span>
+                                                <button onClick={() => handleDeleteAuthor(a.id)} disabled={staffSaving}
+                                                    className="text-red-400 hover:text-red-600 ml-3 shrink-0 disabled:opacity-50"
+                                                    aria-label="Noņemt autoru">✕</button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-gray-400 text-xs italic">Nav pievienotu autoru</p>
+                                )}
+                                <div className="flex gap-2 pt-1">
+                                    {AUTHOR_ROLES.map(r => (
+                                        <button key={r} onClick={() => setSelectedAuthorRole(r)}
+                                            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                                                selectedAuthorRole === r
+                                                    ? 'bg-vea-green text-white border-vea-green'
+                                                    : 'border-gray-300 text-gray-500 hover:border-vea-green hover:text-vea-green'
+                                            }`}>
+                                            {r}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={authorSearch}
+                                        onChange={e => setAuthorSearch(e.target.value)}
+                                        onBlur={() => setTimeout(() => setAuthorSearch(''), 150)}
+                                        placeholder="Meklēt autoru..."
+                                        className={inputClassPlain}
+                                        disabled={staffSaving}
+                                    />
+                                    {filterUsers(authorSearch, authors).length > 0 && (
+                                        <ul className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto">
+                                            {filterUsers(authorSearch, authors).map(u => (
+                                                <li key={u.id}
+                                                    onMouseDown={() => handleAddAuthor(u.id)}
+                                                    className="px-3 py-2 hover:bg-vea-green-light cursor-pointer text-sm text-vea-text">
+                                                    {personLabel(u)}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Kursa mācībspēks */}
+                            {(() => {
+                                const hasAtbildigais = teachers.some(t => t.role === 'Atbildīgais mācībspēks');
+                                return (
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-medium text-vea-neutral">Kursa mācībspēks</p>
+                                        {teachers.length > 0 ? (
+                                            <ul className="space-y-1.5">
+                                                {teachers.map(t => (
+                                                    <li key={t.id} className="flex items-center justify-between border border-gray-200 rounded px-3 py-2 text-sm">
+                                                        <span className="text-vea-text min-w-0">
+                                                            {t.user ? personLabel(t.user) : `ID: ${t.id}`}
+                                                            {t.role && (
+                                                                <span className="ml-2 text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full">{t.role}</span>
+                                                            )}
+                                                        </span>
+                                                        <button onClick={() => handleDeleteTeacher(t.id)} disabled={staffSaving}
+                                                            className="text-red-400 hover:text-red-600 ml-3 shrink-0 disabled:opacity-50"
+                                                            aria-label="Noņemt mācībspēku">✕</button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-gray-400 text-xs italic">Nav pievienotu mācībspēku</p>
+                                        )}
+                                        <div className="flex gap-2 pt-1">
+                                            {TEACHER_ROLES.map(r => {
+                                                const disabled = r === 'Atbildīgais mācībspēks' && hasAtbildigais;
+                                                return (
+                                                    <button key={r}
+                                                        onClick={() => !disabled && setSelectedTeacherRole(r)}
+                                                        disabled={disabled}
+                                                        className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                                                            disabled
+                                                                ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                                                                : selectedTeacherRole === r
+                                                                    ? 'bg-vea-green text-white border-vea-green'
+                                                                    : 'border-gray-300 text-gray-500 hover:border-vea-green hover:text-vea-green'
+                                                        }`}>
+                                                        {r}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={teacherSearch}
+                                                onChange={e => setTeacherSearch(e.target.value)}
+                                                onBlur={() => setTimeout(() => setTeacherSearch(''), 150)}
+                                                placeholder="Meklēt mācībspēku..."
+                                                className={inputClassPlain}
+                                                disabled={staffSaving}
+                                            />
+                                            {filterUsers(teacherSearch, teachers).length > 0 && (
+                                                <ul className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto">
+                                                    {filterUsers(teacherSearch, teachers).map(u => (
+                                                        <li key={u.id}
+                                                            onMouseDown={() => handleAddTeacher(u.id)}
+                                                            className="px-3 py-2 hover:bg-vea-green-light cursor-pointer text-sm text-vea-text">
+                                                            {personLabel(u)}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+
+                        </div>
+                    </section>
+
                     {versionData && (
                         <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-3">
                             <h2 className="text-lg font-semibold font-heading text-vea-neutral">Versijas informācija</h2>
@@ -442,71 +601,6 @@ function CourseEditForm() {
                             </div>
                         </section>
                     )}
-
-                    {/* Autors un atbildīgais mācībspēks */}
-                    <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-4">
-                        <h2 className="text-lg font-semibold font-heading text-vea-neutral">Autors un atbildīgais mācībspēks</h2>
-
-                        <div>
-                            <p className="text-sm font-medium text-vea-neutral mb-1">Autori</p>
-                            {authors.length > 0 ? (
-                                <ul className="space-y-1 mb-2">
-                                    {authors.map(a => (
-                                        <li key={a.id} className="flex items-center justify-between text-sm bg-vea-green-light rounded px-3 py-1.5">
-                                            <span>{a.user ? `${a.user.name} ${a.user.surname}` : `ID: ${a.id}`}</span>
-                                            <button onClick={() => handleDeleteAuthor(a.id)} disabled={staffSaving}
-                                                className="text-red-500 hover:text-red-700 text-xs ml-3" aria-label="Noņemt autoru">✕</button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="text-gray-400 text-xs mb-2">Nav pievienotu autoru</p>
-                            )}
-                            <div className="flex gap-2">
-                                <select className={`${inputClass} flex-1`} value={newAuthorUserId}
-                                    onChange={e => setNewAuthorUserId(e.target.value)}>
-                                    <option value="">— izvēlies lietotāju —</option>
-                                    {users.map(u => (
-                                        <option key={u.id} value={u.id}>{u.name} {u.surname}</option>
-                                    ))}
-                                </select>
-                                <button onClick={handleAddAuthor} disabled={staffSaving || !newAuthorUserId}
-                                    className="bg-vea-green text-white px-3 py-2 rounded text-sm hover:bg-vea-green-dark disabled:opacity-50">
-                                    Pievienot
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <p className="text-sm font-medium text-vea-neutral mb-1">Atbildīgie mācībspēki</p>
-                            {teachers.length > 0 ? (
-                                <ul className="space-y-1 mb-2">
-                                    {teachers.map(t => (
-                                        <li key={t.id} className="flex items-center justify-between text-sm bg-vea-green-light rounded px-3 py-1.5">
-                                            <span>{t.user ? `${t.user.name} ${t.user.surname}` : `ID: ${t.id}`}</span>
-                                            <button onClick={() => handleDeleteTeacher(t.id)} disabled={staffSaving}
-                                                className="text-red-500 hover:text-red-700 text-xs ml-3" aria-label="Noņemt mācībspēku">✕</button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="text-gray-400 text-xs mb-2">Nav pievienotu mācībspēku</p>
-                            )}
-                            <div className="flex gap-2">
-                                <select className={`${inputClass} flex-1`} value={newTeacherUserId}
-                                    onChange={e => setNewTeacherUserId(e.target.value)}>
-                                    <option value="">— izvēlies lietotāju —</option>
-                                    {users.map(u => (
-                                        <option key={u.id} value={u.id}>{u.name} {u.surname}</option>
-                                    ))}
-                                </select>
-                                <button onClick={handleAddTeacher} disabled={staffSaving || !newTeacherUserId}
-                                    className="bg-vea-green text-white px-3 py-2 rounded text-sm hover:bg-vea-green-dark disabled:opacity-50">
-                                    Pievienot
-                                </button>
-                            </div>
-                        </div>
-                    </section>
 
                     {/* Fiksētā saglabāšanas josla */}
                     <StickyBar>

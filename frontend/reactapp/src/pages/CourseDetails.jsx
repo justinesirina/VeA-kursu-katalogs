@@ -190,8 +190,6 @@ function CourseDetails() {
                     <div>
                         <SubLabel>Kurss</SubLabel>
                         <ul className="space-y-1.5">
-                            <InfoRow label="Autors" value={d.authorFullTitle} />
-                            <InfoRow label="Atbildīgais mācībspēks" value={d.teacherFullTitle} />
                             <InfoRow label="LAIS kods" value={d.courseCode} />
                             <InfoRow label="Pārbaudes forma" value={d.assessmentForm} />
                             <InfoRow label="Kredītpunkti / ECTS" value={d.credits} />
@@ -214,6 +212,53 @@ function CourseDetails() {
                         </ul>
                     </div>
                 </div>
+
+                {/* Autors un kursa mācībspēks — pilna platuma sub-sadaļa */}
+                {((d.authors && d.authors.length > 0) || (d.teachers && d.teachers.length > 0) || d.authorFullTitle || d.teacherFullTitle) && (
+                    <div className="border-t border-gray-100 pt-4 mb-4">
+                        <SubLabel>Autors un kursa mācībspēks</SubLabel>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-3">
+                            {/* Kreisā kolonna: Autori */}
+                            <div className="space-y-2">
+                                {(d.authors && d.authors.length > 0)
+                                    ? d.authors.map((a, i) => (
+                                        <div key={`a${i}`} className="flex items-baseline gap-2 text-sm">
+                                            <span className="text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">
+                                                {a.role || 'Autors'}
+                                            </span>
+                                            <span className="text-vea-text">{a.fullTitle}</span>
+                                        </div>
+                                    ))
+                                    : d.authorFullTitle && (
+                                        <div className="flex items-baseline gap-2 text-sm">
+                                            <span className="text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full shrink-0">Autors</span>
+                                            <span className="text-vea-text">{d.authorFullTitle}</span>
+                                        </div>
+                                    )
+                                }
+                            </div>
+                            {/* Labā kolonna: Mācībspēki */}
+                            <div className="space-y-2">
+                                {(d.teachers && d.teachers.length > 0)
+                                    ? d.teachers.map((t, i) => (
+                                        <div key={`t${i}`} className="flex items-baseline gap-2 text-sm">
+                                            <span className="text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">
+                                                {t.role || 'Mācībspēks'}
+                                            </span>
+                                            <span className="text-vea-text">{t.fullTitle}</span>
+                                        </div>
+                                    ))
+                                    : d.teacherFullTitle && (
+                                        <div className="flex items-baseline gap-2 text-sm">
+                                            <span className="text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">Atbildīgais mācībspēks</span>
+                                            <span className="text-vea-text">{d.teacherFullTitle}</span>
+                                        </div>
+                                    )
+                                }
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Stundu sadalījums — stat bloks */}
                 <div className="border-t border-gray-100 pt-4 mb-4">
