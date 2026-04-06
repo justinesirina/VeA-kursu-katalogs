@@ -15,7 +15,7 @@ const TABS = [
     { key: 'apraksts',   label: 'Apraksts' },
     { key: 'temas',      label: 'Tēmas' },
     { key: 'vertesana',  label: 'Vērtēšana' },
-    { key: 'skr',        label: 'SKR' },
+    { key: 'skr',        label: 'Kursa rezultāti' },
     { key: 'literatura', label: 'Literatūra' },
     { key: 'kalendars',  label: 'Kalendārs' },
 ];

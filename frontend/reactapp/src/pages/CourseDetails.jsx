@@ -277,14 +277,19 @@ function CourseDetails() {
                 />
                 {skrCategories.length > 0 ? (
                     <div className="space-y-4">
-                        {skrCategories.map(cat => (
+                        {skrCategories.map((cat, catIndex) => (
                             <div key={cat}>
                                 <p className="text-sm font-semibold text-vea-green mb-1">{cat}</p>
-                                <ol className="list-decimal list-inside space-y-1 text-sm text-vea-text">
+                                <ul className="space-y-1 text-sm text-vea-text">
                                     {skrByCategory[cat].map((r, i) => (
-                                        <li key={i}>{r.learningOutcome}</li>
+                                        <li key={i} className="flex gap-2">
+                                            <span className="text-gray-400 shrink-0 w-14 text-right">
+                                                SKR {catIndex + 1}.{i + 1}
+                                            </span>
+                                            <span>{r.learningOutcome}</span>
+                                        </li>
                                     ))}
-                                </ol>
+                                </ul>
                             </div>
                         ))}
                     </div>
