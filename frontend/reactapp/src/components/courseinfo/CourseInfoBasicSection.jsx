@@ -53,7 +53,7 @@ function CourseInfoBasicSection({ courseInfoId, data, lookups, onSaved, onCancel
         if (!fieldErrors[name]) return null;
         const isMismatch = fieldErrors.lectureHours && fieldErrors.practClassesHours && fieldErrors.academicHoursTotal;
         const text = (isMismatch && hoursMessage) ? hoursMessage : message;
-        return <p className="text-red-500 text-xs mt-1">{text}</p>;
+        return <p className="text-red-500 text-sm mt-1">{text}</p>;
     };
 
     const handleSave = async () => {

@@ -109,7 +109,7 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
         <div>
             <div className="flex items-start justify-between mb-4">
                 <div>
-                    <h2 className="text-xl font-semibold font-heading text-vea-neutral">{title}</h2>
+                    <h2 className="text-2xl font-semibold font-heading text-vea-neutral">{title}</h2>
                     {subtitle && (
                         <p className="text-sm text-gray-500 mt-1 max-w-2xl">{subtitle}</p>
                     )}
@@ -130,21 +130,21 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
                 <p className="text-green-600 bg-green-50 border border-green-200 rounded px-3 py-2 mb-3 text-sm">{successMsg}</p>
             )}
 
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <table className="w-full text-sm">
-                    <thead className="bg-vea-green-light">
+            <div className="vea-table-wrap">
+                <table className="vea-table">
+                    <thead>
                         <tr>
                             {fields.map(f => (
-                                <th key={f.key} className="p-2 text-left text-xs font-semibold text-vea-neutral uppercase tracking-wide border-b border-gray-200">{f.label}</th>
+                                <th key={f.key} scope="col">{f.label}</th>
                             ))}
-                            <th className="p-2 text-left text-xs font-semibold text-vea-neutral uppercase tracking-wide border-b border-gray-200 w-24">Darbības</th>
+                            <th scope="col" className="w-24">Darbības</th>
                         </tr>
                     </thead>
                     <tbody>
                         {editingId === 'new' && (
-                            <tr className="bg-vea-green-light border-t border-gray-200">
+                            <tr className="bg-vea-orange-light">
                                 {fields.map(f => (
-                                    <td key={f.key} className="p-1.5">
+                                    <td key={f.key} className="vea-td-edit">
                                         {f.multiline ? (
                                             <textarea
                                                 className="w-full border border-gray-300 rounded px-2 py-1 text-sm resize-y focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none"
@@ -164,20 +164,20 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
                                         )}
                                     </td>
                                 ))}
-                                <td className="p-1.5">
+                                <td className="vea-td-edit">
                                     <div className="flex gap-1">
                                         <button
                                             onClick={handleSave}
                                             disabled={saving}
-                                            className="p-1 text-vea-green hover:bg-vea-green-light rounded"
-                                            title="Saglabāt"
+                                            aria-label="Saglabāt"
+                                            className="p-1.5 text-vea-green hover:bg-vea-green-light rounded"
                                         >
                                             <Check className="w-4 h-4" aria-hidden="true" />
                                         </button>
                                         <button
                                             onClick={cancelEdit}
-                                            className="p-1 text-gray-500 hover:bg-gray-100 rounded"
-                                            title="Atcelt"
+                                            aria-label="Atcelt"
+                                            className="p-1.5 text-gray-500 hover:bg-gray-100 rounded"
                                         >
                                             <X className="w-4 h-4" aria-hidden="true" />
                                         </button>
@@ -187,17 +187,17 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
                         )}
                         {items.length === 0 && editingId !== 'new' && (
                             <tr>
-                                <td colSpan={fields.length + 1} className="p-4 text-center text-gray-400">
+                                <td colSpan={fields.length + 1} className="vea-td text-center text-gray-400">
                                     Nav ierakstu
                                 </td>
                             </tr>
                         )}
                         {items.map(item => (
-                            <tr key={item.id} className={`border-t border-gray-100 even:bg-gray-50 ${editingId === item.id ? 'bg-vea-green-light' : ''}`}>
+                            <tr key={item.id} className={editingId === item.id ? 'bg-vea-orange-light' : ''}>
                                 {editingId === item.id ? (
                                     <>
                                         {fields.map(f => (
-                                            <td key={f.key} className="p-1.5">
+                                            <td key={f.key} className="vea-td-edit">
                                                 {f.multiline ? (
                                                     <textarea
                                                         className="w-full border border-gray-300 rounded px-2 py-1 text-sm resize-y focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none"
@@ -216,20 +216,20 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
                                                 )}
                                             </td>
                                         ))}
-                                        <td className="p-1.5">
+                                        <td className="vea-td-edit">
                                             <div className="flex gap-1">
                                                 <button
                                                     onClick={handleSave}
                                                     disabled={saving}
-                                                    className="p-1 text-vea-green hover:bg-vea-green-light rounded"
-                                                    title="Saglabāt"
+                                                    aria-label="Saglabāt"
+                                                    className="p-1.5 text-vea-green hover:bg-vea-green-light rounded"
                                                 >
                                                     <Check className="w-4 h-4" aria-hidden="true" />
                                                 </button>
                                                 <button
                                                     onClick={cancelEdit}
-                                                    className="p-1 text-gray-500 hover:bg-gray-100 rounded"
-                                                    title="Atcelt"
+                                                    aria-label="Atcelt"
+                                                    className="p-1.5 text-gray-500 hover:bg-gray-100 rounded"
                                                 >
                                                     <X className="w-4 h-4" aria-hidden="true" />
                                                 </button>
@@ -239,9 +239,9 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
                                 ) : (
                                     <>
                                         {fields.map(f => (
-                                            <td key={f.key} className="p-2 text-vea-text">{item[f.key] ?? '—'}</td>
+                                            <td key={f.key} className="vea-td">{item[f.key] ?? '—'}</td>
                                         ))}
-                                        <td className="p-2">
+                                        <td className="vea-td">
                                             {confirmDeleteId === item.id ? (
                                                 <div className="flex items-center gap-1 text-xs">
                                                     <span className="text-red-600">Dzēst?</span>
@@ -263,7 +263,8 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
                                                     <button
                                                         onClick={() => startEdit(item)}
                                                         disabled={editingId !== null}
-                                                        className="p-1 text-vea-green hover:bg-vea-green-light rounded disabled:opacity-40"
+                                                        aria-label={`Rediģēt: ${item[fields[0].key] ?? ''}`}
+                                                        className="p-2.5 text-vea-green hover:bg-vea-green-light rounded disabled:opacity-40"
                                                         title="Rediģēt"
                                                     >
                                                         <Edit2 className="w-4 h-4" aria-hidden="true" />
@@ -271,7 +272,8 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
                                                     <button
                                                         onClick={() => setConfirmDeleteId(item.id)}
                                                         disabled={editingId !== null}
-                                                        className="p-1 text-red-500 hover:bg-red-50 rounded disabled:opacity-40"
+                                                        aria-label={`Dzēst: ${item[fields[0].key] ?? ''}`}
+                                                        className="p-2.5 text-red-500 hover:bg-red-50 rounded disabled:opacity-40"
                                                         title="Dzēst"
                                                     >
                                                         <Trash2 className="w-4 h-4" aria-hidden="true" />

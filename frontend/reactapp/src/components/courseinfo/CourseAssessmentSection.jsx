@@ -142,21 +142,19 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
         }
     };
 
-    const thClass = "border-b border-gray-200 px-2 py-2 text-xs font-semibold text-vea-neutral uppercase tracking-wide text-left";
-
     return (
         <div className="space-y-6 pb-20">
 
             {/* Vērtēšanas sadalījums */}
             <div>
-                <h3 className="font-medium font-heading text-vea-neutral mb-2">Vērtēšanas sadalījums</h3>
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <table className="w-full text-sm">
-                        <thead className="bg-vea-green-light">
+                <h3 className="text-xl font-semibold font-heading text-vea-neutral mb-2">Vērtēšanas sadalījums</h3>
+                <div className="vea-table-wrap">
+                    <table className="vea-table">
+                        <thead>
                         <tr>
-                            <th scope="col" className={thClass}>Komponente</th>
-                            <th scope="col" className={`${thClass} w-24 text-center`}>%</th>
-                            <th scope="col" aria-label="Darbības" className="border-b border-gray-200 px-2 py-2 w-10"></th>
+                            <th scope="col">Komponente</th>
+                            <th scope="col" className="w-24 text-center">%</th>
+                            <th scope="col" aria-label="Darbības" className="w-10"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -174,7 +172,7 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
                                                 ))}
                                             </select>
                                             {missingComponentIdx.has(idx) && (
-                                                <p className="text-red-500 text-xs mt-0.5">Komponente ir obligāta</p>
+                                                <p className="text-red-500 text-sm mt-0.5">Komponente ir obligāta</p>
                                             )}
                                         </>
                                     ) : (
@@ -209,14 +207,14 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
 
             {/* Patstāvīgā darba aktivitātes */}
             <div>
-                <h3 className="font-medium font-heading text-vea-neutral mb-2">Patstāvīgā darba sadalījums</h3>
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <table className="w-full text-sm">
-                        <thead className="bg-vea-green-light">
+                <h3 className="text-xl font-semibold font-heading text-vea-neutral mb-2">Patstāvīgā darba sadalījums</h3>
+                <div className="vea-table-wrap">
+                    <table className="vea-table">
+                        <thead>
                         <tr>
-                            <th scope="col" className={thClass}>Aktivitāte</th>
-                            <th scope="col" className={`${thClass} w-24 text-center`}>%</th>
-                            <th scope="col" aria-label="Darbības" className="border-b border-gray-200 px-2 py-2 w-10"></th>
+                            <th scope="col">Aktivitāte</th>
+                            <th scope="col" className="w-24 text-center">%</th>
+                            <th scope="col" aria-label="Darbības" className="w-10"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -234,7 +232,7 @@ function CourseAssessmentSection({ courseInfoId, data, lookups, onSaved, onCance
                                                 ))}
                                             </select>
                                             {missingActivityIdx.has(idx) && (
-                                                <p className="text-red-500 text-xs mt-0.5">Aktivitāte ir obligāta</p>
+                                                <p className="text-red-500 text-sm mt-0.5">Aktivitāte ir obligāta</p>
                                             )}
                                         </>
                                     ) : (

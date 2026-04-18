@@ -31,6 +31,10 @@ public class CalendarSession {
     @Column(nullable = false)
     private int academicHours;
 
+    // Secības numurs nodarbībai vienas tēmas ietvaros (1., 2., 3. utt.)
+    @Column(nullable = false, columnDefinition = "INTEGER NOT NULL DEFAULT 0")
+    private int sequenceNumber;
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

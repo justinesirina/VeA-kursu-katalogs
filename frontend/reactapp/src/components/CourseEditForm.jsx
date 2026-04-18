@@ -310,15 +310,15 @@ function CourseEditForm() {
     const labelClass = "block text-sm font-medium text-vea-neutral mb-1";
     // fieldErrors satur kļūdas ziņojumu kā tekstu
     const FieldError = ({ field }) =>
-        fieldErrors[field] ? <p className="text-red-500 text-xs mt-0.5">{fieldErrors[field]}</p> : null;
+        fieldErrors[field] ? <p className="text-red-500 text-sm mt-0.5">{fieldErrors[field]}</p> : null;
 
     return (
-        <div className="p-6 max-w-5xl mx-auto space-y-6">
+        <div className="p-6 max-w-6xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold font-heading text-vea-neutral">Kursa rediģēšana</h1>
+                <h1 className="text-4xl md:text-[2.5rem] font-bold font-heading text-vea-neutral">Kursa rediģēšana</h1>
                 <button
                     onClick={() => navigate(`/courses/${id}`)}
-                    className="text-vea-green hover:underline text-sm"
+                    className="text-vea-green hover:underline text-base"
                 >
                     ← Atpakaļ uz kursu
                 </button>
@@ -345,7 +345,7 @@ function CourseEditForm() {
             {activeTab === 0 && courseData && (
                 <div className="space-y-6 pb-20">
                     <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-3">
-                        <h2 className="text-lg font-semibold font-heading text-vea-neutral">Pamata informācija</h2>
+                        <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Pamata informācija</h2>
 
                         <div>
                             <label className={labelClass}>Nosaukums latviski <span className="text-red-500">*</span></label>
@@ -403,7 +403,7 @@ function CourseEditForm() {
 
                     {/* Autors un kursa mācībspēks */}
                     <section className="bg-white rounded-lg p-5 border border-gray-200">
-                        <h2 className="text-lg font-semibold font-heading text-vea-neutral mb-4">Autors un kursa mācībspēks</h2>
+                        <h2 className="text-2xl font-semibold font-heading text-vea-neutral mb-4">Autors un kursa mācībspēks</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                             {/* Autors */}
@@ -426,7 +426,7 @@ function CourseEditForm() {
                                         ))}
                                     </ul>
                                 ) : (
-                                    <p className="text-gray-400 text-xs italic">Nav pievienotu autoru</p>
+                                    <p className="text-gray-500 text-sm italic">Nav pievienotu autoru</p>
                                 )}
                                 <div className="flex gap-2 pt-1">
                                     {AUTHOR_ROLES.map(r => (
@@ -487,7 +487,7 @@ function CourseEditForm() {
                                                 ))}
                                             </ul>
                                         ) : (
-                                            <p className="text-gray-400 text-xs italic">Nav pievienotu mācībspēku</p>
+                                            <p className="text-gray-500 text-sm italic">Nav pievienotu mācībspēku</p>
                                         )}
                                         <div className="flex gap-2 pt-1">
                                             {TEACHER_ROLES.map(r => {
@@ -539,7 +539,7 @@ function CourseEditForm() {
 
                     {versionData && (
                         <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-3">
-                            <h2 className="text-lg font-semibold font-heading text-vea-neutral">Versijas informācija</h2>
+                            <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Versijas informācija</h2>
 
                             <div>
                                 <label className={labelClass}>Akadēmiskais gads <span className="text-red-500">*</span></label>
@@ -618,7 +618,7 @@ function CourseEditForm() {
 
             {/* Tabs 1–5 — CourseInfo sections */}
             {activeTab > 0 && !courseInfoId && (
-                <div className="p-4 bg-yellow-50 border border-yellow-300 rounded text-yellow-800 text-sm">
+                <div className="p-4 bg-vea-orange-light border border-vea-orange rounded text-vea-orange text-sm">
                     Kursa satura informācija vēl nav izveidota. Vispirms saglabājiet pamatdatus.
                 </div>
             )}
@@ -647,7 +647,8 @@ function CourseEditForm() {
             {activeTab === 4 && courseInfoId && (
                 <div className="bg-white rounded-lg p-5 border border-gray-200">
                     <CourseCalendarSection courseInfoId={courseInfoId} data={courseDetails}
-                        lookups={lookups} onSaved={handleSectionSaved} />
+                        lookups={lookups} onSaved={handleSectionSaved}
+                        onSessionTypeAdded={(st) => setLookups(prev => ({ ...prev, sessionTypes: [...prev.sessionTypes, st] }))} />
                 </div>
             )}
 

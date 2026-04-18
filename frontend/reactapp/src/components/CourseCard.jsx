@@ -16,7 +16,7 @@ function CourseCard({ course }) {
     return (
         <div className="bg-white rounded-lg border border-gray-200 border-t-4 border-t-vea-green p-4 hover:shadow-md transition-shadow flex flex-col">
             <h3
-                className="text-base font-semibold font-heading mb-1 text-vea-green hover:underline cursor-pointer leading-snug"
+                className="text-xl font-semibold font-heading mb-1 text-vea-neutral hover:text-vea-green hover:underline cursor-pointer leading-snug"
                 onClick={() => navigate(`/courses/${course.id}`)}
             >
                 {course.titleLv}
@@ -24,7 +24,7 @@ function CourseCard({ course }) {
             <p className="text-sm text-gray-500 mb-0.5">Kods: {course.courseCode}</p>
             <p className="text-sm text-gray-500 mb-4">Kredītpunkti: {course.credits}</p>
             <button
-                className="mt-auto bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark text-sm"
+                className="mt-auto bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark text-base"
                 onClick={() => navigate(`/courses/${course.id}`)}
             >
                 Skatīt

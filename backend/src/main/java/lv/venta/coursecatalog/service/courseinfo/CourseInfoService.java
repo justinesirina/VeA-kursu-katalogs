@@ -323,15 +323,20 @@ public class CourseInfoService {
         // --- Studiju kursa kalendārais plāns ---
         List<CalendarPlanDTO> calendarPlanDtos = new ArrayList<>();
 
-        calendarTopicRepo.findByCourseInfo(info).forEach(topic -> {
+        calendarTopicRepo.findByCourseInfo(info).stream()
+                .sorted((a, b) -> Integer.compare(a.getSequenceNumber(), b.getSequenceNumber()))
+                .forEach(topic -> {
             List<SessionDTO> sessionDtos = new ArrayList<>();
 
-            calendarSessionRepo.findByTopic(topic).forEach(session -> {
+            calendarSessionRepo.findByTopic(topic).stream()
+                    .sorted((a, b) -> Integer.compare(a.getSequenceNumber(), b.getSequenceNumber()))
+                    .forEach(session -> {
                 SessionDTO s = new SessionDTO();
                 s.setSessionId(session.getId());
                 s.setSessionTypeId(session.getSessionType().getId());
                 s.setSessionType(session.getSessionType().getName());
                 s.setAcademicHours(session.getAcademicHours());
+                s.setSequenceNumber(session.getSequenceNumber());
                 sessionDtos.add(s);
             });
 
@@ -339,6 +344,7 @@ public class CourseInfoService {
             plan.setCalendarTopicId(topic.getId());
             plan.setTopicTitle(topic.getCourseContent().getTopicTitle());
             plan.setCourseContentId(topic.getCourseContent().getId());
+            plan.setSequenceNumber(topic.getSequenceNumber());
             plan.setSessions(sessionDtos);
             calendarPlanDtos.add(plan);
         });

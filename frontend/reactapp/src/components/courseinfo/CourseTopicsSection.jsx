@@ -164,7 +164,7 @@ function CourseTopicsSection({ courseInfoId, data, onSaved, onCancel }) {
                                         }`}
                                     />
                                     {emptyTitleIndices.has(idx) && (
-                                        <p className="text-red-500 text-xs mt-0.5">Nosaukums ir obligāts</p>
+                                        <p className="text-red-500 text-sm mt-0.5">Nosaukums ir obligāts</p>
                                     )}
                                 </div>
 

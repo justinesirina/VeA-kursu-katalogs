@@ -36,10 +36,19 @@ public class CalendarSessionService {
     @Transactional
     public CalendarSession create(CalendarSession session) {
         int topicId = session.getTopic().getId();
-        session.setTopic(topicRepo.getReferenceById(topicId));
+        CalendarTopic topic = topicRepo.getReferenceById(topicId);
+        session.setTopic(topic);
         int sessionTypeId = session.getSessionType().getId();
         session.setSessionType(sessionTypeRepo.findById(sessionTypeId)
                 .orElseThrow(() -> new RuntimeException("SessionType nav atrasts: " + sessionTypeId)));
+        // Ja klients nav norādījis sequenceNumber, liekam to kā nākamo pēc kārtas
+        if (session.getSequenceNumber() <= 0) {
+            int maxSeq = sessionRepo.findByTopic(topic).stream()
+                    .mapToInt(CalendarSession::getSequenceNumber)
+                    .max()
+                    .orElse(0);
+            session.setSequenceNumber(maxSeq + 1);
+        }
         return sessionRepo.save(session);
     }
 
@@ -49,6 +58,9 @@ public class CalendarSessionService {
         existing.setTopic(updated.getTopic());
         existing.setSessionType(updated.getSessionType());
         existing.setAcademicHours(updated.getAcademicHours());
+        if (updated.getSequenceNumber() > 0) {
+            existing.setSequenceNumber(updated.getSequenceNumber());
+        }
         existing.setUpdatedAt(updated.getUpdatedAt());
         return sessionRepo.save(existing);
     }

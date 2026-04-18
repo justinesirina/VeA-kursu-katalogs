@@ -127,7 +127,7 @@ function AdminPage() {
         <div className="flex min-h-[calc(100vh-3.5rem)] bg-vea-bg">
             <nav className="w-56 border-r border-gray-200 bg-white flex flex-col" aria-label="Administrācijas navigācija">
                 <div className="p-4 border-b border-gray-200">
-                    <h1 className="text-base font-bold font-heading text-vea-neutral">Administrācija</h1>
+                    <h1 className="text-lg font-bold font-heading text-vea-neutral">Administrācija</h1>
                 </div>
                 <div className="p-2 space-y-0.5 overflow-y-auto flex-1">
                     {SECTIONS.map(s => (

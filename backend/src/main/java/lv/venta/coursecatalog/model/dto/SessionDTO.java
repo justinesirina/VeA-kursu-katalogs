@@ -24,4 +24,7 @@ public class SessionDTO {
 
     // Akadēmisko stundu skaits
     private int academicHours;
+
+    // Secības numurs nodarbībai tēmas ietvaros (1., 2., 3. utt.)
+    private int sequenceNumber;
 }

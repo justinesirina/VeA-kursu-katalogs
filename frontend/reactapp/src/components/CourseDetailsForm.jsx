@@ -170,14 +170,14 @@ function CourseDetailsForm() {
 
     return (
         <div className="p-6 max-w-3xl mx-auto space-y-6">
-            <h1 className="text-2xl font-bold font-heading text-vea-neutral">Jauna kursa izveide</h1>
+            <h1 className="text-4xl md:text-[2.5rem] font-bold font-heading text-vea-neutral">Jauna kursa izveide</h1>
 
             <StepIndicator currentStep={step} steps={['Kursa dati', 'Versijas dati', 'Gatavs']} />
 
             {/* SOLIS 1 — Kursa pamata informācija */}
             {step === 1 && (
                 <section className="space-y-3 bg-white rounded-lg p-5 border border-gray-200">
-                    <h2 className="text-lg font-semibold font-heading text-vea-neutral">Kursa pamata informācija</h2>
+                    <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Kursa pamata informācija</h2>
 
                     <div>
                         <label className={labelClass} htmlFor="titleLv">Nosaukums latviski <span className="text-red-500">*</span></label>
@@ -263,7 +263,7 @@ function CourseDetailsForm() {
             {/* SOLIS 2 — Versijas informācija */}
             {step === 2 && (
                 <section className="space-y-3 bg-white rounded-lg p-5 border border-gray-200">
-                    <h2 className="text-lg font-semibold font-heading text-vea-neutral">Versijas informācija</h2>
+                    <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Versijas informācija</h2>
                     <p className="text-sm text-gray-500">Kurss: <strong>{createdCourseTitle}</strong></p>
 
                     <div>
@@ -389,9 +389,9 @@ function CourseDetailsForm() {
             {/* SOLIS 3 — Apstiprinājums */}
             {step === 3 && (
                 <section className="bg-vea-green-light border border-vea-green rounded-lg p-6 space-y-3">
-                    <p className="text-2xl text-vea-green">✓</p>
-                    <p className="text-xl font-semibold font-heading text-vea-green">Kurss veiksmīgi izveidots!</p>
-                    <div className="text-sm text-vea-text space-y-1">
+                    <p className="text-3xl text-vea-green">✓</p>
+                    <p className="text-2xl font-semibold font-heading text-vea-green">Kurss veiksmīgi izveidots!</p>
+                    <div className="text-base text-vea-text space-y-1">
                         <p><strong>Nosaukums:</strong> {createdCourseTitle}</p>
                         {createdVersionInfo && (
                             <>

@@ -116,7 +116,7 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
     return (
         <div className="space-y-5 pb-20">
             <div>
-                <h2 className="text-base font-semibold text-vea-neutral mb-1">
+                <h2 className="text-2xl font-semibold font-heading text-vea-neutral mb-1">
                     Studiju kursa sasniedzamie rezultāti
                 </h2>
                 <p className="text-sm text-gray-500 leading-snug">
@@ -141,7 +141,7 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
                                     <p className="text-sm text-gray-500 mt-0.5">{meta.description}</p>
                                 )}
                                 {meta.hint && (
-                                    <p className="text-xs text-gray-400 mt-0.5 italic">{meta.hint}</p>
+                                    <p className="text-sm text-gray-500 mt-0.5 italic">{meta.hint}</p>
                                 )}
                             </div>
 
@@ -160,7 +160,7 @@ function CourseSKRSection({ courseId, data, lookups, onSaved, onCancel }) {
                                                 placeholder="Students prot / spēj / izprot..."
                                             />
                                             {rowErrors[idx]?.learningOutcome && (
-                                                <p className="text-red-500 text-xs mt-0.5">Rezultāta teksts ir obligāts</p>
+                                                <p className="text-red-500 text-sm mt-0.5">Rezultāta teksts ir obligāts</p>
                                             )}
                                         </div>
                                         <button onClick={() => removeRow(idx)}

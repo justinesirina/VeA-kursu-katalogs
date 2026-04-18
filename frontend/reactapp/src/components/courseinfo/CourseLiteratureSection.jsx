@@ -108,7 +108,6 @@ function CourseLiteratureSection({ courseInfoId, data, lookups, onSaved, onCance
     const sortedTypes = [...(lookups.literatureTypes || [])]
         .sort((a, b) => TYPE_ORDER.indexOf(a.name) - TYPE_ORDER.indexOf(b.name));
 
-    const thClass = "border-b border-gray-200 px-2 py-2 text-xs font-semibold text-vea-neutral uppercase tracking-wide text-left";
 
     return (
         <div className="space-y-4 pb-20">
@@ -119,18 +118,18 @@ function CourseLiteratureSection({ courseInfoId, data, lookups, onSaved, onCance
 
                 return (
                     <div key={type.id} className="space-y-2">
-                        <h3 className="text-base font-semibold font-heading text-vea-neutral">{type.name}</h3>
+                        <h3 className="text-xl font-semibold font-heading text-vea-neutral">{type.name}</h3>
 
-                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                            <table className="w-full text-sm">
-                                <thead className="bg-vea-green-light">
+                        <div className="vea-table-wrap">
+                            <table className="vea-table">
+                                <thead>
                                 <tr>
-                                    <th scope="col" className={thClass}>
+                                    <th scope="col">
                                         Nosaukums <span className="text-red-500">*</span>
                                     </th>
-                                    <th scope="col" className={`${thClass} w-44`}>URL</th>
-                                    <th scope="col" className={`${thClass} w-20`}>Valoda</th>
-                                    <th scope="col" aria-label="Darbības" className="border-b border-gray-200 px-2 py-2 w-10"></th>
+                                    <th scope="col" className="w-44">URL</th>
+                                    <th scope="col" className="w-20">Valoda</th>
+                                    <th scope="col" aria-label="Darbības" className="w-10"></th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -145,7 +144,7 @@ function CourseLiteratureSection({ courseInfoId, data, lookups, onSaved, onCance
                                                 placeholder="Autors, nosaukums, gads..."
                                             />
                                             {rowErrors[globalIdx]?.citation && (
-                                                <p className="text-red-500 text-xs mt-0.5">Nosaukums ir obligāts</p>
+                                                <p className="text-red-500 text-sm mt-0.5">Nosaukums ir obligāts</p>
                                             )}
                                         </td>
                                         <td className="px-2 py-1 align-top">
@@ -157,7 +156,7 @@ function CourseLiteratureSection({ courseInfoId, data, lookups, onSaved, onCance
                                                 placeholder="https://..."
                                             />
                                             {rowErrors[globalIdx]?.url && (
-                                                <p className="text-red-500 text-xs mt-0.5">Jāsākas ar http://</p>
+                                                <p className="text-red-500 text-sm mt-0.5">Jāsākas ar http://</p>
                                             )}
                                         </td>
                                         <td className="px-2 py-1 align-top">

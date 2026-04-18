@@ -48,10 +48,10 @@ function AllCourses() {
     return (
         <div className="p-6 max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-4">
-                <h1 className="text-3xl font-bold font-heading text-vea-neutral">Visi studiju kursi</h1>
+                <h1 className="text-4xl md:text-[2.5rem] font-bold font-heading text-vea-neutral">Visi studiju kursi</h1>
                 <button
                     onClick={() => navigate('/courses/new')}
-                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark text-sm"
+                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark text-base"
                 >
                     + Pievienot kursu
                 </button>
@@ -61,7 +61,7 @@ function AllCourses() {
                 <input
                     type="text"
                     placeholder="Meklēt pēc nosaukuma vai koda..."
-                    className="flex-1 md:max-w-sm p-2 border border-gray-300 rounded focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none"
+                    className="flex-1 md:max-w-sm p-2 border border-gray-300 rounded focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none text-base"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
                     aria-label="Meklēt kursus"
@@ -73,7 +73,7 @@ function AllCourses() {
             </div>
 
             {filteredCourses.length === 0 ? (
-                <p className="text-gray-500">Nav neviena kursa, kas atbilst meklēšanai.</p>
+                <p className="text-gray-500 text-base">Nav neviena kursa, kas atbilst meklēšanai.</p>
             ) : view === 'cards' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredCourses.map(course => (
@@ -81,20 +81,20 @@ function AllCourses() {
                     ))}
                 </div>
             ) : (
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-100">
+                <div className="vea-table-wrap">
+                    <table className="vea-table">
+                        <thead>
                         <tr>
-                            <th scope="col" className="p-3 text-left text-xs font-semibold text-vea-neutral uppercase tracking-wide border-b border-gray-200">Nosaukums</th>
-                            <th scope="col" className="p-3 text-left text-xs font-semibold text-vea-neutral uppercase tracking-wide border-b border-gray-200">Kods</th>
-                            <th scope="col" className="p-3 text-left text-xs font-semibold text-vea-neutral uppercase tracking-wide border-b border-gray-200">KP</th>
-                            <th scope="col" aria-label="Darbības" className="p-3 border-b border-gray-200"></th>
+                            <th scope="col">Nosaukums</th>
+                            <th scope="col">Kods</th>
+                            <th scope="col">KP</th>
+                            <th scope="col" aria-label="Darbības"></th>
                         </tr>
                         </thead>
                         <tbody>
                         {filteredCourses.map(course => (
-                            <tr key={course.id} className="border-b border-gray-100 hover:bg-vea-green-light transition-colors">
-                                <td className="p-3">
+                            <tr key={course.id}>
+                                <td className="vea-td">
                                     <button
                                         onClick={() => navigate(`/courses/${course.id}`)}
                                         className="text-vea-green hover:underline text-left"
@@ -102,11 +102,11 @@ function AllCourses() {
                                         {course.titleLv}
                                     </button>
                                 </td>
-                                <td className="p-3 text-gray-600">{course.courseCode}</td>
-                                <td className="p-3 text-gray-600">{course.credits}</td>
-                                <td className="p-3">
+                                <td className="vea-td text-gray-600">{course.courseCode}</td>
+                                <td className="vea-td text-gray-600">{course.credits}</td>
+                                <td className="vea-td">
                                     <button
-                                        className="text-vea-green hover:underline text-sm"
+                                        className="text-vea-green hover:underline"
                                         onClick={() => navigate(`/courses/${course.id}`)}
                                     >
                                         Skatīt

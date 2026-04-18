@@ -24,6 +24,9 @@ public class CalendarPlanDTO {
     // CourseContent ID — saite uz tēmu no Tēmas sadaļas
     private int courseContentId;
 
+    // Secības numurs kalendārajā plānā (ļauj pasniedzējam mainīt tēmu secību)
+    private int sequenceNumber;
+
     // Nodarbības, kas saistītas ar šo tēmu (lekcijas, semināri u.c.)
     private List<SessionDTO> sessions;
 }

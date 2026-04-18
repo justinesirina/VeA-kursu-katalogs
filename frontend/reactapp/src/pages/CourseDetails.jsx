@@ -68,19 +68,38 @@ function CourseDetails() {
         .flatMap(p => p.sessions || [])
         .reduce((sum, s) => sum + s.academicHours, 0);
 
+    // --- Kalendārais plāns, sakārtots pēc tēmu un nodarbību secības numuriem ---
+    const sortedCalendarPlan = (() => {
+        const seqByContent = new Map(
+            (d.topics || []).map(t => [t.id, t.sequenceNumber || 0])
+        );
+        return [...(d.calendarPlan || [])]
+            .sort((a, b) => {
+                const sa = seqByContent.get(a.courseContentId) ?? 0;
+                const sb = seqByContent.get(b.courseContentId) ?? 0;
+                return sa - sb;
+            })
+            .map(plan => ({
+                ...plan,
+                sessions: [...(plan.sessions || [])].sort(
+                    (a, b) => (a.sequenceNumber || 0) - (b.sequenceNumber || 0)
+                ),
+            }));
+    })();
+
     // --- Palīgkomponents: sekcijas virsraksts ---
     const SectionTitle = ({ title, isEmpty }) => (
         <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-lg font-semibold font-heading text-vea-neutral">{title}</h2>
+            <h2 className="text-2xl font-semibold font-heading text-vea-neutral">{title}</h2>
             {isEmpty && (
-                <span title="Sadaļa nav aizpildīta" className="text-vea-orange text-base" aria-label="Sadaļa nav aizpildīta">⚠</span>
+                <span title="Sadaļa nav aizpildīta" className="text-vea-orange text-lg" aria-label="Sadaļa nav aizpildīta">⚠</span>
             )}
         </div>
     );
 
     // --- Palīgkomponents: info rinda (label: value) ---
     const InfoRow = ({ label, value }) => (
-        <li className="flex gap-1 text-sm">
+        <li className="flex gap-1 text-base">
             <span className="text-gray-500 shrink-0">{label}:</span>
             <span className="font-medium text-vea-text">
                 {value || <span className="text-gray-400 font-normal">Nav norādīts</span>}
@@ -91,40 +110,40 @@ function CourseDetails() {
     // --- Palīgkomponents: stundu stat bloks ---
     const HourStat = ({ label, value }) => (
         <div className="flex flex-col items-center text-center px-2 py-3 bg-vea-green-light rounded border border-gray-200">
-            <span className="text-xs text-gray-500 mb-1 leading-tight">{label}</span>
-            <span className="text-2xl font-bold text-vea-neutral">{value ?? 0}</span>
-            <span className="text-xs text-gray-400">ak. st.</span>
+            <span className="text-sm text-gray-500 mb-1 leading-tight">{label}</span>
+            <span className="text-3xl font-bold text-vea-neutral">{value ?? 0}</span>
+            <span className="text-sm text-gray-400">ak. st.</span>
         </div>
     );
 
     // --- Palīgkomponents: sadaļas apakšvirsraksts ---
     const SubLabel = ({ children }) => (
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 border-l-2 border-vea-green pl-2 mb-2">
+        <p className="text-sm font-semibold uppercase tracking-wide text-gray-500 border-l-2 border-vea-green pl-2 mb-2">
             {children}
         </p>
     );
 
     return (
-        <div className="p-6 space-y-5 max-w-5xl mx-auto text-vea-text print:text-black">
+        <div className="p-6 space-y-6 max-w-6xl mx-auto text-vea-text print:text-black">
 
-            <button onClick={() => navigate('/')} className="text-vea-green hover:underline text-sm mb-1">
+            <button onClick={() => navigate('/')} className="text-vea-green hover:underline text-base mb-1">
                 ← Atpakaļ uz kursiem
             </button>
 
             {/* ── 1. DARBĪBAS POGAS ── */}
             <div className="flex gap-2 flex-wrap">
-                <button className="bg-vea-green text-white px-4 py-1.5 rounded text-sm hover:bg-vea-green-dark">
+                <button className="bg-vea-green text-white px-4 py-2 rounded text-base hover:bg-vea-green-dark">
                     PDF
                 </button>
                 <button
                     onClick={() => navigate(`/courses/${id}/edit`)}
-                    className="bg-vea-orange text-white px-4 py-1.5 rounded text-sm hover:opacity-90"
+                    className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90"
                 >
                     Rediģēt
                 </button>
                 <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="bg-red-600 text-white px-4 py-1.5 rounded text-sm hover:bg-red-700 ml-auto"
+                    className="bg-red-600 text-white px-4 py-2 rounded text-base hover:bg-red-700 ml-auto"
                 >
                     Dzēst
                 </button>
@@ -134,7 +153,7 @@ function CourseDetails() {
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                 {/* Apstiprināšanas bloks — virs nosaukuma mobilā, labajā pusē desktop */}
                 {(d.versionStatus || d.approvalDate || d.decisionNumber || d.decisionReference) && (
-                    <div className="text-left md:text-right text-sm md:shrink-0 md:order-2">
+                    <div className="text-left md:text-right text-base md:shrink-0 md:order-2">
                         {d.versionStatus && (
                             <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold mb-1
                                 ${d.versionStatus.toLowerCase().includes('apstip')
@@ -143,7 +162,7 @@ function CourseDetails() {
                                 {d.versionStatus}
                             </span>
                         )}
-                        <div className="text-gray-500 space-y-0.5 text-xs">
+                        <div className="text-gray-500 space-y-0.5 text-sm">
                             {d.approvalDate && <p>Apstiprināts: {d.approvalDate}</p>}
                             {d.decisionNumber && <p>Lēmums Nr.: {d.decisionNumber}</p>}
                             {d.decisionReference && <p>{d.decisionReference}</p>}
@@ -152,9 +171,9 @@ function CourseDetails() {
                 )}
                 {/* Nosaukums */}
                 <div className="flex-1 min-w-0 md:order-1">
-                    <h1 className="text-3xl font-bold font-heading text-vea-neutral leading-tight">{d.titleLv}</h1>
+                    <h1 className="text-4xl md:text-[2.5rem] font-bold font-heading text-vea-neutral leading-tight">{d.titleLv}</h1>
                     {d.titleEn && (
-                        <p className="text-base text-gray-500 italic mt-0.5">{d.titleEn}</p>
+                        <p className="text-xl text-gray-500 italic mt-1">{d.titleEn}</p>
                     )}
                 </div>
             </div>
@@ -162,28 +181,28 @@ function CourseDetails() {
             {/* Dzēšanas apstiprinājums */}
             {showDeleteConfirm && (
                 <div className="bg-red-50 border border-red-300 rounded-lg p-4 flex flex-wrap items-center gap-4">
-                    <p className="text-red-700 font-medium flex-1">
+                    <p className="text-red-700 font-medium flex-1 text-base">
                         Vai tiešām vēlies dzēst šo kursu? Šo darbību nevar atsaukt.
                     </p>
                     <button
                         onClick={handleDelete} disabled={deleting}
-                        className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50 text-sm"
+                        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 text-base"
                     >
                         {deleting ? 'Dzēš...' : 'Jā, dzēst'}
                     </button>
                     <button
                         onClick={() => setShowDeleteConfirm(false)}
-                        className="border border-gray-300 px-3 py-1 rounded hover:bg-gray-100 text-sm"
+                        className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-base"
                     >
                         Atcelt
                     </button>
-                    {deleteError && <p className="w-full text-red-600 text-sm">{deleteError}</p>}
+                    {deleteError && <p className="w-full text-red-600 text-base">{deleteError}</p>}
                 </div>
             )}
 
             {/* ── 3. PAMATA INFORMĀCIJA ── */}
             <section className="bg-white rounded-lg p-5 border border-gray-200">
-                <h2 className="text-lg font-semibold font-heading text-vea-neutral mb-4">Pamata informācija</h2>
+                <h2 className="text-2xl font-semibold font-heading text-vea-neutral mb-4">Pamata informācija</h2>
 
                 {/* Divas kolonnas: Kurss | Pasniegšanas konteksts */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-1 mb-4">
@@ -222,7 +241,7 @@ function CourseDetails() {
                             <div className="space-y-2">
                                 {(d.authors && d.authors.length > 0)
                                     ? d.authors.map((a, i) => (
-                                        <div key={`a${i}`} className="flex items-baseline gap-2 text-sm">
+                                        <div key={`a${i}`} className="flex items-baseline gap-2 text-base">
                                             <span className="text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">
                                                 {a.role || 'Autors'}
                                             </span>
@@ -230,7 +249,7 @@ function CourseDetails() {
                                         </div>
                                     ))
                                     : d.authorFullTitle && (
-                                        <div className="flex items-baseline gap-2 text-sm">
+                                        <div className="flex items-baseline gap-2 text-base">
                                             <span className="text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full shrink-0">Autors</span>
                                             <span className="text-vea-text">{d.authorFullTitle}</span>
                                         </div>
@@ -241,7 +260,7 @@ function CourseDetails() {
                             <div className="space-y-2">
                                 {(d.teachers && d.teachers.length > 0)
                                     ? d.teachers.map((t, i) => (
-                                        <div key={`t${i}`} className="flex items-baseline gap-2 text-sm">
+                                        <div key={`t${i}`} className="flex items-baseline gap-2 text-base">
                                             <span className="text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">
                                                 {t.role || 'Mācībspēks'}
                                             </span>
@@ -249,7 +268,7 @@ function CourseDetails() {
                                         </div>
                                     ))
                                     : d.teacherFullTitle && (
-                                        <div className="flex items-baseline gap-2 text-sm">
+                                        <div className="flex items-baseline gap-2 text-base">
                                             <span className="text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">Atbildīgais mācībspēks</span>
                                             <span className="text-vea-text">{d.teacherFullTitle}</span>
                                         </div>
@@ -272,7 +291,7 @@ function CourseDetails() {
                 </div>
 
                 {/* Priekšnosacījumi */}
-                <div className="border-t border-gray-100 pt-4 text-sm">
+                <div className="border-t border-gray-100 pt-4 text-base">
                     <SubLabel>Nepieciešamās zināšanas kursa uzsākšanai</SubLabel>
                     {d.prerequisitesDescription || (d.prerequisites && d.prerequisites.length > 0) ? (
                         <>
@@ -280,7 +299,7 @@ function CourseDetails() {
                                 <p className="text-vea-text mb-1">{d.prerequisitesDescription}</p>
                             )}
                             {d.prerequisites && d.prerequisites.length > 0 && (
-                                <ul className="list-disc list-inside space-y-0.5 text-gray-700">
+                                <ul className="list-disc list-inside space-y-0.5 text-vea-text">
                                     {d.prerequisites.map((p, i) => (
                                         <li key={i}>
                                             <span className="font-medium">{p.title}</span>
@@ -300,8 +319,8 @@ function CourseDetails() {
             <section className="bg-white rounded-lg p-5 border border-gray-200">
                 <SectionTitle title="Studiju kursa anotācija" isEmpty={!d.annotation} />
                 {d.annotation
-                    ? <p className="text-sm text-vea-text leading-relaxed">{d.annotation}</p>
-                    : <p className="text-gray-400 text-sm">Nav aizpildīta</p>
+                    ? <p className="text-base text-vea-text leading-relaxed">{d.annotation}</p>
+                    : <p className="text-gray-400 text-base">Nav aizpildīta</p>
                 }
             </section>
 
@@ -309,8 +328,8 @@ function CourseDetails() {
             <section className="bg-white rounded-lg p-5 border border-gray-200">
                 <SectionTitle title="Studiju kursa mērķis" isEmpty={!d.goal} />
                 {d.goal
-                    ? <p className="text-sm text-vea-text leading-relaxed">{d.goal}</p>
-                    : <p className="text-gray-400 text-sm">Nav aizpildīts</p>
+                    ? <p className="text-base text-vea-text leading-relaxed">{d.goal}</p>
+                    : <p className="text-gray-400 text-base">Nav aizpildīts</p>
                 }
             </section>
 
@@ -324,11 +343,11 @@ function CourseDetails() {
                     <div className="space-y-4">
                         {skrCategories.map((cat, catIndex) => (
                             <div key={cat}>
-                                <p className="text-sm font-semibold text-vea-green mb-1">{cat}</p>
-                                <ul className="space-y-1 text-sm text-vea-text">
+                                <h3 className="text-xl font-semibold font-heading text-vea-neutral mb-1">{cat}</h3>
+                                <ul className="space-y-1 text-base text-vea-text">
                                     {skrByCategory[cat].map((r, i) => (
                                         <li key={i} className="flex gap-2">
-                                            <span className="text-gray-400 shrink-0 w-14 text-right">
+                                            <span className="text-gray-500 shrink-0 w-14 text-right text-sm">
                                                 SKR {catIndex + 1}.{i + 1}
                                             </span>
                                             <span>{r.learningOutcome}</span>
@@ -339,7 +358,7 @@ function CourseDetails() {
                         ))}
                     </div>
                 ) : (
-                    <p className="text-gray-400 text-sm">Nav pievienotu studiju kursa rezultātu</p>
+                    <p className="text-gray-400 text-base">Nav pievienotu studiju kursa rezultātu</p>
                 )}
             </section>
 
@@ -350,7 +369,7 @@ function CourseDetails() {
                     isEmpty={!d.topics || d.topics.length === 0}
                 />
                 {d.topics && d.topics.length > 0 ? (
-                    <ol className="space-y-4 text-sm">
+                    <ol className="space-y-4 text-base">
                         {d.topics.map((t, i) => (
                             <li key={i} className="flex gap-3">
                                 <span className="text-vea-green font-bold shrink-0 w-5">{i + 1}.</span>
@@ -358,7 +377,7 @@ function CourseDetails() {
                                     <span className="font-semibold text-vea-neutral">{t.title}</span>
                                     {t.description && (
                                         <div
-                                            className="mt-1.5 pl-3 border-l-2 border-vea-green-light text-gray-500 text-sm [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:my-1 [&_strong]:font-semibold [&_em]:italic [&_u]:underline [&_p]:my-0"
+                                            className="mt-1.5 pl-3 border-l-2 border-vea-green-light text-gray-600 text-base [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:my-1 [&_strong]:font-semibold [&_em]:italic [&_u]:underline [&_p]:my-0"
                                             dangerouslySetInnerHTML={{ __html: t.description }}
                                         />
                                     )}
@@ -367,7 +386,7 @@ function CourseDetails() {
                         ))}
                     </ol>
                 ) : (
-                    <p className="text-gray-400 text-sm">Nav pievienotu tēmu</p>
+                    <p className="text-gray-400 text-base">Nav pievienotu tēmu</p>
                 )}
             </section>
 
@@ -378,24 +397,26 @@ function CourseDetails() {
                     isEmpty={!d.selfStudyActivities || d.selfStudyActivities.length === 0}
                 />
                 {d.selfStudyActivities && d.selfStudyActivities.length > 0 ? (
-                    <table className="w-full border border-gray-200 text-sm rounded overflow-hidden">
-                        <thead className="bg-vea-green-light">
-                        <tr>
-                            <th scope="col" className="p-2 text-left border-b border-gray-200 text-xs font-semibold text-vea-neutral uppercase tracking-wide">Darbības veids</th>
-                            <th scope="col" className="p-2 text-center border-b border-gray-200 w-20 text-xs font-semibold text-vea-neutral uppercase tracking-wide">%</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {d.selfStudyActivities.map((s, i) => (
-                            <tr key={i} className="even:bg-gray-50">
-                                <td className="p-2 border-b border-gray-100">{s.activityName}</td>
-                                <td className="p-2 border-b border-gray-100 text-center">{s.percentage}</td>
+                    <div className="vea-table-wrap">
+                        <table className="vea-table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Darbības veids</th>
+                                <th scope="col" className="text-center w-20">%</th>
                             </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                            {d.selfStudyActivities.map((s, i) => (
+                                <tr key={i}>
+                                    <td className="vea-td">{s.activityName}</td>
+                                    <td className="vea-td text-center">{s.percentage}</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
                 ) : (
-                    <p className="text-gray-400 text-sm">Nav norādīts patstāvīgā darba sadalījums</p>
+                    <p className="text-gray-400 text-base">Nav norādīts patstāvīgā darba sadalījums</p>
                 )}
             </section>
 
@@ -409,41 +430,42 @@ function CourseDetails() {
 
                 {d.assessmentDistribution && d.assessmentDistribution.length > 0 ? (
                     <div className="mb-5">
-                        <p className="text-sm font-medium text-vea-neutral mb-2">
+                        <h3 className="text-xl font-semibold font-heading text-vea-neutral mb-2">
                             Vērtēšanas sadalījums (kopā 100%)
-                        </p>
-                        <table className="w-full border border-gray-200 text-sm">
-                            <thead className="bg-vea-green-light">
-                            <tr>
-                                <th scope="col" className="p-2 text-left border-b border-gray-200 text-xs font-semibold text-vea-neutral uppercase tracking-wide">Komponente</th>
-                                <th scope="col" className="p-2 text-center border-b border-gray-200 w-20 text-xs font-semibold text-vea-neutral uppercase tracking-wide">%</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {d.assessmentDistribution.map((a, i) => (
-                                <tr key={i} className="even:bg-gray-50">
-                                    <td className="p-2 border-b border-gray-100">{a.componentName}</td>
-                                    <td className="p-2 border-b border-gray-100 text-center">{a.percentage}</td>
+                        </h3>
+                        <div className="vea-table-wrap">
+                            <table className="vea-table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Komponente</th>
+                                    <th scope="col" className="text-center w-20">%</th>
                                 </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                {d.assessmentDistribution.map((a, i) => (
+                                    <tr key={i}>
+                                        <td className="vea-td">{a.componentName}</td>
+                                        <td className="vea-td text-center">{a.percentage}</td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 ) : (
-                    <p className="text-gray-400 text-sm mb-4">Nav norādīts vērtēšanas sadalījums</p>
+                    <p className="text-gray-400 text-base mb-4">Nav norādīts vērtēšanas sadalījums</p>
                 )}
 
                 {skrCategories.length > 0 && allComponents.length > 0 && (
                     <div>
-                        <p className="text-sm font-medium text-vea-neutral mb-2">SKR × Vērtēšanas kritēriji</p>
-                        <div className="overflow-x-auto">
-                            <table className="border-collapse text-sm w-full">
+                        <h3 className="text-xl font-semibold font-heading text-vea-neutral mb-2">SKR × Vērtēšanas kritēriji</h3>
+                        <div className="vea-table-wrap overflow-x-auto">
+                            <table className="vea-table border-collapse">
                                 <thead>
-                                <tr className="bg-vea-green-light">
-                                    <th scope="col" className="border border-gray-200 px-3 py-2 text-left text-xs font-semibold text-vea-neutral">SKR</th>
+                                <tr>
+                                    <th scope="col">SKR</th>
                                     {allComponents.map(c => (
-                                        <th key={c} scope="col"
-                                            className="border border-gray-200 px-2 py-2 text-center font-normal text-xs whitespace-nowrap text-vea-neutral">
+                                        <th key={c} scope="col" className="text-center whitespace-nowrap">
                                             {c}
                                         </th>
                                     ))}
@@ -452,16 +474,15 @@ function CourseDetails() {
                                 <tbody>
                                 {skrCategories.map(cat =>
                                     skrByCategory[cat].map((r, i) => (
-                                        <tr key={r.courseResultId} className="even:bg-gray-50">
-                                            <td className="border border-gray-200 px-3 py-2 text-xs">
+                                        <tr key={r.courseResultId}>
+                                            <td className="vea-td border-r border-gray-100">
                                                 {i === 0 && (
                                                     <span className="font-semibold text-vea-green block mb-0.5">{cat}</span>
                                                 )}
                                                 {r.learningOutcome}
                                             </td>
                                             {allComponents.map(c => (
-                                                <td key={c}
-                                                    className="border border-gray-200 px-2 py-2 text-center text-vea-green">
+                                                <td key={c} className="vea-td text-center text-vea-green border-r border-gray-100 last:border-r-0">
                                                     {r.components && r.components.includes(c) ? '✓' : ''}
                                                 </td>
                                             ))}
@@ -477,39 +498,77 @@ function CourseDetails() {
 
             {/* ── 10. KALENDĀRAIS PLĀNS ── */}
             <section className="bg-white rounded-lg p-5 border border-gray-200">
-                <h2 className="text-lg font-semibold font-heading text-vea-neutral mb-3">Studiju kursa kalendārais plāns</h2>
-                {d.calendarPlan && d.calendarPlan.length > 0 ? (
-                    <table className="w-full border border-gray-200 text-sm">
-                        <thead className="bg-vea-green-light">
-                        <tr>
-                            <th className="p-2 text-left border-b border-gray-200 text-xs font-semibold text-vea-neutral uppercase tracking-wide">Tēma</th>
-                            <th className="p-2 border-b border-gray-200 text-xs font-semibold text-vea-neutral uppercase tracking-wide">Nodarbības veids</th>
-                            <th className="p-2 text-center border-b border-gray-200 w-24 text-xs font-semibold text-vea-neutral uppercase tracking-wide">Ak. st.</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {d.calendarPlan.map((plan, pi) =>
-                            (plan.sessions || []).map((session, si) => (
-                                <tr key={`${pi}-${si}`} className="even:bg-gray-50">
-                                    {si === 0 && (
-                                        <td className="p-2 border-b border-gray-100 font-medium align-top"
-                                            rowSpan={(plan.sessions || []).length}>
-                                            {plan.topicTitle}
-                                        </td>
-                                    )}
-                                    <td className="p-2 border-b border-gray-100">{session.sessionType}</td>
-                                    <td className="p-2 border-b border-gray-100 text-center">{session.academicHours}</td>
-                                </tr>
-                            ))
-                        )}
-                        <tr className="font-semibold bg-vea-green-light">
-                            <td colSpan={2} className="p-2 border-t border-gray-200">Kopā:</td>
-                            <td className="p-2 border-t border-gray-200 text-center">{calendarTotalHours}</td>
-                        </tr>
-                        </tbody>
-                    </table>
+                <h2 className="text-2xl font-semibold font-heading text-vea-neutral mb-3">Studiju kursa kalendārais plāns</h2>
+                {sortedCalendarPlan.length > 0 ? (
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                        {/* Virsraksta josla — redzama tikai no md augšā, imitē tabulas galveni */}
+                        <div className="hidden md:grid grid-cols-[3rem_minmax(12rem,1fr)_minmax(0,2fr)_5rem] bg-vea-green-light text-sm font-semibold text-vea-neutral uppercase tracking-wide">
+                            <div className="p-2 text-center border-b border-gray-200">Nr.</div>
+                            <div className="p-2 border-b border-gray-200">Tēma</div>
+                            <div className="p-2 border-b border-gray-200">Nodarbības</div>
+                            <div className="p-2 text-center border-b border-gray-200">Ak. st.</div>
+                        </div>
+
+                        <ul className="divide-y divide-gray-100">
+                            {sortedCalendarPlan.map((plan, pi) => {
+                                const topicHours = (plan.sessions || []).reduce((sum, s) => sum + s.academicHours, 0);
+                                return (
+                                    <li
+                                        key={plan.calendarTopicId ?? pi}
+                                        className="md:grid md:grid-cols-[3rem_minmax(12rem,1fr)_minmax(0,2fr)_5rem] even:bg-gray-50"
+                                    >
+                                        {/* Mobilajā skatā: galvenes rinda ar Nr., tēmu un stundām */}
+                                        <div className="flex items-baseline justify-between gap-2 p-3 md:hidden">
+                                            <div className="flex items-baseline gap-2 min-w-0">
+                                                <span className="text-gray-500 text-base shrink-0">{pi + 1}.</span>
+                                                <span className="font-medium text-vea-neutral text-base">{plan.topicTitle}</span>
+                                            </div>
+                                            <span className="text-base font-semibold shrink-0 whitespace-nowrap">
+                                                {topicHours} ak.st.
+                                            </span>
+                                        </div>
+
+                                        {/* Desktop šūnas */}
+                                        <div className="hidden md:block p-2 text-center text-gray-500 text-base align-top">{pi + 1}.</div>
+                                        <div className="hidden md:block p-2 font-medium text-base align-top">{plan.topicTitle}</div>
+
+                                        {/* Nodarbību pill-tagi — vienāds saturs abiem skatiem */}
+                                        <div className="px-3 pb-3 md:p-2">
+                                            {(plan.sessions || []).length > 0 ? (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {plan.sessions.map((session, si) => (
+                                                        <span
+                                                            key={session.sessionId ?? si}
+                                                            className="inline-flex items-center gap-1 bg-vea-green-light border border-vea-green/20 text-vea-neutral rounded-full px-2.5 py-0.5 text-sm whitespace-nowrap"
+                                                        >
+                                                            <span className="text-vea-neutral/60 font-medium">{si + 1}.</span>
+                                                            <span>{session.sessionType}</span>
+                                                            <span className="text-vea-green-dark font-semibold">{session.academicHours} ak.st.</span>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className="text-gray-400 text-sm italic">Nav nodarbību</span>
+                                            )}
+                                        </div>
+
+                                        {/* Desktop stundu šūna */}
+                                        <div className="hidden md:block p-2 text-center font-semibold text-base align-top">{topicHours}</div>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+
+                        {/* Kopsumma */}
+                        <div className="flex items-center justify-between bg-vea-green-light font-semibold text-vea-neutral border-t border-gray-200 px-3 py-2 md:grid md:grid-cols-[3rem_minmax(12rem,1fr)_minmax(0,2fr)_5rem] md:px-0 md:py-0">
+                            <span className="md:hidden text-base">Kopā:</span>
+                            <span className="md:hidden text-base">{calendarTotalHours} ak.st.</span>
+                            <div className="hidden md:block md:col-span-3 p-2 text-right text-base">Kopā:</div>
+                            <div className="hidden md:block p-2 text-center text-base">{calendarTotalHours}</div>
+                        </div>
+                    </div>
                 ) : (
-                    <p className="text-gray-400 text-sm italic">
+                    <p className="text-gray-400 text-base italic">
                         Kalendārais plāns vēl nav izveidots. Pievienot to var rediģēšanas skatā.
                     </p>
                 )}
@@ -530,13 +589,13 @@ function CourseDetails() {
                             })
                             .map((group, i) => (
                             <div key={i}>
-                                <p className="text-sm font-semibold text-vea-green mb-1">{group.type}</p>
-                                <ul className="list-disc list-inside space-y-1 text-sm text-vea-text">
+                                <h3 className="text-xl font-semibold font-heading text-vea-neutral mb-1">{group.type}</h3>
+                                <ul className="list-disc list-inside space-y-1 text-base text-vea-text">
                                     {(group.sources || []).map((src, j) => (
                                         <li key={j}>
                                             {src.citation}
                                             {src.language && (
-                                                <span className="text-gray-400 ml-1">({src.language.toUpperCase()})</span>
+                                                <span className="text-sm text-gray-400 ml-1">({src.language.toUpperCase()})</span>
                                             )}
                                             {src.url && (
                                                 <span>. Pieejams: <a href={src.url} target="_blank" rel="noreferrer"
@@ -549,12 +608,12 @@ function CourseDetails() {
                         ))}
                     </div>
                 ) : (
-                    <p className="text-gray-400 text-sm">Nav pievienotu literatūras avotu</p>
+                    <p className="text-gray-400 text-base">Nav pievienotu literatūras avotu</p>
                 )}
             </section>
 
             {d.authorFullTitle && (
-                <footer className="text-xs text-gray-400 text-right pb-4">
+                <footer className="text-sm text-gray-400 text-right pb-4">
                     Autors: {d.authorFullTitle}
                 </footer>
             )}

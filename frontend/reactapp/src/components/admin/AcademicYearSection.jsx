@@ -104,11 +104,11 @@ function AcademicYearSection() {
     return (
         <div>
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Akadēmiskie gadi</h2>
+                <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Akadēmiskie gadi</h2>
                 <button
                     onClick={startAdd}
                     disabled={editingId !== null}
-                    className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50 text-sm"
+                    className="flex items-center gap-1 bg-vea-green text-white px-3 py-1.5 rounded hover:bg-vea-green-dark disabled:opacity-50 text-sm"
                 >
                     <Plus className="w-4 h-4" /> Pievienot
                 </button>
@@ -117,20 +117,21 @@ function AcademicYearSection() {
             {error && <p className="text-red-600 bg-red-50 border border-red-200 rounded p-3 mb-3 text-sm">{error}</p>}
             {successMsg && <p className="text-green-600 bg-green-50 border border-green-200 rounded px-3 py-2 mb-3 text-sm">{successMsg}</p>}
 
-            <table className="w-full border border-gray-300 text-sm">
-                <thead className="bg-gray-100">
+            <div className="vea-table-wrap">
+            <table className="vea-table">
+                <thead>
                     <tr>
-                        <th className="p-2 text-left border-b border-gray-300">Nosaukums</th>
-                        <th className="p-2 text-left border-b border-gray-300">Sākuma datums</th>
-                        <th className="p-2 text-left border-b border-gray-300">Beigu datums</th>
-                        <th className="p-2 text-center border-b border-gray-300">Aktīvs</th>
-                        <th className="p-2 text-left border-b border-gray-300 w-24">Darbības</th>
+                        <th scope="col">Nosaukums</th>
+                        <th scope="col">Sākuma datums</th>
+                        <th scope="col">Beigu datums</th>
+                        <th scope="col" className="text-center">Aktīvs</th>
+                        <th scope="col" className="w-24">Darbības</th>
                     </tr>
                 </thead>
                 <tbody>
                     {editingId === 'new' && (
-                        <tr className="bg-blue-50 border-t border-gray-200">
-                            <td className="p-1.5">
+                        <tr className="bg-vea-orange-light">
+                            <td className="vea-td-edit">
                                 <input
                                     className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                                     value={draft.name}
@@ -139,75 +140,75 @@ function AcademicYearSection() {
                                     autoFocus
                                 />
                             </td>
-                            <td className="p-1.5">
+                            <td className="vea-td-edit">
                                 <input type="date" className="border border-gray-300 rounded px-2 py-1 text-sm"
                                     value={draft.startDate} onChange={e => setDraft(p => ({ ...p, startDate: e.target.value }))} />
                             </td>
-                            <td className="p-1.5">
+                            <td className="vea-td-edit">
                                 <input type="date" className="border border-gray-300 rounded px-2 py-1 text-sm"
                                     value={draft.endDate} onChange={e => setDraft(p => ({ ...p, endDate: e.target.value }))} />
                             </td>
-                            <td className="p-1.5 text-center">
+                            <td className="vea-td-edit text-center">
                                 <input type="checkbox" checked={draft.active} className="w-4 h-4"
                                     onChange={e => setDraft(p => ({ ...p, active: e.target.checked }))} />
                             </td>
-                            <td className="p-1.5">
+                            <td className="vea-td-edit">
                                 <div className="flex gap-1">
-                                    <button onClick={handleSave} disabled={saving} className="p-1 text-green-700 hover:bg-green-100 rounded" title="Saglabāt">
-                                        <Check className="w-4 h-4" />
+                                    <button onClick={handleSave} disabled={saving} aria-label="Saglabāt" className="p-1.5 text-green-700 hover:bg-green-100 rounded">
+                                        <Check className="w-4 h-4" aria-hidden="true" />
                                     </button>
-                                    <button onClick={cancelEdit} className="p-1 text-gray-500 hover:bg-gray-100 rounded" title="Atcelt">
-                                        <X className="w-4 h-4" />
+                                    <button onClick={cancelEdit} aria-label="Atcelt" className="p-1.5 text-gray-500 hover:bg-gray-100 rounded">
+                                        <X className="w-4 h-4" aria-hidden="true" />
                                     </button>
                                 </div>
                             </td>
                         </tr>
                     )}
                     {items.length === 0 && editingId !== 'new' && (
-                        <tr><td colSpan={5} className="p-4 text-center text-gray-400">Nav ierakstu</td></tr>
+                        <tr><td colSpan={5} className="vea-td text-center text-gray-400">Nav ierakstu</td></tr>
                     )}
                     {items.map(item => (
-                        <tr key={item.id} className={`border-t border-gray-200 even:bg-gray-50 ${editingId === item.id ? 'bg-blue-50' : ''}`}>
+                        <tr key={item.id} className={editingId === item.id ? 'bg-vea-orange-light' : ''}>
                             {editingId === item.id ? (
                                 <>
-                                    <td className="p-1.5">
+                                    <td className="vea-td-edit">
                                         <input className="w-full border border-gray-300 rounded px-2 py-1 text-sm" value={draft.name}
                                             onChange={e => setDraft(p => ({ ...p, name: e.target.value }))} />
                                     </td>
-                                    <td className="p-1.5">
+                                    <td className="vea-td-edit">
                                         <input type="date" className="border border-gray-300 rounded px-2 py-1 text-sm" value={draft.startDate}
                                             onChange={e => setDraft(p => ({ ...p, startDate: e.target.value }))} />
                                     </td>
-                                    <td className="p-1.5">
+                                    <td className="vea-td-edit">
                                         <input type="date" className="border border-gray-300 rounded px-2 py-1 text-sm" value={draft.endDate}
                                             onChange={e => setDraft(p => ({ ...p, endDate: e.target.value }))} />
                                     </td>
-                                    <td className="p-1.5 text-center">
+                                    <td className="vea-td-edit text-center">
                                         <input type="checkbox" checked={draft.active}
                                             onChange={e => setDraft(p => ({ ...p, active: e.target.checked }))} className="w-4 h-4" />
                                     </td>
-                                    <td className="p-1.5">
+                                    <td className="vea-td-edit">
                                         <div className="flex gap-1">
-                                            <button onClick={handleSave} disabled={saving} className="p-1 text-green-700 hover:bg-green-100 rounded">
-                                                <Check className="w-4 h-4" />
+                                            <button onClick={handleSave} disabled={saving} aria-label="Saglabāt" className="p-1.5 text-green-700 hover:bg-green-100 rounded">
+                                                <Check className="w-4 h-4" aria-hidden="true" />
                                             </button>
-                                            <button onClick={cancelEdit} className="p-1 text-gray-500 hover:bg-gray-100 rounded">
-                                                <X className="w-4 h-4" />
+                                            <button onClick={cancelEdit} aria-label="Atcelt" className="p-1.5 text-gray-500 hover:bg-gray-100 rounded">
+                                                <X className="w-4 h-4" aria-hidden="true" />
                                             </button>
                                         </div>
                                     </td>
                                 </>
                             ) : (
                                 <>
-                                    <td className="p-2">{item.name}</td>
-                                    <td className="p-2">{item.startDate ?? '—'}</td>
-                                    <td className="p-2">{item.endDate ?? '—'}</td>
-                                    <td className="p-2 text-center">
-                                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${item.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                    <td className="vea-td">{item.name}</td>
+                                    <td className="vea-td">{item.startDate ?? '—'}</td>
+                                    <td className="vea-td">{item.endDate ?? '—'}</td>
+                                    <td className="vea-td text-center">
+                                        <span className={`vea-badge ${item.active ? 'vea-badge-success' : 'vea-badge-neutral'}`}>
                                             {item.active ? 'Jā' : 'Nē'}
                                         </span>
                                     </td>
-                                    <td className="p-2">
+                                    <td className="vea-td">
                                         {confirmDeleteId === item.id ? (
                                             <div className="flex items-center gap-1 text-xs">
                                                 <span className="text-red-600">Dzēst?</span>
@@ -216,11 +217,11 @@ function AcademicYearSection() {
                                             </div>
                                         ) : (
                                             <div className="flex gap-1">
-                                                <button onClick={() => startEdit(item)} disabled={editingId !== null} className="p-1 text-blue-600 hover:bg-blue-50 rounded disabled:opacity-40">
-                                                    <Edit2 className="w-4 h-4" />
+                                                <button onClick={() => startEdit(item)} disabled={editingId !== null} aria-label="Rediģēt akadēmisko gadu" className="p-2.5 text-vea-green hover:bg-vea-green-light rounded disabled:opacity-40">
+                                                    <Edit2 className="w-4 h-4" aria-hidden="true" />
                                                 </button>
-                                                <button onClick={() => setConfirmDeleteId(item.id)} disabled={editingId !== null} className="p-1 text-red-500 hover:bg-red-50 rounded disabled:opacity-40">
-                                                    <Trash2 className="w-4 h-4" />
+                                                <button onClick={() => setConfirmDeleteId(item.id)} disabled={editingId !== null} aria-label="Dzēst akadēmisko gadu" className="p-2.5 text-red-500 hover:bg-red-50 rounded disabled:opacity-40">
+                                                    <Trash2 className="w-4 h-4" aria-hidden="true" />
                                                 </button>
                                             </div>
                                         )}
@@ -231,6 +232,7 @@ function AcademicYearSection() {
                     ))}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 }
