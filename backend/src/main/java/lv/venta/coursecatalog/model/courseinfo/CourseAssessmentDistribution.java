@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 import lv.venta.coursecatalog.model.user.User;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -36,6 +37,11 @@ public class CourseAssessmentDistribution {
     @Max(value = 100, message = "Procentuālā vērtība nevar pārsniegt 100%")
     @Column(nullable = false)
     private int percentage;
+
+    // Secība rādīšanai (0-based)
+    @Column(name = "display_order", nullable = false)
+    @ColumnDefault("0")
+    private int displayOrder = 0;
 
     // Izveides un atjaunošanas datumi
     @Column(nullable = false)

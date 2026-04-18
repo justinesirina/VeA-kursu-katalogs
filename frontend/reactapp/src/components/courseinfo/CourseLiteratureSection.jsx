@@ -120,7 +120,8 @@ function CourseLiteratureSection({ courseInfoId, data, lookups, onSaved, onCance
                     <div key={type.id} className="space-y-2">
                         <h3 className="text-xl font-semibold font-heading text-vea-neutral">{type.name}</h3>
 
-                        <div className="vea-table-wrap">
+                        {/* Desktop: tabulas skats */}
+                        <div className="hidden md:block vea-table-wrap">
                             <table className="vea-table">
                                 <thead>
                                 <tr>
@@ -181,6 +182,59 @@ function CourseLiteratureSection({ courseInfoId, data, lookups, onSaved, onCance
                                 ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Mobilā: katrs avots kā kartīte ar pilna platuma laukiem */}
+                        <div className="md:hidden space-y-3">
+                            {typeRows.map(({ globalIdx, ...row }) => (
+                                <div key={globalIdx} className="border border-gray-200 rounded-lg p-3 bg-white shadow-sm">
+                                    <label className="block text-xs font-medium text-vea-neutral mb-1">
+                                        Nosaukums <span className="text-red-500">*</span>
+                                    </label>
+                                    <textarea
+                                        value={row.citation}
+                                        rows={3}
+                                        onChange={e => updateRow(globalIdx, 'citation', e.target.value)}
+                                        className={cellClass(globalIdx, 'citation')}
+                                        placeholder="Autors, nosaukums, gads..."
+                                    />
+                                    {rowErrors[globalIdx]?.citation && (
+                                        <p className="text-red-500 text-sm mt-0.5">Nosaukums ir obligāts</p>
+                                    )}
+
+                                    <label className="block text-xs font-medium text-vea-neutral mb-1 mt-3">URL</label>
+                                    <input
+                                        type="text"
+                                        value={row.url}
+                                        onChange={e => updateRow(globalIdx, 'url', e.target.value)}
+                                        className={cellClass(globalIdx, 'url')}
+                                        placeholder="https://..."
+                                    />
+                                    {rowErrors[globalIdx]?.url && (
+                                        <p className="text-red-500 text-sm mt-0.5">Jāsākas ar http://</p>
+                                    )}
+
+                                    <div className="mt-3 flex items-end gap-3">
+                                        <div className="flex-1">
+                                            <label className="block text-xs font-medium text-vea-neutral mb-1">Valoda</label>
+                                            <select
+                                                value={row.language}
+                                                onChange={e => updateRow(globalIdx, 'language', e.target.value)}
+                                                className={cellOk}
+                                            >
+                                                <option value="">—</option>
+                                                <option value="lv">LV</option>
+                                                <option value="en">EN</option>
+                                            </select>
+                                        </div>
+                                        <button
+                                            onClick={() => removeRow(globalIdx)}
+                                            className="shrink-0 text-red-600 hover:bg-red-50 rounded px-3 py-2 text-sm border border-red-200"
+                                            aria-label="Dzēst avotu"
+                                        >✕ Dzēst</button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         <button

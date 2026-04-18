@@ -654,7 +654,7 @@ function CourseEditForm() {
 
             {activeTab === 5 && courseInfoId && (
                 <div className="bg-white rounded-lg p-5 border border-gray-200">
-                    <CourseAssessmentSection courseInfoId={courseInfoId} data={courseDetails}
+                    <CourseAssessmentSection courseId={id} courseInfoId={courseInfoId} data={courseDetails}
                         lookups={lookups} onSaved={handleSectionSaved} onCancel={() => {}} />
                 </div>
             )}

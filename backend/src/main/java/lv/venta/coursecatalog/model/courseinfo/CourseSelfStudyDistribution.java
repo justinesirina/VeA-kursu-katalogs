@@ -3,6 +3,7 @@ package lv.venta.coursecatalog.model.courseinfo;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.user.User;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -29,6 +30,11 @@ public class CourseSelfStudyDistribution {
 
     @Column(nullable = false)
     private int percentage;
+
+    // Secība rādīšanai (0-based)
+    @Column(name = "display_order", nullable = false)
+    @ColumnDefault("0")
+    private int displayOrder = 0;
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

@@ -68,6 +68,9 @@ public class CourseDetailsDTO {
     // --- SKR vērtēšanas kritēriji ---
     private List<ResultAssessmentDTO> resultAssessments;
 
+    // --- SKR × komponentes matricas pilni ieraksti (ID, rediģēšanai) ---
+    private List<ResultAssessmentFullDTO> resultAssessmentsFull;
+
     // --- Patstāvīgā darba organizācija ---
     private List<SelfStudyDTO> selfStudyActivities;
 

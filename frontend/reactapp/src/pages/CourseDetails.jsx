@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../services/axiosConfig';
+import PercentageStackBar from '../components/ui/PercentageStackBar';
 
 /**
  * Kursa detaļu skats — tikai lasīšana.
@@ -390,123 +391,17 @@ function CourseDetails() {
                 )}
             </section>
 
-            {/* ── 8. PATSTĀVĪGĀ DARBA ORGANIZĀCIJA ── */}
-            <section className="bg-white rounded-lg p-5 border border-gray-200">
-                <SectionTitle
-                    title="Studējošo individuālā patstāvīgā darba organizācija"
-                    isEmpty={!d.selfStudyActivities || d.selfStudyActivities.length === 0}
-                />
-                {d.selfStudyActivities && d.selfStudyActivities.length > 0 ? (
-                    <div className="vea-table-wrap">
-                        <table className="vea-table">
-                            <thead>
-                            <tr>
-                                <th scope="col">Darbības veids</th>
-                                <th scope="col" className="text-center w-20">%</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {d.selfStudyActivities.map((s, i) => (
-                                <tr key={i}>
-                                    <td className="vea-td">{s.activityName}</td>
-                                    <td className="vea-td text-center">{s.percentage}</td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
-                ) : (
-                    <p className="text-gray-400 text-base">Nav norādīts patstāvīgā darba sadalījums</p>
-                )}
-            </section>
-
-            {/* ── 9. VĒRTĒŠANAS KRITĒRIJI ── */}
-            <section className="bg-white rounded-lg p-5 border border-gray-200">
-                <SectionTitle
-                    title="Studiju kursa rezultātu vērtēšanas kritēriji"
-                    isEmpty={(!d.assessmentDistribution || d.assessmentDistribution.length === 0)
-                        && skrCategories.length === 0}
-                />
-
-                {d.assessmentDistribution && d.assessmentDistribution.length > 0 ? (
-                    <div className="mb-5">
-                        <h3 className="text-xl font-semibold font-heading text-vea-neutral mb-2">
-                            Vērtēšanas sadalījums (kopā 100%)
-                        </h3>
-                        <div className="vea-table-wrap">
-                            <table className="vea-table">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Komponente</th>
-                                    <th scope="col" className="text-center w-20">%</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {d.assessmentDistribution.map((a, i) => (
-                                    <tr key={i}>
-                                        <td className="vea-td">{a.componentName}</td>
-                                        <td className="vea-td text-center">{a.percentage}</td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                ) : (
-                    <p className="text-gray-400 text-base mb-4">Nav norādīts vērtēšanas sadalījums</p>
-                )}
-
-                {skrCategories.length > 0 && allComponents.length > 0 && (
-                    <div>
-                        <h3 className="text-xl font-semibold font-heading text-vea-neutral mb-2">SKR × Vērtēšanas kritēriji</h3>
-                        <div className="vea-table-wrap overflow-x-auto">
-                            <table className="vea-table border-collapse">
-                                <thead>
-                                <tr>
-                                    <th scope="col">SKR</th>
-                                    {allComponents.map(c => (
-                                        <th key={c} scope="col" className="text-center whitespace-nowrap">
-                                            {c}
-                                        </th>
-                                    ))}
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {skrCategories.map(cat =>
-                                    skrByCategory[cat].map((r, i) => (
-                                        <tr key={r.courseResultId}>
-                                            <td className="vea-td border-r border-gray-100">
-                                                {i === 0 && (
-                                                    <span className="font-semibold text-vea-green block mb-0.5">{cat}</span>
-                                                )}
-                                                {r.learningOutcome}
-                                            </td>
-                                            {allComponents.map(c => (
-                                                <td key={c} className="vea-td text-center text-vea-green border-r border-gray-100 last:border-r-0">
-                                                    {r.components && r.components.includes(c) ? '✓' : ''}
-                                                </td>
-                                            ))}
-                                        </tr>
-                                    ))
-                                )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-            </section>
-
-            {/* ── 10. KALENDĀRAIS PLĀNS ── */}
+            {/* ── 8. KALENDĀRAIS PLĀNS ── */}
             <section className="bg-white rounded-lg p-5 border border-gray-200">
                 <h2 className="text-2xl font-semibold font-heading text-vea-neutral mb-3">Studiju kursa kalendārais plāns</h2>
                 {sortedCalendarPlan.length > 0 ? (
-                    <div className="border border-gray-200 rounded-lg overflow-hidden">
-                        {/* Virsraksta josla — redzama tikai no md augšā, imitē tabulas galveni */}
-                        <div className="hidden md:grid grid-cols-[3rem_minmax(12rem,1fr)_minmax(0,2fr)_5rem] bg-vea-green-light text-sm font-semibold text-vea-neutral uppercase tracking-wide">
-                            <div className="p-2 text-center border-b border-gray-200">Nr.</div>
-                            <div className="p-2 border-b border-gray-200">Tēma</div>
-                            <div className="p-2 border-b border-gray-200">Nodarbības</div>
-                            <div className="p-2 text-center border-b border-gray-200">Ak. st.</div>
+                    <div className="rounded-lg overflow-hidden border border-gray-200 border-t-4 border-t-vea-green bg-white shadow-sm">
+                        {/* Virsraksta josla — redzama tikai no md augšā, imitē .vea-table galveni */}
+                        <div className="hidden md:grid grid-cols-[3rem_minmax(12rem,1fr)_minmax(0,2fr)_5rem] bg-vea-green-light text-sm font-semibold text-vea-neutral uppercase tracking-wider">
+                            <div className="px-4 py-3 text-center">Nr.</div>
+                            <div className="px-4 py-3">Tēma</div>
+                            <div className="px-4 py-3">Nodarbības</div>
+                            <div className="px-4 py-3 text-center">Ak. st.</div>
                         </div>
 
                         <ul className="divide-y divide-gray-100">
@@ -515,7 +410,7 @@ function CourseDetails() {
                                 return (
                                     <li
                                         key={plan.calendarTopicId ?? pi}
-                                        className="md:grid md:grid-cols-[3rem_minmax(12rem,1fr)_minmax(0,2fr)_5rem] even:bg-gray-50"
+                                        className="md:grid md:grid-cols-[3rem_minmax(12rem,1fr)_minmax(0,2fr)_5rem] hover:bg-vea-green-light/40 transition-colors"
                                     >
                                         {/* Mobilajā skatā: galvenes rinda ar Nr., tēmu un stundām */}
                                         <div className="flex items-baseline justify-between gap-2 p-3 md:hidden">
@@ -529,21 +424,21 @@ function CourseDetails() {
                                         </div>
 
                                         {/* Desktop šūnas */}
-                                        <div className="hidden md:block p-2 text-center text-gray-500 text-base align-top">{pi + 1}.</div>
-                                        <div className="hidden md:block p-2 font-medium text-base align-top">{plan.topicTitle}</div>
+                                        <div className="hidden md:block px-4 py-2.5 text-center text-gray-500 text-base align-top">{pi + 1}.</div>
+                                        <div className="hidden md:block px-4 py-2.5 font-medium text-base text-vea-text align-top">{plan.topicTitle}</div>
 
                                         {/* Nodarbību pill-tagi — vienāds saturs abiem skatiem */}
-                                        <div className="px-3 pb-3 md:p-2">
+                                        <div className="px-3 pb-3 md:px-4 md:py-2.5">
                                             {(plan.sessions || []).length > 0 ? (
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {plan.sessions.map((session, si) => (
                                                         <span
                                                             key={session.sessionId ?? si}
-                                                            className="inline-flex items-center gap-1 bg-vea-green-light border border-vea-green/20 text-vea-neutral rounded-full px-2.5 py-0.5 text-sm whitespace-nowrap"
+                                                            className="inline-flex items-center gap-1.5 bg-vea-green-light/60 text-vea-neutral rounded-full px-3 py-0.5 text-sm whitespace-nowrap"
                                                         >
                                                             <span className="text-vea-neutral/60 font-medium">{si + 1}.</span>
                                                             <span>{session.sessionType}</span>
-                                                            <span className="text-vea-green-dark font-semibold">{session.academicHours} ak.st.</span>
+                                                            <span className="font-semibold">{session.academicHours} ak.st.</span>
                                                         </span>
                                                     ))}
                                                 </div>
@@ -553,24 +448,139 @@ function CourseDetails() {
                                         </div>
 
                                         {/* Desktop stundu šūna */}
-                                        <div className="hidden md:block p-2 text-center font-semibold text-base align-top">{topicHours}</div>
+                                        <div className="hidden md:block px-4 py-2.5 text-center font-semibold text-base text-vea-neutral align-top">{topicHours}</div>
                                     </li>
                                 );
                             })}
                         </ul>
 
                         {/* Kopsumma */}
-                        <div className="flex items-center justify-between bg-vea-green-light font-semibold text-vea-neutral border-t border-gray-200 px-3 py-2 md:grid md:grid-cols-[3rem_minmax(12rem,1fr)_minmax(0,2fr)_5rem] md:px-0 md:py-0">
+                        <div className="flex items-center justify-between bg-vea-green-light font-semibold text-vea-neutral border-t border-gray-200 px-4 py-2.5 md:grid md:grid-cols-[3rem_minmax(12rem,1fr)_minmax(0,2fr)_5rem] md:px-0 md:py-0">
                             <span className="md:hidden text-base">Kopā:</span>
                             <span className="md:hidden text-base">{calendarTotalHours} ak.st.</span>
-                            <div className="hidden md:block md:col-span-3 p-2 text-right text-base">Kopā:</div>
-                            <div className="hidden md:block p-2 text-center text-base">{calendarTotalHours}</div>
+                            <div className="hidden md:block md:col-span-3 px-4 py-2.5 text-right text-base">Kopā:</div>
+                            <div className="hidden md:block px-4 py-2.5 text-center text-base">{calendarTotalHours}</div>
                         </div>
                     </div>
                 ) : (
                     <p className="text-gray-400 text-base italic">
                         Kalendārais plāns vēl nav izveidots. Pievienot to var rediģēšanas skatā.
                     </p>
+                )}
+            </section>
+
+            {/* ── 9. PATSTĀVĪGĀ DARBA ORGANIZĀCIJA ── */}
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
+                <SectionTitle
+                    title="Studējošo individuālā patstāvīgā darba organizācija"
+                    isEmpty={!d.selfStudyActivities || d.selfStudyActivities.length === 0}
+                />
+                <p className="text-base text-vea-text mb-3">
+                    Studentu patstāvīgais darbs: <strong>{d.independentWorkHours ?? 0}</strong> akadēmiskās stundas
+                </p>
+                {d.selfStudyActivities && d.selfStudyActivities.length > 0 ? (
+                    <>
+                        <PercentageStackBar rows={d.selfStudyActivities} labelKey="activityName" />
+                        <div className="vea-table-wrap">
+                            <table className="vea-table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Aktivitāte</th>
+                                    <th scope="col" className="text-center w-20">%</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {d.selfStudyActivities.map((s, i) => (
+                                    <tr key={i}>
+                                        <td className="vea-td">{s.activityName}</td>
+                                        <td className="vea-td text-center font-semibold text-vea-neutral">{s.percentage}%</td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                ) : (
+                    <p className="text-gray-400 text-base">Nav norādīts patstāvīgā darba sadalījums</p>
+                )}
+            </section>
+
+            {/* ── 10. VĒRTĒŠANAS KRITĒRIJI ── */}
+            <section className="bg-white rounded-lg p-5 border border-gray-200">
+                <SectionTitle
+                    title="Studiju kursa rezultātu vērtēšana"
+                    isEmpty={(!d.assessmentDistribution || d.assessmentDistribution.length === 0)
+                        && skrCategories.length === 0}
+                />
+
+                {d.assessmentDistribution && d.assessmentDistribution.length > 0 ? (
+                    <div className="mb-5">
+                        <PercentageStackBar rows={d.assessmentDistribution} labelKey="componentName" />
+                        <div className="vea-table-wrap">
+                            <table className="vea-table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Vērtēšanas komponente</th>
+                                    <th scope="col" className="text-center w-20">%</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {d.assessmentDistribution.map((a, i) => (
+                                    <tr key={i}>
+                                        <td className="vea-td">{a.componentName}</td>
+                                        <td className="vea-td text-center font-semibold text-vea-neutral">{a.percentage}%</td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ) : (
+                    <p className="text-gray-400 text-base mb-4">Nav norādīts vērtēšanas sadalījums</p>
+                )}
+
+                {skrCategories.length > 0 && allComponents.length > 0 && (
+                    <div>
+                        <h3 className="text-xl font-semibold font-heading text-vea-neutral mb-2">
+                            Studiju kursa rezultātu vērtēšanas komponentes
+                        </h3>
+                        <div className="vea-table-wrap overflow-x-auto">
+                            <table className="vea-table border-collapse">
+                                <thead>
+                                <tr>
+                                    <th scope="col">SKR</th>
+                                    {allComponents.map(c => (
+                                        <th key={c} scope="col" className="text-center align-bottom leading-tight min-w-[6.5rem] max-w-[10rem]">
+                                            <span className="break-words whitespace-normal block">{c}</span>
+                                        </th>
+                                    ))}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {skrCategories.map((cat, catIndex) =>
+                                    skrByCategory[cat].map((r, i) => (
+                                        <tr key={r.courseResultId}>
+                                            <td className="vea-td border-r border-gray-100 align-top">
+                                                {i === 0 && (
+                                                    <span className="font-semibold text-vea-green block mb-1 text-xs uppercase tracking-wide">{cat}</span>
+                                                )}
+                                                <div className="flex gap-2">
+                                                    <span className="font-semibold text-vea-neutral shrink-0 whitespace-nowrap">SKR {catIndex + 1}.{i + 1}.</span>
+                                                    <span>{r.learningOutcome}</span>
+                                                </div>
+                                            </td>
+                                            {allComponents.map(c => (
+                                                <td key={c} className="vea-td text-center text-vea-green border-r border-gray-100 last:border-r-0">
+                                                    {r.components && r.components.includes(c) ? '✓' : ''}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))
+                                )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 )}
             </section>
 
@@ -598,8 +608,12 @@ function CourseDetails() {
                                                 <span className="text-sm text-gray-400 ml-1">({src.language.toUpperCase()})</span>
                                             )}
                                             {src.url && (
-                                                <span>. Pieejams: <a href={src.url} target="_blank" rel="noreferrer"
-                                                     className="text-vea-green hover:underline">{src.url}</a></span>
+                                                <span className="block sm:inline">. Pieejams:{' '}
+                                                    <a href={src.url} target="_blank" rel="noreferrer"
+                                                       className="text-vea-green hover:underline break-all">
+                                                        {src.url}
+                                                    </a>
+                                                </span>
                                             )}
                                         </li>
                                     ))}

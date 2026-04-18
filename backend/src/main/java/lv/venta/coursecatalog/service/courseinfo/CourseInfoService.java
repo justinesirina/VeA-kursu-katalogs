@@ -262,7 +262,7 @@ public class CourseInfoService {
 
         // --- Vērtēšanas sadalījums ---
         List<AssessmentComponentDTO> assessmentDtos = new ArrayList<>();
-        courseAssessmentRepo.findByCourseInfoIdOrderById(info.getId()).forEach(ad -> {
+        courseAssessmentRepo.findByCourseInfoIdOrderByDisplayOrderAscIdAsc(info.getId()).forEach(ad -> {
             String component = ad.getComponent().getName();
             int percent = ad.getPercentage();
             assessmentDtos.add(new AssessmentComponentDTO(ad.getId(), component, percent));
@@ -271,6 +271,7 @@ public class CourseInfoService {
 
         // --- Studiju kursa rezultāti (SKR) – CourseResult + SPSR + vērtēšanas komponentes ---
         List<ResultAssessmentDTO> assessmentCriteriaDtos = new ArrayList<>();
+        List<ResultAssessmentFullDTO> assessmentFullDtos = new ArrayList<>();
 
         courseResultRepo.findByCourseId(course.getId()).forEach(cr -> {
             List<String> components = new ArrayList<>();
@@ -278,6 +279,11 @@ public class CourseInfoService {
                 if (ra.isUsed()) {
                     components.add(ra.getComponent().getName());
                 }
+                assessmentFullDtos.add(new ResultAssessmentFullDTO(
+                        cr.getId(),
+                        ra.getComponent().getId(),
+                        ra.isUsed()
+                ));
             });
 
             // Iegūst atbilstošo SPSR (studiju programmas studiju rezultātu), ja tāds ir piesaistīts
@@ -294,10 +300,11 @@ public class CourseInfoService {
             ));
         });
         dto.setResultAssessments(assessmentCriteriaDtos);
+        dto.setResultAssessmentsFull(assessmentFullDtos);
 
         // --- Patstāvīgā darba aktivitātes ar % sadalījumu ---
         List<SelfStudyDTO> selfStudyDtos = new ArrayList<>();
-        courseSelfStudyDistributionRepo.findByCourseInfo(info).forEach(ssd -> {
+        courseSelfStudyDistributionRepo.findByCourseInfoOrderByDisplayOrderAscIdAsc(info).forEach(ssd -> {
             String activity = ssd.getActivity().getName();
             int percent = ssd.getPercentage();
             selfStudyDtos.add(new SelfStudyDTO(ssd.getId(), activity, percent));

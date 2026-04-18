@@ -9,5 +9,5 @@ import java.util.List;
 public interface CourseSelfStudyDistributionRepository extends JpaRepository<CourseSelfStudyDistribution, Integer> {
     List<CourseSelfStudyDistribution> findByCourseInfo(CourseInfo courseInfo);
 
-
+    List<CourseSelfStudyDistribution> findByCourseInfoOrderByDisplayOrderAscIdAsc(CourseInfo courseInfo);
 }

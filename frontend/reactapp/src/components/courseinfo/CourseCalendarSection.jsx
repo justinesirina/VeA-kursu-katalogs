@@ -469,8 +469,8 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
                         const isLast = idx === calendarPlan.length - 1;
                         return (
                             <div key={plan.calendarTopicId} className="bg-white rounded-lg border border-gray-200 border-t-4 border-t-vea-green overflow-hidden shadow-sm">
-                                {/* Tēmas galvene — numurēts aplis */}
-                                <div className="flex items-center justify-between px-3 py-3 gap-2 border-b border-gray-200">
+                                {/* Tēmas galvene — numurēts aplis; mobilā 2. rinda stackota */}
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-3 py-3 gap-2 border-b border-gray-200">
                                     <div className="flex items-center gap-3 min-w-0">
                                         <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-vea-green-light text-vea-green font-bold text-sm shrink-0">
                                             {idx + 1}
@@ -491,9 +491,9 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
                                                 title="Pārvietot lejup"
                                             >▼</button>
                                         </div>
-                                        <span className="font-semibold text-vea-neutral text-lg truncate">{plan.topicTitle}</span>
+                                        <span className="font-semibold text-vea-neutral text-base sm:text-lg truncate min-w-0">{plan.topicTitle}</span>
                                     </div>
-                                    <div className="flex items-center gap-3 shrink-0">
+                                    <div className="flex items-center justify-between sm:justify-start gap-3 shrink-0 self-stretch sm:self-auto">
                                         <span className="text-sm text-gray-600">Kopā: <span className="font-semibold text-vea-neutral">{topicTotal}</span> ak. st.</span>
                                         <button
                                             onClick={() => handleDeleteTopic(plan.calendarTopicId)}
@@ -512,8 +512,8 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
                                         const isLastSession = sIdx === plan.sessions.length - 1;
                                         if (edit) {
                                             return (
-                                                <div key={session.sessionId} className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-vea-green-light bg-vea-green-light/30">
-                                                    <div className="flex-1 min-w-40">
+                                                <div key={session.sessionId} className="flex flex-col sm:flex-row sm:items-center gap-2 px-3 py-2.5 rounded-lg border border-vea-green-light bg-vea-green-light/30">
+                                                    <div className="flex-1 min-w-0 sm:min-w-40 w-full sm:w-auto">
                                                         <select
                                                             className={`${inputBase} ${edit.errors?.type ? inputErr : inputOk} w-full`}
                                                             value={edit.sessionTypeId || ''}
@@ -531,7 +531,7 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
                                                             <p className="text-red-500 text-sm mt-1">{edit.errors.type}</p>
                                                         )}
                                                     </div>
-                                                    <div className="w-24">
+                                                    <div className="w-full sm:w-24">
                                                         <input
                                                             type="number" min="1"
                                                             className={`${inputBase} ${edit.errors?.hours ? inputErr : inputOk} w-full text-center`}
@@ -546,16 +546,18 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
                                                             <p className="text-red-500 text-sm mt-1">{edit.errors.hours}</p>
                                                         )}
                                                     </div>
-                                                    <button
-                                                        onClick={() => handleSaveEditSession(plan, session)}
-                                                        disabled={saving}
-                                                        className="bg-vea-green text-white px-3 py-1.5 rounded text-sm hover:bg-vea-green-dark disabled:opacity-50"
-                                                    >Saglabāt</button>
-                                                    <button
-                                                        onClick={() => cancelEditSession(session.sessionId)}
-                                                        disabled={saving}
-                                                        className="text-sm text-vea-neutral hover:text-red-500 px-2"
-                                                    >Atcelt</button>
+                                                    <div className="flex gap-2 w-full sm:w-auto">
+                                                        <button
+                                                            onClick={() => handleSaveEditSession(plan, session)}
+                                                            disabled={saving}
+                                                            className="flex-1 sm:flex-none bg-vea-green text-white px-3 py-1.5 rounded text-sm hover:bg-vea-green-dark disabled:opacity-50"
+                                                        >Saglabāt</button>
+                                                        <button
+                                                            onClick={() => cancelEditSession(session.sessionId)}
+                                                            disabled={saving}
+                                                            className="text-sm text-vea-neutral hover:text-red-500 px-2"
+                                                        >Atcelt</button>
+                                                    </div>
                                                 </div>
                                             );
                                         }
@@ -602,10 +604,10 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
                                         );
                                     })}
 
-                                    {/* Pievienošanas rinda */}
-                                    <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-vea-green/40 bg-vea-green-light/10">
-                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-vea-green text-white text-lg font-bold shrink-0" aria-hidden="true">+</div>
-                                        <div className="flex-1 min-w-40">
+                                    {/* Pievienošanas rinda — mobilā stackota vertikāli */}
+                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-vea-green/40 bg-vea-green-light/10">
+                                        <div className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-vea-green text-white text-lg font-bold shrink-0" aria-hidden="true">+</div>
+                                        <div className="flex-1 min-w-0 sm:min-w-40">
                                             <select
                                                 className={`${inputBase} ${row.errors?.type ? inputErr : inputOk} w-full bg-white`}
                                                 value={row.sessionTypeId || ''}
@@ -642,7 +644,7 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="w-20">
+                                        <div className="w-full sm:w-20">
                                             <input
                                                 type="number" min="1"
                                                 className={`${inputBase} ${row.errors?.hours ? inputErr : inputOk} w-full text-center bg-white`}
@@ -662,7 +664,7 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
                                         <button
                                             onClick={() => handleAddSession(plan)}
                                             disabled={saving}
-                                            className="bg-vea-green text-white px-3 py-1.5 rounded text-sm hover:bg-vea-green-dark disabled:opacity-50 shrink-0"
+                                            className="w-full sm:w-auto bg-vea-green text-white px-3 py-1.5 rounded text-sm hover:bg-vea-green-dark disabled:opacity-50 shrink-0"
                                         >
                                             Pievienot
                                         </button>

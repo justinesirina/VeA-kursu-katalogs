@@ -4,6 +4,7 @@ import CourseDetails from './pages/CourseDetails';
 import CourseDetailsForm from "./components/CourseDetailsForm";
 import CourseEditForm from "./components/CourseEditForm";
 import AdminPage from "./pages/AdminPage";
+import DesignPreview from "./pages/DesignPreview";
 import { ToastProvider } from './components/ui/ToastProvider';
 import veaLogo from './assets/vea-logo.svg';
 
@@ -71,6 +72,7 @@ function App() {
                         <Route path="/courses/:id/edit" element={<CourseEditForm />} />
                         <Route path="/courses/:id" element={<CourseDetails />} />
                         <Route path="/admin" element={<AdminPage />} />
+                        <Route path="/design-preview" element={<DesignPreview />} />
                     </Routes>
                 </main>
             </div>
