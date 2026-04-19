@@ -37,4 +37,12 @@ public class CourseToStudyPrograms implements Serializable {
     @JoinColumn(name = "program_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private StudyProgram program;
+
+    /**
+     * Programmas daļa — piem., A, B, C. Nullable, jo var tikt piešķirta vēlāk.
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "program_part_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private StudyProgramPart programPart;
 }

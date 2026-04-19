@@ -253,12 +253,19 @@ public class CourseInfoService {
         dto.setGoal(info.getGoal());
         dto.setAnnotation(info.getAnnotation());
 
-        // --- Piesaistītā studiju programma ---
-        List<String> studyProgramNames = new ArrayList<>();
+        // --- Piesaistītās studiju programmas ar programmas daļu ---
+        List<StudyProgramLinkDTO> studyProgramLinks = new ArrayList<>();
         courseToProgramRepo.findByCourseId(course.getId()).forEach(link -> {
-            studyProgramNames.add(link.getProgram().getName());
+            lv.venta.coursecatalog.model.program.StudyProgramPart part = link.getProgramPart();
+            studyProgramLinks.add(new StudyProgramLinkDTO(
+                    link.getId(),
+                    link.getProgram().getId(),
+                    link.getProgram().getName(),
+                    part != null ? part.getId() : null,
+                    part != null ? part.getName() : null
+            ));
         });
-        dto.setStudyPrograms(studyProgramNames);
+        dto.setStudyPrograms(studyProgramLinks);
 
         // --- Vērtēšanas sadalījums ---
         List<AssessmentComponentDTO> assessmentDtos = new ArrayList<>();

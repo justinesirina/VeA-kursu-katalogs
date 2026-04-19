@@ -213,13 +213,25 @@ function CourseDetails() {
                             <InfoRow label="LAIS kods" value={d.courseCode} />
                             <InfoRow label="Pārbaudes forma" value={d.assessmentForm} />
                             <InfoRow label="Kredītpunkti / ECTS" value={d.credits} />
-                            <InfoRow
-                                label="Studiju programma"
-                                value={d.studyPrograms && d.studyPrograms.length > 0
-                                    ? d.studyPrograms.join(', ')
-                                    : null}
-                            />
-                            <InfoRow label="Studiju programmas daļa" value={null} />
+                            {d.studyPrograms && d.studyPrograms.length > 0 ? (
+                                <li className="flex flex-col gap-0.5 text-base">
+                                    <span className="text-gray-500">Studiju programma un daļa:</span>
+                                    <ul className="space-y-0.5 pl-1">
+                                        {d.studyPrograms.map(p => (
+                                            <li key={p.id} className="flex items-baseline gap-2 flex-wrap">
+                                                <span className="font-medium text-vea-text">{p.programName}</span>
+                                                {p.partName && (
+                                                    <span className="text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full">
+                                                        {p.partName}
+                                                    </span>
+                                                )}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </li>
+                            ) : (
+                                <InfoRow label="Studiju programma un daļa" value={null} />
+                            )}
                         </ul>
                     </div>
                     <div>

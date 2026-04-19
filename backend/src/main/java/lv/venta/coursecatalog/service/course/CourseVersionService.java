@@ -80,16 +80,23 @@ public class CourseVersionService {
     public CourseVersion saveCourseVersion(CourseVersion version) {
         UUID courseId = version.getCourse().getId();
         int statusId = version.getStatus().getId();
-        int yearId = version.getAcademicYear().getId();
-        int semesterId = version.getSemester().getId();
 
         version.setCourse(courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found")));
         version.setStatus(versionStatusRepository.findById(statusId).orElseThrow(() -> new RuntimeException("Status not found")));
-        version.setAcademicYear(academicYearRepository.findById(yearId).orElseThrow(() -> new RuntimeException("Academic year not found")));
-        version.setSemester(semesterRepository.findById(semesterId).orElseThrow(() -> new RuntimeException("Semester not found")));
 
-       CourseVersion saved = courseVersionRepository.save(version);
-        return saved;
+        // academicYear un semester ir nullable (Melnraksts versijā vēl nav piesaistes gadam)
+        if (version.getAcademicYear() != null) {
+            int yearId = version.getAcademicYear().getId();
+            version.setAcademicYear(academicYearRepository.findById(yearId)
+                    .orElseThrow(() -> new RuntimeException("Academic year not found")));
+        }
+        if (version.getSemester() != null) {
+            int semesterId = version.getSemester().getId();
+            version.setSemester(semesterRepository.findById(semesterId)
+                    .orElseThrow(() -> new RuntimeException("Semester not found")));
+        }
+
+        return courseVersionRepository.save(version);
     }
 
 

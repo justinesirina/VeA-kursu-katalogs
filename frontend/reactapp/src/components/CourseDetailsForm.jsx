@@ -1,421 +1,317 @@
 /**
- * Kursa izveides forma — 3 soļos izveido Course un CourseVersion.
- * Solis 1: POST /api/courses → izveido kursu.
- * Solis 2: POST /api/course-versions → izveido versiju ar akadēmisko gadu, semestri u.c.
- * Solis 3: Apstiprinājums ar saiti uz izveidoto kursu.
- *
- * @returns {JSX.Element} Daudzsoļu kursa izveides forma
+ * Jauna kursa izveides "skelets" — tikai satura kodola pamatdati.
+ * POST kaskāde: Course → CourseAuthor → CourseVersion (Melnraksts) → CourseInfo (tukšs).
+ * Pēc veiksmīgas izveides novirza uz /courses/:id/edit, kur pilnveido saturu.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/axiosConfig';
-import StepIndicator from './StepIndicator';
+import { useToast } from './ui/ToastProvider';
 
-const EMPTY_COURSE = {
-    titleLv: '',
-    titleEn: '',
-    courseCode: '',
-    slug: '',
-    credits: 2
-};
-
-const EMPTY_VERSION = {
-    academicYearId: '',
-    semesterId: '',
-    facultyId: '',
-    statusId: '',
-    approvalDate: '',
-    decisionNumber: '',
-    decisionReference: ''
-};
+const STAFF_ROLE_FILTER = ['Pasniedzējs', 'Programmas direktors'];
 
 function CourseDetailsForm() {
     const navigate = useNavigate();
+    const showToast = useToast();
 
-    // Soļu pārvaldība
-    const [step, setStep] = useState(1);
+    const [titleLv, setTitleLv] = useState('');
+    const [titleEn, setTitleEn] = useState('');
+    const [courseCode, setCourseCode] = useState('');
+    const [credits, setCredits] = useState(2);
 
-    // Solis 1 — kursa dati
-    const [course, setCourse] = useState(EMPTY_COURSE);
+    // Autora izvēle ar meklēšanu
+    const [users, setUsers] = useState([]);
+    const [authorSearch, setAuthorSearch] = useState('');
+    const [selectedAuthor, setSelectedAuthor] = useState(null);
+
+    // Melnraksts versijas statuss (ielādēts no /version-statuses)
+    const [draftStatusId, setDraftStatusId] = useState(null);
+
     const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState(null);
+    const [fieldErrors, setFieldErrors] = useState({});
 
-    // Starp soļiem glabātie dati
-    const [createdCourseId, setCreatedCourseId] = useState(null);
-    const [createdCourseTitle, setCreatedCourseTitle] = useState('');
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const [usersRes, statusRes] = await Promise.all([
+                    api.get('/users'),
+                    api.get('/version-statuses'),
+                ]);
+                setUsers(usersRes.data || []);
+                const draft = (statusRes.data || []).find(s => s.name === 'Melnraksts');
+                if (draft) setDraftStatusId(draft.id);
+                else showToast('Nav atrasts "Melnraksts" versijas statuss. Administratoram tas jāpievieno.', 'error');
+            } catch {
+                showToast('Neizdevās ielādēt datus. Atsvaidzini lapu.', 'error');
+            }
+        };
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    // Solis 2 — versijas dati
-    const [versionData, setVersionData] = useState(EMPTY_VERSION);
-    const [lookups, setLookups] = useState({ academicYears: [], semesters: [], faculties: [], versionStatuses: [] });
-    const [lookupsLoading, setLookupsLoading] = useState(false);
-    const [versionSubmitting, setVersionSubmitting] = useState(false);
-    const [versionError, setVersionError] = useState(null);
-
-    // Solis 3 — apstiprinājuma dati
-    const [createdVersionInfo, setCreatedVersionInfo] = useState(null);
-
-    /**
-     * Solis 1: Izveido jaunu Course ierakstu un pāriet uz 2. soli.
-     */
-    const handleCreateCourse = async () => {
-        setSubmitting(true);
-        setError(null);
-
-        try {
-            const payload = {
-                titleLv: course.titleLv,
-                titleEn: course.titleEn,
-                courseCode: course.courseCode,
-                slug: course.slug || null,
-                credits: Number(course.credits)
-            };
-
-            const res = await api.post('/courses', payload);
-            setCreatedCourseId(res.data.id);
-            setCreatedCourseTitle(res.data.titleLv);
-
-            // Ielādē lookup datus 2. solim
-            setLookupsLoading(true);
-            const [ay, sem, fac, st] = await Promise.all([
-                api.get('/academic-years'),
-                api.get('/semesters'),
-                api.get('/faculties'),
-                api.get('/version-statuses')
-            ]);
-            setLookups({
-                academicYears: ay.data,
-                semesters: sem.data,
-                faculties: fac.data,
-                versionStatuses: st.data
-            });
-
-            setStep(2);
-        } catch (err) {
-            console.error('Kļūda saglabājot kursu:', err);
-            setError('Neizdevās saglabāt kursu. Lūdzu, pārbaudi ievades datus un mēģini vēlreiz.');
-        } finally {
-            setSubmitting(false);
-            setLookupsLoading(false);
-        }
+    // Palīgfunkcijas (identiskas ar CourseEditForm paraugu)
+    const sanitizeTitle = (val) =>
+        val.replace(/[<>"';`\\={}[\]]/g, '').replace(/https?:\/\/\S*/gi, '');
+    const isUrl = (val) => /https?:\/\//i.test(val);
+    const blockNonNumeric = e => {
+        if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault();
+    };
+    const personLabel = (u) => {
+        const name = [u.name, u.surname].filter(Boolean).join(' ');
+        const extra = [u.position, u.academicDegree].filter(Boolean).join(', ');
+        return extra ? `${name}, ${extra}` : name;
+    };
+    const filterUsers = (query) => {
+        if (!query.trim()) return [];
+        const q = query.toLowerCase();
+        return users
+            .filter(u => STAFF_ROLE_FILTER.includes(u.role?.roleName))
+            .filter(u => u.name.toLowerCase().includes(q) || u.surname.toLowerCase().includes(q))
+            .slice(0, 8);
     };
 
-    /**
-     * Solis 2: Izveido CourseVersion un pāriet uz 3. soli.
-     */
-    const handleCreateVersion = async () => {
-        setVersionSubmitting(true);
-        setVersionError(null);
+    const validate = () => {
+        const errs = {};
+        if (!titleLv.trim()) errs.titleLv = 'Nosaukums latviski ir obligāts';
+        else if (isUrl(titleLv)) errs.titleLv = 'Nosaukums nevar būt URL adrese';
+        if (!titleEn.trim()) errs.titleEn = 'Nosaukums angliski ir obligāts';
+        else if (isUrl(titleEn)) errs.titleEn = 'Nosaukums nevar būt URL adrese';
+        if (courseCode && !/^[A-Za-z0-9]{1,10}$/.test(courseCode.trim()))
+            errs.courseCode = 'Kods var saturēt tikai burtus un ciparus (maks. 10 zīmes)';
+        if (!credits || Number(credits) < 1) errs.credits = 'Kredītpunkti ir obligāti (min. 1)';
+        if (!selectedAuthor) errs.author = 'Izvēlies kursa autoru';
+        if (!draftStatusId) errs.status = 'Trūkst "Melnraksts" statusa DB';
+        return errs;
+    };
+
+    const handleCreate = async () => {
+        const errs = validate();
+        if (Object.keys(errs).length > 0) {
+            setFieldErrors(errs);
+            showToast('Pārbaudi iezīmētos obligātos laukus.', 'error');
+            return;
+        }
+        setFieldErrors({});
+        setSubmitting(true);
+
+        let createdCourseId = null;
+        const rollback = async () => {
+            if (createdCourseId) {
+                try { await api.delete(`/courses/${createdCourseId}`); } catch { /* klusā kļūda rollback laikā */ }
+            }
+        };
 
         try {
-            const payload = {
+            // 1. Izveido Course
+            const courseRes = await api.post('/courses', {
+                titleLv: sanitizeTitle(titleLv.trim()),
+                titleEn: sanitizeTitle(titleEn.trim()),
+                courseCode: courseCode.trim() ? courseCode.trim().toUpperCase() : null,
+                credits: Number(credits),
+                active: true,
+                archived: false,
+            });
+            createdCourseId = courseRes.data.id;
+
+            // 2. Piesaista autoru
+            await api.post('/course-authors', {
                 course: { id: createdCourseId },
-                status: { id: Number(versionData.statusId) },
-                academicYear: { id: Number(versionData.academicYearId) },
-                semester: { id: Number(versionData.semesterId) },
-                faculty: versionData.facultyId ? { id: Number(versionData.facultyId) } : null,
+                user: { id: selectedAuthor.id },
+                role: 'Autors',
+            });
+
+            // 3. Izveido Melnraksts versiju (bez ay/semestra/apstiprinājuma)
+            const versionRes = await api.post('/course-versions', {
+                course: { id: createdCourseId },
+                status: { id: draftStatusId },
                 versionNumber: 1,
                 active: true,
-                approvalDate: versionData.approvalDate || null,
-                decisionNumber: versionData.decisionNumber || null,
-                decisionReference: versionData.decisionReference || null
-            };
+                archived: false,
+            });
+            const versionId = versionRes.data.id;
 
-            const versionRes = await api.post('/course-versions', payload);
-            const createdVersionId = versionRes.data.id;
-
-            // Izveido tukšu CourseInfo, lai detaļu skats darbotos uzreiz pēc izveides
+            // 4. Tukšs CourseInfo, lai redaktora cilnes darbotos uzreiz
             await api.post('/course-info', {
                 course: { id: createdCourseId },
-                courseVersion: { id: createdVersionId },
+                courseVersion: { id: versionId },
                 academicHoursTotal: 0,
                 independentWorkHours: 0,
-                language: 'lv'
+                language: 'lv',
             });
 
-            // Atrod nosaukumus apstiprinājuma solim
-            const ay = lookups.academicYears.find(a => a.id === Number(versionData.academicYearId));
-            const sem = lookups.semesters.find(s => s.id === Number(versionData.semesterId));
-            setCreatedVersionInfo({
-                academicYear: ay ? ay.name : versionData.academicYearId,
-                semester: sem ? sem.name : versionData.semesterId
-            });
-
-            setStep(3);
+            showToast('Kurss izveidots. Turpini aizpildīt saturu.');
+            navigate(`/courses/${createdCourseId}/edit`);
         } catch (err) {
-            console.error('Kļūda saglabājot versiju:', err);
-            setVersionError('Neizdevās saglabāt versiju. Lūdzu, pārbaudi ievades datus un mēģini vēlreiz.');
+            console.error('Kļūda izveidojot kursu:', err);
+            // Atsaukt Course izveidi, ja sekojošie soļi neizdevās
+            await rollback();
+
+            const msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || '';
+            const isDuplicate = /duplicate key|already exists|unique constraint/i.test(msg) || /course_code/.test(msg);
+
+            if (isDuplicate && !createdCourseId) {
+                setFieldErrors(p => ({ ...p, courseCode: 'Šis kursa kods jau izmantots citam kursam' }));
+                showToast('Kursa kods jau izmantots. Izvēlies citu vai atstāj tukšu.', 'error');
+            } else if (createdCourseId) {
+                showToast('Kurss izveidots tikai daļēji un tika atcelts. Mēģini vēlreiz.', 'error');
+            } else {
+                showToast('Neizdevās izveidot kursu. Pārbaudi datus un mēģini vēlreiz.', 'error');
+            }
         } finally {
-            setVersionSubmitting(false);
+            setSubmitting(false);
         }
     };
 
-    /**
-     * Atiestata visu formu uz sākuma stāvokli.
-     */
-    const handleReset = () => {
-        setStep(1);
-        setCourse(EMPTY_COURSE);
-        setVersionData(EMPTY_VERSION);
-        setCreatedCourseId(null);
-        setCreatedCourseTitle('');
-        setCreatedVersionInfo(null);
-        setError(null);
-        setVersionError(null);
-    };
-
-    const inputClass = "w-full p-2 border border-gray-300 rounded focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none";
+    const inputBase = "w-full p-2 border rounded focus:ring-1 outline-none";
+    const inputOk  = `${inputBase} border-gray-300 focus:border-vea-green focus:ring-vea-green`;
+    const inputErr = `${inputBase} border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-300`;
+    const inputClass = (field) => fieldErrors[field] ? inputErr : inputOk;
     const labelClass = "block text-sm font-medium text-vea-neutral mb-1";
-    const step2Valid = versionData.academicYearId && versionData.semesterId && versionData.statusId;
+    const FieldError = ({ field }) =>
+        fieldErrors[field] ? <p className="text-red-500 text-sm mt-0.5">{fieldErrors[field]}</p> : null;
+
+    const filteredUsers = filterUsers(authorSearch);
 
     return (
         <div className="p-6 max-w-3xl mx-auto space-y-6">
-            <h1 className="text-4xl md:text-[2.5rem] font-bold font-heading text-vea-neutral">Jauna kursa izveide</h1>
+            <div className="flex items-center justify-between">
+                <h1 className="text-4xl md:text-[2.5rem] font-bold font-heading text-vea-neutral">Jauna kursa izveide</h1>
+                <button onClick={() => navigate('/')} className="text-vea-green hover:underline text-base">
+                    ← Atpakaļ uz sarakstu
+                </button>
+            </div>
 
-            <StepIndicator currentStep={step} steps={['Kursa dati', 'Versijas dati', 'Gatavs']} />
+            <p className="text-base text-vea-text">
+                Ievadi kursa pamata datus. Pēc izveides turpināsi aizpildīt saturu rediģēšanas skatā, kurā varēsi pievienot detalizētus kursa datus.
+            </p>
 
-            {/* SOLIS 1 — Kursa pamata informācija */}
-            {step === 1 && (
-                <section className="space-y-3 bg-white rounded-lg p-5 border border-gray-200">
-                    <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Kursa pamata informācija</h2>
+            <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-4">
+                <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Kursa pamatinformācija</h2>
 
-                    <div>
-                        <label className={labelClass} htmlFor="titleLv">Nosaukums latviski <span className="text-red-500">*</span></label>
-                        <input
-                            id="titleLv"
-                            type="text"
-                            placeholder="Piemēram: Datoru tīkli"
-                            className={inputClass}
-                            value={course.titleLv}
-                            onChange={e => setCourse({ ...course, titleLv: e.target.value })}
-                        />
+                <div>
+                    <label className={labelClass} htmlFor="titleLv">
+                        Nosaukums latviski <span className="text-red-500">*</span>
+                    </label>
+                    <input id="titleLv" type="text" maxLength={200}
+                           className={inputClass('titleLv')}
+                           value={titleLv}
+                           onChange={e => {
+                               setTitleLv(sanitizeTitle(e.target.value));
+                               if (fieldErrors.titleLv) setFieldErrors(p => { const n = {...p}; delete n.titleLv; return n; });
+                           }}
+                           placeholder="Piemēram: Datoru tīkli" />
+                    <FieldError field="titleLv" />
+                </div>
+
+                <div>
+                    <label className={labelClass} htmlFor="titleEn">
+                        Nosaukums angliski <span className="text-red-500">*</span>
+                    </label>
+                    <input id="titleEn" type="text" maxLength={200}
+                           className={inputClass('titleEn')}
+                           value={titleEn}
+                           onChange={e => {
+                               setTitleEn(sanitizeTitle(e.target.value));
+                               if (fieldErrors.titleEn) setFieldErrors(p => { const n = {...p}; delete n.titleEn; return n; });
+                           }}
+                           placeholder="Piemēram: Computer Networks" />
+                    <FieldError field="titleEn" />
+                </div>
+
+                <div>
+                    <label className={labelClass} htmlFor="courseCode">
+                        Kursa kods
+                        <span className="text-xs text-gray-500 font-normal ml-1">
+                            (neobligāts — piešķir pēc apstiprinājuma)
+                        </span>
+                    </label>
+                    <input id="courseCode" type="text" maxLength={10}
+                           className={inputClass('courseCode')}
+                           value={courseCode}
+                           onChange={e => {
+                               const v = e.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 10);
+                               setCourseCode(v);
+                               if (fieldErrors.courseCode) setFieldErrors(p => { const n = {...p}; delete n.courseCode; return n; });
+                           }}
+                           placeholder="Piemēram: ITB101" />
+                    <FieldError field="courseCode" />
+                </div>
+
+                <div>
+                    <label className={labelClass} htmlFor="credits">
+                        Kredītpunkti <span className="text-red-500">*</span>
+                    </label>
+                    <input id="credits" type="number" min={1} max={9999}
+                           className={inputClass('credits')}
+                           value={credits}
+                           onKeyDown={blockNonNumeric}
+                           onChange={e => {
+                               const v = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+                               setCredits(v);
+                               if (fieldErrors.credits) setFieldErrors(p => { const n = {...p}; delete n.credits; return n; });
+                           }} />
+                    <FieldError field="credits" />
+                </div>
+            </section>
+
+            <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-3">
+                <h2 className="text-2xl font-semibold font-heading text-vea-neutral">
+                    Kursa autors <span className="text-red-500 text-base">*</span>
+                </h2>
+
+                {selectedAuthor ? (
+                    <div className="flex items-center justify-between border border-gray-200 rounded px-3 py-2 text-sm">
+                        <span className="text-vea-text min-w-0">
+                            {personLabel(selectedAuthor)}
+                            <span className="ml-2 text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full">Autors</span>
+                        </span>
+                        <button onClick={() => setSelectedAuthor(null)}
+                                className="text-red-400 hover:text-red-600 ml-3 shrink-0"
+                                aria-label="Noņemt autoru">✕</button>
                     </div>
-
-                    <div>
-                        <label className={labelClass} htmlFor="titleEn">Nosaukums angliski</label>
-                        <input
-                            id="titleEn"
-                            type="text"
-                            placeholder="Piemēram: Computer Networks"
-                            className={inputClass}
-                            value={course.titleEn}
-                            onChange={e => setCourse({ ...course, titleEn: e.target.value })}
-                        />
-                    </div>
-
-                    <div>
-                        <label className={labelClass} htmlFor="courseCode">Kursa kods <span className="text-red-500">*</span></label>
-                        <input
-                            id="courseCode"
-                            type="text"
-                            placeholder="Piemēram: DT101"
-                            className={inputClass}
-                            value={course.courseCode}
-                            onChange={e => setCourse({ ...course, courseCode: e.target.value })}
-                        />
-                    </div>
-
-                    <div>
-                        <label className={labelClass} htmlFor="slug">Slug</label>
-                        <input
-                            id="slug"
-                            type="text"
-                            placeholder="Piemēram: datu-strukturas"
-                            className={inputClass}
-                            value={course.slug}
-                            onChange={e => setCourse({ ...course, slug: e.target.value })}
-                        />
-                    </div>
-
-                    <div>
-                        <label className={labelClass} htmlFor="credits">Kredītpunkti</label>
-                        <input
-                            id="credits"
-                            type="number"
-                            className={inputClass}
-                            value={course.credits}
-                            onChange={e => setCourse({ ...course, credits: e.target.value })}
-                            min={1}
-                        />
-                    </div>
-
-                    {error && <p className="text-red-600 text-sm">{error}</p>}
-
-                    <div className="flex gap-2">
-                        <button
-                            className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={handleCreateCourse}
-                            disabled={submitting || lookupsLoading || !course.titleLv.trim() || !course.courseCode.trim()}
-                        >
-                            {submitting || lookupsLoading ? 'Saglabā...' : 'Tālāk →'}
-                        </button>
-                        <button
-                            type="button"
-                            className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral"
-                            onClick={() => navigate('/')}
-                        >
-                            Atcelt
-                        </button>
-                    </div>
-                </section>
-            )}
-
-            {/* SOLIS 2 — Versijas informācija */}
-            {step === 2 && (
-                <section className="space-y-3 bg-white rounded-lg p-5 border border-gray-200">
-                    <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Versijas informācija</h2>
-                    <p className="text-sm text-gray-500">Kurss: <strong>{createdCourseTitle}</strong></p>
-
-                    <div>
-                        <label className={labelClass} htmlFor="academicYear">Akadēmiskais gads <span className="text-red-500">*</span></label>
-                        <select
-                            id="academicYear"
-                            className={inputClass}
-                            value={versionData.academicYearId}
-                            onChange={e => setVersionData({ ...versionData, academicYearId: e.target.value })}
-                        >
-                            <option value="">— izvēlies —</option>
-                            {lookups.academicYears.map(ay => (
-                                <option key={ay.id} value={ay.id}>{ay.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className={labelClass} htmlFor="semester">Semestris <span className="text-red-500">*</span></label>
-                        <select
-                            id="semester"
-                            className={inputClass}
-                            value={versionData.semesterId}
-                            onChange={e => setVersionData({ ...versionData, semesterId: e.target.value })}
-                        >
-                            <option value="">— izvēlies —</option>
-                            {lookups.semesters.map(s => (
-                                <option key={s.id} value={s.id}>{s.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className={labelClass} htmlFor="status">Statuss <span className="text-red-500">*</span></label>
-                        <select
-                            id="status"
-                            className={inputClass}
-                            value={versionData.statusId}
-                            onChange={e => setVersionData({ ...versionData, statusId: e.target.value })}
-                        >
-                            <option value="">— izvēlies —</option>
-                            {lookups.versionStatuses.map(s => (
-                                <option key={s.id} value={s.id}>{s.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className={labelClass} htmlFor="faculty">Fakultāte</label>
-                        <select
-                            id="faculty"
-                            className={inputClass}
-                            value={versionData.facultyId}
-                            onChange={e => setVersionData({ ...versionData, facultyId: e.target.value })}
-                        >
-                            <option value="">— nav norādīts —</option>
-                            {lookups.faculties.map(f => (
-                                <option key={f.id} value={f.id}>{f.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className={labelClass} htmlFor="approvalDate">Apstiprināšanas datums</label>
-                        <input
-                            id="approvalDate"
-                            type="date"
-                            className={inputClass}
-                            value={versionData.approvalDate}
-                            onChange={e => setVersionData({ ...versionData, approvalDate: e.target.value })}
-                        />
-                    </div>
-
-                    <div>
-                        <label className={labelClass} htmlFor="decisionNumber">Lēmuma numurs</label>
-                        <input
-                            id="decisionNumber"
-                            type="text"
-                            placeholder="Piemēram: Nr. 22-04-12"
-                            className={inputClass}
-                            value={versionData.decisionNumber}
-                            onChange={e => setVersionData({ ...versionData, decisionNumber: e.target.value })}
-                        />
-                    </div>
-
-                    <div>
-                        <label className={labelClass} htmlFor="decisionReference">Atsauce</label>
-                        <input
-                            id="decisionReference"
-                            type="text"
-                            placeholder="Piemēram: Senāta lēmums"
-                            className={inputClass}
-                            value={versionData.decisionReference}
-                            onChange={e => setVersionData({ ...versionData, decisionReference: e.target.value })}
-                        />
-                    </div>
-
-                    {versionError && <p className="text-red-600 text-sm">{versionError}</p>}
-
-                    <div className="flex gap-2">
-                        <button
-                            className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={handleCreateVersion}
-                            disabled={versionSubmitting || !step2Valid}
-                        >
-                            {versionSubmitting ? 'Saglabā...' : 'Izveidot versiju →'}
-                        </button>
-                        <button
-                            type="button"
-                            className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral"
-                            onClick={() => {
-                                if (window.confirm('Kurss ir saglabāts, bet versija nav izveidota. Vai tiešām vēlies atcelt?')) {
-                                    navigate('/');
-                                }
-                            }}
-                        >
-                            Atcelt
-                        </button>
-                    </div>
-                </section>
-            )}
-
-            {/* SOLIS 3 — Apstiprinājums */}
-            {step === 3 && (
-                <section className="bg-vea-green-light border border-vea-green rounded-lg p-6 space-y-3">
-                    <p className="text-3xl text-vea-green">✓</p>
-                    <p className="text-2xl font-semibold font-heading text-vea-green">Kurss veiksmīgi izveidots!</p>
-                    <div className="text-base text-vea-text space-y-1">
-                        <p><strong>Nosaukums:</strong> {createdCourseTitle}</p>
-                        {createdVersionInfo && (
-                            <>
-                                <p><strong>Akadēmiskais gads:</strong> {createdVersionInfo.academicYear}</p>
-                                <p><strong>Semestris:</strong> {createdVersionInfo.semester}</p>
-                            </>
+                ) : (
+                    <div className="relative">
+                        <input type="text" className={inputClass('author')}
+                               value={authorSearch}
+                               onChange={e => {
+                                   setAuthorSearch(e.target.value);
+                                   if (fieldErrors.author) setFieldErrors(p => { const n = {...p}; delete n.author; return n; });
+                               }}
+                               onBlur={() => setTimeout(() => setAuthorSearch(''), 150)}
+                               placeholder="Meklēt autoru pēc vārda vai uzvārda..." />
+                        {filteredUsers.length > 0 && (
+                            <ul className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto">
+                                {filteredUsers.map(u => (
+                                    <li key={u.id}
+                                        onMouseDown={() => {
+                                            setSelectedAuthor(u);
+                                            setAuthorSearch('');
+                                        }}
+                                        className="px-3 py-2 hover:bg-vea-green-light cursor-pointer text-sm text-vea-text">
+                                        {personLabel(u)}
+                                    </li>
+                                ))}
+                            </ul>
                         )}
                     </div>
-                    <div className="flex gap-3 pt-2">
-                        <button
-                            className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark"
-                            onClick={() => navigate(`/courses/${createdCourseId}`)}
-                        >
-                            Skatīt kursu →
-                        </button>
-                        <button
-                            className="border border-gray-300 px-4 py-2 rounded hover:bg-white text-vea-neutral"
-                            onClick={handleReset}
-                        >
-                            Izveidot jaunu kursu
-                        </button>
-                    </div>
-                </section>
-            )}
+                )}
+                <FieldError field="author" />
+                <p className="text-xs text-gray-500">
+                    Papildu autorus un mācībspēkus varēs pievienot pēc izveides rediģēšanas skatā.
+                </p>
+            </section>
+
+            <div className="flex gap-3">
+                <button onClick={() => navigate('/')}
+                        className="bg-white border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-vea-neutral">
+                    Atcelt
+                </button>
+                <button onClick={handleCreate} disabled={submitting || !draftStatusId}
+                        className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 disabled:cursor-not-allowed">
+                    {submitting ? 'Izveido...' : 'Izveidot kursu'}
+                </button>
+            </div>
         </div>
     );
 }

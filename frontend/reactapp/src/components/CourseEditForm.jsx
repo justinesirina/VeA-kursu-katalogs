@@ -48,11 +48,18 @@ function CourseEditForm() {
     const [courseInfoId, setCourseInfoId] = useState(null);
     const [courseDetails, setCourseDetails] = useState(null);
 
+    // Studiju programmas
+    const [studyPrograms, setStudyPrograms] = useState([]);        // visas pieejamās
+    const [selectedProgramId, setSelectedProgramId] = useState('');
+    const [selectedPartId, setSelectedPartId] = useState('');
+    const [programSaving, setProgramSaving] = useState(false);
+
     // Shared
     const [lookups, setLookups] = useState({
         academicYears: [], semesters: [], faculties: [], versionStatuses: [],
         assessmentForms: [], assessmentComponents: [], selfStudyActivities: [],
-        literatureTypes: [], resultsCategories: [], sessionTypes: []
+        literatureTypes: [], resultsCategories: [], sessionTypes: [],
+        studyProgramParts: []
     });
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -66,7 +73,8 @@ function CourseEditForm() {
                     courseRes, versionsRes, detailsRes,
                     ayRes, semRes, facRes, stRes,
                     afRes, acRes, ssaRes, ltRes, rcRes, sessionTypesRes,
-                    authorsRes, teachersRes, usersRes
+                    authorsRes, teachersRes, usersRes,
+                    spRes, sppRes
                 ] = await Promise.all([
                     api.get(`/courses/${id}`),
                     api.get(`/course-versions/by-course/${id}`),
@@ -84,6 +92,8 @@ function CourseEditForm() {
                     api.get(`/course-authors/by-course/${id}`),
                     api.get(`/course-teachers/by-course/${id}`),
                     api.get('/users'),
+                    api.get('/study-programs'),
+                    api.get('/study-program-parts'),
                 ]);
 
                 const course = courseRes.data;
@@ -137,10 +147,12 @@ function CourseEditForm() {
                     literatureTypes: ltRes.data,
                     resultsCategories: rcRes.data,
                     sessionTypes: sessionTypesRes.data,
+                    studyProgramParts: sppRes.data || [],
                 });
                 setAuthors(authorsRes.data || []);
                 setTeachers(teachersRes.data || []);
                 setUsers(usersRes.data || []);
+                setStudyPrograms(spRes.data || []);
             } catch (err) {
                 console.error('Kļūda ielādējot rediģēšanas datus:', err);
                 showToast(`Neizdevās ielādēt kursa datus.`, 'error');
@@ -290,6 +302,31 @@ function CourseEditForm() {
             await reloadStaff();
         } catch { showToast('Neizdevās dzēst mācībspēku.', 'error'); }
         finally { setStaffSaving(false); }
+    };
+
+    const handleAddStudyProgram = async () => {
+        if (!selectedProgramId) return;
+        setProgramSaving(true);
+        try {
+            await api.post('/course-to-study-programs', {
+                course: { id },
+                program: { id: Number(selectedProgramId) },
+                programPart: selectedPartId ? { id: Number(selectedPartId) } : null,
+            });
+            setSelectedProgramId('');
+            setSelectedPartId('');
+            handleSectionSaved();
+        } catch { showToast('Neizdevās pievienot programmu.', 'error'); }
+        finally { setProgramSaving(false); }
+    };
+
+    const handleDeleteStudyProgram = async (linkId) => {
+        setProgramSaving(true);
+        try {
+            await api.delete(`/course-to-study-programs/${linkId}`);
+            handleSectionSaved();
+        } catch { showToast('Neizdevās noņemt programmu.', 'error'); }
+        finally { setProgramSaving(false); }
     };
 
     const handleSectionSaved = () => {
@@ -535,6 +572,62 @@ function CourseEditForm() {
                             })()}
 
                         </div>
+                    </section>
+
+                    {/* Studiju programmas un programmas daļa */}
+                    <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-3">
+                        <h2 className="text-2xl font-semibold font-heading text-vea-neutral">
+                            Studiju programmas un programmas daļa
+                        </h2>
+                        {(courseDetails?.studyPrograms?.length ?? 0) > 0 ? (
+                            <ul className="space-y-1.5">
+                                {courseDetails.studyPrograms.map(link => (
+                                    <li key={link.id} className="flex items-center justify-between border border-gray-200 rounded px-3 py-2 text-sm">
+                                        <span className="text-vea-text min-w-0">
+                                            <span className="font-medium">{link.programName}</span>
+                                            {link.partName && (
+                                                <span className="ml-2 text-xs bg-vea-green-light text-vea-green px-1.5 py-0.5 rounded-full">
+                                                    {link.partName}
+                                                </span>
+                                            )}
+                                        </span>
+                                        <button onClick={() => handleDeleteStudyProgram(link.id)} disabled={programSaving}
+                                                className="text-red-400 hover:text-red-600 ml-3 shrink-0 disabled:opacity-50"
+                                                aria-label="Noņemt programmu">✕</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500 text-sm italic">Nav piesaistītu studiju programmu</p>
+                        )}
+
+                        {(() => {
+                            const linkedProgramIds = new Set((courseDetails?.studyPrograms ?? []).map(l => l.programId));
+                            const available = studyPrograms.filter(p => !linkedProgramIds.has(p.id));
+                            return (
+                                <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                                    <select className={inputClassPlain + ' flex-1'} value={selectedProgramId}
+                                            onChange={e => setSelectedProgramId(e.target.value)}>
+                                        <option value="">— izvēlies programmu —</option>
+                                        {available.map(p => (
+                                            <option key={p.id} value={p.id}>{p.name}</option>
+                                        ))}
+                                    </select>
+                                    <select className={inputClassPlain + ' sm:w-60'} value={selectedPartId}
+                                            onChange={e => setSelectedPartId(e.target.value)}>
+                                        <option value="">— daļa (nav obligāti) —</option>
+                                        {(lookups.studyProgramParts || []).map(pp => (
+                                            <option key={pp.id} value={pp.id}>{pp.name}</option>
+                                        ))}
+                                    </select>
+                                    <button onClick={handleAddStudyProgram}
+                                            disabled={!selectedProgramId || programSaving}
+                                            className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark disabled:opacity-50 text-sm whitespace-nowrap">
+                                        Pievienot
+                                    </button>
+                                </div>
+                            );
+                        })()}
                     </section>
 
                     {versionData && (

@@ -105,17 +105,20 @@ public class CourseVersion {
 
     /**
      * Atsauce uz akadēmisko gadu, kurā šī kursa versija ir spēkā.
+     * Nullable — jaunas Melnraksts versijas tiek izveidotas bez piesaistes konkrētam gadam;
+     * apstiprinātājs piesaista versiju gadam tikai pirms apstiprināšanas.
      */
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "academic_year_id", nullable = false)
+    @JoinColumn(name = "academic_year_id")
     @JsonIgnoreProperties({"courseVersions"})
     private AcademicYear academicYear;
 
     /**
      * Atsauce uz semestri – rudens, pavasara u.c.
+     * Nullable tāpat kā academicYear.
      */
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "semester_id", nullable = false)
+    @JoinColumn(name = "semester_id")
     @JsonIgnoreProperties({"courseVersions"})
     private Semester semester;
 

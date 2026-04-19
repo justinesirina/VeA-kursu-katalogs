@@ -3,6 +3,7 @@ import LookupSection from '../components/admin/LookupSection';
 import AcademicYearSection from '../components/admin/AcademicYearSection';
 import UserSection from '../components/admin/UserSection';
 import StudyProgramSection from '../components/admin/StudyProgramSection';
+import StudyProgramPartSection from '../components/admin/StudyProgramPartSection';
 
 const SECTIONS = [
     { key: 'semesters',             label: 'Semestri' },
@@ -19,6 +20,7 @@ const SECTIONS = [
     { key: 'user-roles',            label: 'Lietotāju lomas' },
     { key: 'users',                 label: 'Lietotāji' },
     { key: 'study-programs',        label: 'Studiju programmas' },
+    { key: 'study-program-parts',   label: 'Studiju programmas daļas' },
 ];
 
 const LOOKUP_CONFIGS = {
@@ -115,6 +117,7 @@ function renderSection(key) {
     if (key === 'academic-years') return <AcademicYearSection />;
     if (key === 'users')          return <UserSection />;
     if (key === 'study-programs') return <StudyProgramSection />;
+    if (key === 'study-program-parts') return <StudyProgramPartSection />;
     const cfg = LOOKUP_CONFIGS[key];
     if (cfg) return <LookupSection key={key} title={cfg.title} subtitle={cfg.subtitle} endpoint={cfg.endpoint} fields={cfg.fields} />;
     return <p className="text-gray-400">Sekcija nav konfigurēta.</p>;

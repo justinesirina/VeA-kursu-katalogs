@@ -48,7 +48,7 @@ public class CourseDetailsDTO {
     private List<PrerequisiteDTO> prerequisites;
 
     // --- Studiju programmas, semestris, gads, valoda ---
-    private List<String> studyPrograms;
+    private List<StudyProgramLinkDTO> studyPrograms;
     private String academicYear;
     private String semester;
     private String language;     // Pilnais nosaukums (skatam): "Latviešu"
