@@ -1,6 +1,7 @@
 package lv.venta.coursecatalog.service.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CourseResult;
+import lv.venta.coursecatalog.repository.courseinfo.CourseResultAssessmentRepository;
 import lv.venta.coursecatalog.repository.courseinfo.CourseResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,9 @@ public class CourseResultService {
 
     @Autowired
     private CourseResultRepository resultRepo;
+
+    @Autowired
+    private CourseResultAssessmentRepository resultAssessmentRepo;
 
     /**
      * Iegūst visus kursa rezultātus.
@@ -64,9 +68,8 @@ public class CourseResultService {
      */
     @Transactional
     public void deleteResultById(UUID id) {
-        if (!resultRepo.existsById(id)) {
-            throw new RuntimeException("Nav atrasts dzēšamais rezultāts ar id = " + id);
-        }
-        resultRepo.deleteById(id);
+        CourseResult result = getResultById(id);
+        resultAssessmentRepo.deleteAll(resultAssessmentRepo.findByCourseResult(result));
+        resultRepo.delete(result);
     }
 }

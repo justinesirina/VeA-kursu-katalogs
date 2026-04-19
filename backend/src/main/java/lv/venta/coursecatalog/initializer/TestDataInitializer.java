@@ -12,6 +12,8 @@ import lv.venta.coursecatalog.model.user.User;
 import lv.venta.coursecatalog.model.user.UserRole;
 import lv.venta.coursecatalog.model.support.Faculty;
 import lv.venta.coursecatalog.service.support.FacultyService;
+import lv.venta.coursecatalog.service.support.LanguageService;
+import lv.venta.coursecatalog.model.support.Language;
 import lv.venta.coursecatalog.model.courseinfo.CourseInfo;
 import lv.venta.coursecatalog.model.courseinfo.AssessmentForm;
 import lv.venta.coursecatalog.service.courseinfo.CourseInfoService;
@@ -41,6 +43,7 @@ public class TestDataInitializer {
     private final FacultyService facultyService;
     private final CourseInfoService courseInfoService;
     private final AssessmentFormService assessmentFormService;
+    private final LanguageService languageService;
 
 
     @PostConstruct
@@ -114,6 +117,17 @@ public class TestDataInitializer {
         version.setDecisionReference("ITF domes sēde, 2024.06.01");
 
         courseVersionService.saveCourseVersion(version);
+
+        // Izveidojam valodas
+        Language latvian = new Language();
+        latvian.setName("Latviešu");
+        latvian.setCode("lv");
+        languageService.create(latvian);
+
+        Language english = new Language();
+        english.setName("Angļu");
+        english.setCode("en");
+        languageService.create(english);
 
         // Izveidojam pārbaudes formu
         AssessmentForm examForm = new AssessmentForm();

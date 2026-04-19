@@ -11,6 +11,7 @@ import lv.venta.coursecatalog.repository.course.CourseRepository;
 import lv.venta.coursecatalog.repository.course.CourseTeacherRepository;
 import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
 import lv.venta.coursecatalog.repository.courseinfo.*;
+import lv.venta.coursecatalog.repository.support.LanguageRepository;
 import lv.venta.coursecatalog.model.program.CourseToProgrammeResults;
 import lv.venta.coursecatalog.repository.program.CourseToProgrammeResultsRepository;
 import lv.venta.coursecatalog.repository.program.CourseToStudyProgramsRepository;
@@ -70,6 +71,9 @@ public class CourseInfoService {
 
     @Autowired
     private LiteratureSourceRepository literatureRepo;
+
+    @Autowired
+    private LanguageRepository languageRepo;
 
     /**
      * Veido docētāja pilno nosaukumu ar grādu un amatu.
@@ -166,6 +170,8 @@ public class CourseInfoService {
 
         CourseDetailsDTO dto = new CourseDetailsDTO();
 
+        dto.setCourseInfoId(info.getId());
+
         dto.setVersionStatus(version.getStatus() != null ? version.getStatus().getName() : null);
         if (version.getApprovalDate() != null)
             dto.setApprovalDate(version.getApprovalDate().toString());
@@ -181,34 +187,57 @@ public class CourseInfoService {
         dto.setCredits(course.getCredits());
 
         dto.setAssessmentForm(info.getAssessmentForm() != null ? info.getAssessmentForm().getName() : null);
+        dto.setAssessmentFormId(info.getAssessmentForm() != null ? info.getAssessmentForm().getId() : null);
         dto.setAcademicHoursTotal(info.getAcademicHoursTotal());
-        dto.setLectureHours(info.getLectureHours());
-        dto.setPractClassesHours(info.getPractClassesHours());
+        dto.setLectureHours(info.getLectureHours() != null ? info.getLectureHours() : 0);
+        dto.setPractClassesHours(info.getPractClassesHours() != null ? info.getPractClassesHours() : 0);
 
         dto.setAcademicYear(version.getAcademicYear() != null ? version.getAcademicYear().getName() : null);
         dto.setSemester(version.getSemester() != null ? version.getSemester().getName() : null);
-        dto.setLanguage(info.getLanguage());
+        String languageCode = info.getLanguage();
+        String languageName = languageCode != null
+                ? languageRepo.findByCodeIgnoreCase(languageCode).map(l -> l.getName()).orElse(languageCode)
+                : null;
+        dto.setLanguage(languageName);
+        dto.setLanguageCode(languageCode);
 
         dto.setFacultyName(version.getFaculty() != null ? version.getFaculty().getName() : null);
 
-        // --- Autora (docētāja) vārds ar grādu un amatu ---
-        String authorName = null;
-
+        // --- Kursa autori ---
         List<CourseAuthor> authors = courseAuthorRepo.findByCourseId(course.getId());
+        List<StaffMemberDTO> authorDtos = authors.stream()
+                .filter(a -> a.getUser() != null)
+                .map(a -> {
+                    var u = a.getUser();
+                    return new StaffMemberDTO(
+                            buildAuthorTitle(u.getAcademicDegree(), u.getPosition(), u.getName(), u.getSurname()),
+                            a.getRole());
+                })
+                .collect(java.util.stream.Collectors.toList());
+        dto.setAuthors(authorDtos);
+        authorDtos.stream()
+                .filter(a -> "Autors".equals(a.getRole()))
+                .findFirst()
+                .or(() -> authorDtos.stream().findFirst())
+                .ifPresent(a -> dto.setAuthorFullTitle(a.getFullTitle()));
 
-        if (!authors.isEmpty()) {
-            var user = authors.get(0).getUser();
-            authorName = buildAuthorTitle(user.getAcademicDegree(), user.getPosition(),
-                    user.getName(), user.getSurname());
-        } else {
-            List<CourseTeacher> teachers = courseTeacherRepo.findByCourseId(course.getId());
-            if (!teachers.isEmpty()) {
-                var user = teachers.get(0).getUser();
-                authorName = buildAuthorTitle(user.getAcademicDegree(), user.getPosition(),
-                        user.getName(), user.getSurname());
-            }
-        }
-        dto.setAuthorFullTitle(authorName);
+        // --- Kursa mācībspēki ---
+        List<CourseTeacher> teachers = courseTeacherRepo.findByCourseId(course.getId());
+        List<StaffMemberDTO> teacherDtos = teachers.stream()
+                .filter(t -> t.getUser() != null)
+                .map(t -> {
+                    var u = t.getUser();
+                    return new StaffMemberDTO(
+                            buildAuthorTitle(u.getAcademicDegree(), u.getPosition(), u.getName(), u.getSurname()),
+                            t.getRole());
+                })
+                .collect(java.util.stream.Collectors.toList());
+        dto.setTeachers(teacherDtos);
+        teacherDtos.stream()
+                .filter(t -> "Atbildīgais mācībspēks".equals(t.getRole()))
+                .findFirst()
+                .or(() -> teacherDtos.stream().findFirst())
+                .ifPresent(t -> dto.setTeacherFullTitle(t.getFullTitle()));
 
         // --- Studiju kursa priekšnosacījumi ---
         List<PrerequisiteDTO> prereqDtos = new ArrayList <>();
@@ -221,25 +250,35 @@ public class CourseInfoService {
         dto.setPrerequisites(prereqDtos);
 
         dto.setPrerequisitesDescription(info.getPrerequisitesDescription());
+        dto.setGoal(info.getGoal());
+        dto.setAnnotation(info.getAnnotation());
 
-        // --- Piesaistītā studiju programma ---
-        List<String> studyProgramNames = new ArrayList<>();
+        // --- Piesaistītās studiju programmas ar programmas daļu ---
+        List<StudyProgramLinkDTO> studyProgramLinks = new ArrayList<>();
         courseToProgramRepo.findByCourseId(course.getId()).forEach(link -> {
-            studyProgramNames.add(link.getProgram().getName());
+            lv.venta.coursecatalog.model.program.StudyProgramPart part = link.getProgramPart();
+            studyProgramLinks.add(new StudyProgramLinkDTO(
+                    link.getId(),
+                    link.getProgram().getId(),
+                    link.getProgram().getName(),
+                    part != null ? part.getId() : null,
+                    part != null ? part.getName() : null
+            ));
         });
-        dto.setStudyPrograms(studyProgramNames);
+        dto.setStudyPrograms(studyProgramLinks);
 
         // --- Vērtēšanas sadalījums ---
         List<AssessmentComponentDTO> assessmentDtos = new ArrayList<>();
-        courseAssessmentRepo.findByCourseInfoIdOrderById(info.getId()).forEach(ad -> {
+        courseAssessmentRepo.findByCourseInfoIdOrderByDisplayOrderAscIdAsc(info.getId()).forEach(ad -> {
             String component = ad.getComponent().getName();
             int percent = ad.getPercentage();
-            assessmentDtos.add(new AssessmentComponentDTO(component, percent));
+            assessmentDtos.add(new AssessmentComponentDTO(ad.getId(), component, percent));
         });
         dto.setAssessmentDistribution(assessmentDtos);
 
         // --- Studiju kursa rezultāti (SKR) – CourseResult + SPSR + vērtēšanas komponentes ---
         List<ResultAssessmentDTO> assessmentCriteriaDtos = new ArrayList<>();
+        List<ResultAssessmentFullDTO> assessmentFullDtos = new ArrayList<>();
 
         courseResultRepo.findByCourseId(course.getId()).forEach(cr -> {
             List<String> components = new ArrayList<>();
@@ -247,6 +286,11 @@ public class CourseInfoService {
                 if (ra.isUsed()) {
                     components.add(ra.getComponent().getName());
                 }
+                assessmentFullDtos.add(new ResultAssessmentFullDTO(
+                        cr.getId(),
+                        ra.getComponent().getId(),
+                        ra.isUsed()
+                ));
             });
 
             // Iegūst atbilstošo SPSR (studiju programmas studiju rezultātu), ja tāds ir piesaistīts
@@ -254,16 +298,23 @@ public class CourseInfoService {
             String spsr = spsrLinks.isEmpty() ? null
                     : spsrLinks.get(0).getProgrammeResult().getLearningOutcome();
 
-            assessmentCriteriaDtos.add(new ResultAssessmentDTO(cr.getLearningOutcome(), spsr, components));
+            assessmentCriteriaDtos.add(new ResultAssessmentDTO(
+                    cr.getId(),
+                    cr.getLearningOutcome(),
+                    cr.getCategory() != null ? cr.getCategory().getName() : null,
+                    spsr,
+                    components
+            ));
         });
         dto.setResultAssessments(assessmentCriteriaDtos);
+        dto.setResultAssessmentsFull(assessmentFullDtos);
 
         // --- Patstāvīgā darba aktivitātes ar % sadalījumu ---
         List<SelfStudyDTO> selfStudyDtos = new ArrayList<>();
-        courseSelfStudyDistributionRepo.findByCourseInfo(info).forEach(ssd -> {
+        courseSelfStudyDistributionRepo.findByCourseInfoOrderByDisplayOrderAscIdAsc(info).forEach(ssd -> {
             String activity = ssd.getActivity().getName();
             int percent = ssd.getPercentage();
-            selfStudyDtos.add(new SelfStudyDTO(activity, percent));
+            selfStudyDtos.add(new SelfStudyDTO(ssd.getId(), activity, percent));
         });
         dto.setSelfStudyActivities(selfStudyDtos);
         dto.setIndependentWorkHours(info.getIndependentWorkHours());
@@ -273,6 +324,7 @@ public class CourseInfoService {
 
         contentRepo.findByCourseInfoOrderBySequenceNumberAsc(info).forEach(content -> {
             TopicDTO topic = new TopicDTO(
+                    content.getId(),
                     content.getSequenceNumber(),
                     content.getTopicTitle(),
                     content.getTopicDescription()
@@ -285,16 +337,29 @@ public class CourseInfoService {
         // --- Studiju kursa kalendārais plāns ---
         List<CalendarPlanDTO> calendarPlanDtos = new ArrayList<>();
 
-        calendarTopicRepo.findByCourseInfo(info).forEach(topic -> {
+        calendarTopicRepo.findByCourseInfo(info).stream()
+                .sorted((a, b) -> Integer.compare(a.getSequenceNumber(), b.getSequenceNumber()))
+                .forEach(topic -> {
             List<SessionDTO> sessionDtos = new ArrayList<>();
 
-            calendarSessionRepo.findByTopic(topic).forEach(session -> {
-                String type = session.getSessionType().getName();
-                int hours = session.getAcademicHours();
-                sessionDtos.add(new SessionDTO(type, hours));
+            calendarSessionRepo.findByTopic(topic).stream()
+                    .sorted((a, b) -> Integer.compare(a.getSequenceNumber(), b.getSequenceNumber()))
+                    .forEach(session -> {
+                SessionDTO s = new SessionDTO();
+                s.setSessionId(session.getId());
+                s.setSessionTypeId(session.getSessionType().getId());
+                s.setSessionType(session.getSessionType().getName());
+                s.setAcademicHours(session.getAcademicHours());
+                s.setSequenceNumber(session.getSequenceNumber());
+                sessionDtos.add(s);
             });
 
-            CalendarPlanDTO plan = new CalendarPlanDTO(topic.getCourseContent().getTopicTitle(), sessionDtos);
+            CalendarPlanDTO plan = new CalendarPlanDTO();
+            plan.setCalendarTopicId(topic.getId());
+            plan.setTopicTitle(topic.getCourseContent().getTopicTitle());
+            plan.setCourseContentId(topic.getCourseContent().getId());
+            plan.setSequenceNumber(topic.getSequenceNumber());
+            plan.setSessions(sessionDtos);
             calendarPlanDtos.add(plan);
         });
 
@@ -309,8 +374,11 @@ public class CourseInfoService {
             grouped.putIfAbsent(type, new ArrayList<>());
 
             grouped.get(type).add(new LiteratureDTO(
+                    source.getId(),
+                    source.getType().getId(),
                     source.getCitation(),
-                    source.getUrl()
+                    source.getUrl(),
+                    source.getLanguage()
             ));
         });
 

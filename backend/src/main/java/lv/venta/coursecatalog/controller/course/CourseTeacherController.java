@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Kontrolieris kursa docētāju API piekļuvei.
@@ -21,6 +22,11 @@ public class CourseTeacherController {
     @GetMapping
     public List<CourseTeacher> getAll() {
         return service.getAll();
+    }
+
+    @GetMapping("/by-course/{courseId}")
+    public List<CourseTeacher> getByCourse(@PathVariable UUID courseId) {
+        return service.getByCourseId(courseId);
     }
 
     @PostMapping

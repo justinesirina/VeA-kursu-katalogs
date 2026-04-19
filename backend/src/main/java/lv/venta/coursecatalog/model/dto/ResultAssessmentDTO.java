@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * DTO klase, kas norāda, ar kādiem vērtēšanas veidiem tiek novērtēts konkrētais kursa rezultāts (SKR),
@@ -15,12 +16,18 @@ import java.util.List;
 @AllArgsConstructor
 public class ResultAssessmentDTO {
 
-    // SKR kā teksts (piemēram, “Spēj veikt datu struktūru implementāciju”)
-    private String courseResult;
+    // CourseResult ieraksta ID (vajadzīgs rediģēšanai)
+    private UUID courseResultId;
+
+    // SKR kā teksts (piemēram, "Spēj veikt datu struktūru implementāciju")
+    private String learningOutcome;
+
+    // Kategorijas nosaukums (piemēram: "Zināšanas", "Prasmes", "Kompetences")
+    private String categoryName;
 
     // SPSR — studiju programmas studiju rezultāts, kuram atbilst šis SKR (var būt null)
     private String spsr;
 
-    // Vērtēšanas komponentes, kas šo rezultātu novērtē (piemēram: “Eksāmens”, “Projekts”)
+    // Vērtēšanas komponentes, kas šo rezultātu novērtē (piemēram: "Eksāmens", "Projekts")
     private List<String> components;
 }

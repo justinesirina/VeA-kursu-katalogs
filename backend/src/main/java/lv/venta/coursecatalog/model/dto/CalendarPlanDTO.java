@@ -15,8 +15,17 @@ import java.util.List;
 @AllArgsConstructor
 public class CalendarPlanDTO {
 
+    // CalendarTopic ID rediģēšanai/dzēšanai
+    private int calendarTopicId;
+
     // Tēmas nosaukums, kurai šis plāns pieder
     private String topicTitle;
+
+    // CourseContent ID — saite uz tēmu no Tēmas sadaļas
+    private int courseContentId;
+
+    // Secības numurs kalendārajā plānā (ļauj pasniedzējam mainīt tēmu secību)
+    private int sequenceNumber;
 
     // Nodarbības, kas saistītas ar šo tēmu (lekcijas, semināri u.c.)
     private List<SessionDTO> sessions;

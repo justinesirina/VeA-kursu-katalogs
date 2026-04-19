@@ -34,6 +34,7 @@ public class CourseSelfStudyDistributionService {
         existing.setCourseInfo(updated.getCourseInfo());
         existing.setActivity(updated.getActivity());
         existing.setPercentage(updated.getPercentage());
+        existing.setDisplayOrder(updated.getDisplayOrder());
         existing.setUpdatedAt(updated.getUpdatedAt());
         existing.setUpdatedBy(updated.getUpdatedBy());
         return distRepo.save(existing);

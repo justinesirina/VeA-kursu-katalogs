@@ -33,9 +33,10 @@ public class LiteratureSourceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LiteratureSource> update(@PathVariable int id,
-                                                   @Valid @RequestBody LiteratureSource updated) {
-        return ResponseEntity.ok(sourceService.updateSource(id, updated));
+    public ResponseEntity<Void> update(@PathVariable int id,
+                                       @Valid @RequestBody LiteratureSource updated) {
+        sourceService.updateSource(id, updated);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

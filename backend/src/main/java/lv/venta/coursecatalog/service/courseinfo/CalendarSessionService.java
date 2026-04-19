@@ -1,7 +1,11 @@
 package lv.venta.coursecatalog.service.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CalendarSession;
+import lv.venta.coursecatalog.model.courseinfo.CalendarTopic;
+import lv.venta.coursecatalog.model.courseinfo.SessionType;
 import lv.venta.coursecatalog.repository.courseinfo.CalendarSessionRepository;
+import lv.venta.coursecatalog.repository.courseinfo.CalendarTopicRepository;
+import lv.venta.coursecatalog.repository.courseinfo.SessionTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +18,12 @@ public class CalendarSessionService {
     @Autowired
     private CalendarSessionRepository sessionRepo;
 
+    @Autowired
+    private CalendarTopicRepository topicRepo;
+
+    @Autowired
+    private SessionTypeRepository sessionTypeRepo;
+
     public List<CalendarSession> getAll() {
         return sessionRepo.findAll();
     }
@@ -25,6 +35,20 @@ public class CalendarSessionService {
 
     @Transactional
     public CalendarSession create(CalendarSession session) {
+        int topicId = session.getTopic().getId();
+        CalendarTopic topic = topicRepo.getReferenceById(topicId);
+        session.setTopic(topic);
+        int sessionTypeId = session.getSessionType().getId();
+        session.setSessionType(sessionTypeRepo.findById(sessionTypeId)
+                .orElseThrow(() -> new RuntimeException("SessionType nav atrasts: " + sessionTypeId)));
+        // Ja klients nav norādījis sequenceNumber, liekam to kā nākamo pēc kārtas
+        if (session.getSequenceNumber() <= 0) {
+            int maxSeq = sessionRepo.findByTopic(topic).stream()
+                    .mapToInt(CalendarSession::getSequenceNumber)
+                    .max()
+                    .orElse(0);
+            session.setSequenceNumber(maxSeq + 1);
+        }
         return sessionRepo.save(session);
     }
 
@@ -34,6 +58,9 @@ public class CalendarSessionService {
         existing.setTopic(updated.getTopic());
         existing.setSessionType(updated.getSessionType());
         existing.setAcademicHours(updated.getAcademicHours());
+        if (updated.getSequenceNumber() > 0) {
+            existing.setSequenceNumber(updated.getSequenceNumber());
+        }
         existing.setUpdatedAt(updated.getUpdatedAt());
         return sessionRepo.save(existing);
     }

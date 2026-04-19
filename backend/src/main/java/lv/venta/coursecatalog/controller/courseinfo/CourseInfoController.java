@@ -51,9 +51,10 @@ public class CourseInfoController {
      * Atjauno CourseInfo pēc ID.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CourseInfo> update(@PathVariable UUID id,
-                                             @Valid @RequestBody CourseInfo updated) {
-        return ResponseEntity.ok(infoService.update(id, updated));
+    public ResponseEntity<Void> update(@PathVariable UUID id,
+                                       @Valid @RequestBody CourseInfo updated) {
+        infoService.update(id, updated);
+        return ResponseEntity.noContent().build();
     }
 
     /**

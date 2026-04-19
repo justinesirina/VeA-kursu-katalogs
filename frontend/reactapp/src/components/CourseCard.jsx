@@ -14,17 +14,17 @@ function CourseCard({ course }) {
     const navigate = useNavigate();
 
     return (
-        <div className="bg-white rounded shadow p-4 border hover:shadow-lg transition">
+        <div className="bg-white rounded-lg border border-gray-200 border-t-4 border-t-vea-green p-4 hover:shadow-md transition-shadow flex flex-col">
             <h3
-                className="text-xl font-semibold mb-1 text-blue-600 hover:underline cursor-pointer"
+                className="text-xl font-semibold font-heading mb-1 text-vea-neutral hover:text-vea-green hover:underline cursor-pointer leading-snug"
                 onClick={() => navigate(`/courses/${course.id}`)}
             >
                 {course.titleLv}
             </h3>
-            <p className="text-sm text-gray-600 mb-1">Kods: {course.courseCode}</p>
-            <p className="text-sm text-gray-600 mb-3">Kredītpunkti: {course.credits}</p>
+            <p className="text-sm text-gray-500 mb-0.5">Kods: {course.courseCode}</p>
+            <p className="text-sm text-gray-500 mb-4">Kredītpunkti: {course.credits}</p>
             <button
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+                className="mt-auto bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark text-base"
                 onClick={() => navigate(`/courses/${course.id}`)}
             >
                 Skatīt

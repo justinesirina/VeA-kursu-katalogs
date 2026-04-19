@@ -44,9 +44,9 @@ public class LiteratureSource {
     )
     private String url;
 
-    // Valodas kods – tikai 'lv' vai 'en'
+    // Valodas kods – 'lv' vai 'en', neobligāts
     @Pattern(regexp = "^(lv|en)$", message = "Valodai jābūt 'lv' vai 'en'")
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String language;
 
     // Izveides un atjaunināšanas laiki

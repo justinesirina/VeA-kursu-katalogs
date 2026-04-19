@@ -34,8 +34,12 @@ public class Course {
 
     /**
      * Studiju kursa LAIS kods (piemēram, "IT101").
+     * Nullable — kods var tikt piešķirts tikai pēc kursa apstiprināšanas.
+     * Unikalitāte tiek nodrošināta ar partial indeksu SQL līmenī
+     * (tikai aktīviem, ne soft-deletētiem kursiem), lai atceltu kursi
+     * neaizņemtu kodu jauniem.
      */
-    @Column(name = "course_code", nullable = false, unique = true)
+    @Column(name = "course_code")
     private String courseCode;
 
     /**

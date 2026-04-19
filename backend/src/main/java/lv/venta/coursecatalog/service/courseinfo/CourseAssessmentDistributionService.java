@@ -56,6 +56,7 @@ public class CourseAssessmentDistributionService {
         CourseAssessmentDistribution existing = getDistributionById(id);
         existing.setComponent(updated.getComponent());
         existing.setPercentage(updated.getPercentage());
+        existing.setDisplayOrder(updated.getDisplayOrder());
         existing.setUpdatedAt(updated.getUpdatedAt());
         existing.setUpdatedBy(updated.getUpdatedBy());
         return distributionRepo.save(existing);

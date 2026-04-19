@@ -1,6 +1,7 @@
 package lv.venta.coursecatalog.model.course;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.user.User;
@@ -24,17 +25,16 @@ public class CourseAuthor implements Serializable {
     /**
      * Studiju kurss, kuram piesaistīts autors.
      */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Course course;
 
     /**
      * Lietotājs, kurš ir kursa autors.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User user;
 
     /**

@@ -9,4 +9,7 @@ import java.util.UUID;
 public interface CourseAssessmentDistributionRepository extends JpaRepository<CourseAssessmentDistribution, Integer> {
     // Šī metode vēlāk noderēs, lai iegūtu visus sadalījumus konkrētam kursam
     List<CourseAssessmentDistribution> findByCourseInfoIdOrderById(UUID courseInfoId);
+
+    // Sakārtots pēc lietotāja definētās secības (tad pēc id kā tiebreak)
+    List<CourseAssessmentDistribution> findByCourseInfoIdOrderByDisplayOrderAscIdAsc(UUID courseInfoId);
 }

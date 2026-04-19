@@ -33,9 +33,10 @@ public class CourseContentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CourseContent> update(@PathVariable int id,
-                                                @Valid @RequestBody CourseContent updated) {
-        return ResponseEntity.ok(contentService.update(id, updated));
+    public ResponseEntity<Void> update(@PathVariable int id,
+                                       @Valid @RequestBody CourseContent updated) {
+        contentService.update(id, updated);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

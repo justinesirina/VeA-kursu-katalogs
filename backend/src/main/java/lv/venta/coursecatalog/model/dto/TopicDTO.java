@@ -12,10 +12,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TopicDTO {
 
+    // DB ieraksta ID (vajadzīgs rediģēšanai)
+    private int id;
+
     // Tēmas secības numurs (1., 2., 3. utt.)
     private int sequenceNumber;
 
-    // Tēmas nosaukums (piemēram, “Koki”)
+    // Tēmas nosaukums (piemēram, "Koki")
     private String title;
 
     // Papildu tēmas apraksts, ja nepieciešams

@@ -26,6 +26,7 @@ public class CourseToStudyProgramsService {
                 .orElseThrow(() -> new Exception("Sasaistes ieraksts nav atrasts pēc ID = " + id));
         existing.setCourse(input.getCourse());
         existing.setProgram(input.getProgram());
+        existing.setProgramPart(input.getProgramPart());
         return repository.save(existing);
     }
 

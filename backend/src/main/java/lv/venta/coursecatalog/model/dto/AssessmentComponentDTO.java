@@ -12,7 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AssessmentComponentDTO {
 
-    // Komponentes nosaukums, piemēram: “Eksāmens”, “Mājasdarbs”
+    // DB ieraksta ID (vajadzīgs rediģēšanai)
+    private int id;
+
+    // Komponentes nosaukums, piemēram: "Eksāmens", "Mājasdarbs"
     private String componentName;
 
     // Procentuālā daļa (kopā visām jāveido 100%)

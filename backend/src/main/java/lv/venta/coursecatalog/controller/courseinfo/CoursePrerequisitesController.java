@@ -33,9 +33,10 @@ public class CoursePrerequisitesController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CoursePrerequisites> update(@PathVariable int id,
-                                                      @Valid @RequestBody CoursePrerequisites updated) {
-        return ResponseEntity.ok(prereqService.update(id, updated));
+    public ResponseEntity<Void> update(@PathVariable int id,
+                                       @Valid @RequestBody CoursePrerequisites updated) {
+        prereqService.update(id, updated);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

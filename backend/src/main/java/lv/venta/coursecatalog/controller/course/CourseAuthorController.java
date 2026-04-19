@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Kontrolieris kursa autoru API piekļuvei.
@@ -21,6 +22,11 @@ public class CourseAuthorController {
     @GetMapping
     public List<CourseAuthor> getAll() {
         return service.getAll();
+    }
+
+    @GetMapping("/by-course/{courseId}")
+    public List<CourseAuthor> getByCourse(@PathVariable UUID courseId) {
+        return service.getByCourseId(courseId);
     }
 
     @PostMapping

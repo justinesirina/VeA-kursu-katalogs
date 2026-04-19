@@ -13,9 +13,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SessionDTO {
 
+    // CalendarSession ID rediģēšanai/dzēšanai
+    private int sessionId;
+
+    // SessionType ID
+    private int sessionTypeId;
+
     // Nodarbības veids (piemēram, “Lekcija”, “Seminārs”)
     private String sessionType;
 
     // Akadēmisko stundu skaits
     private int academicHours;
+
+    // Secības numurs nodarbībai tēmas ietvaros (1., 2., 3. utt.)
+    private int sequenceNumber;
 }

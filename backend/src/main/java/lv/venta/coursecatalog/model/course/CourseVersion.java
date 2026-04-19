@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.model.course;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.support.AcademicYear;
@@ -91,6 +92,7 @@ public class CourseVersion {
     @Column(name = "is_archived", nullable = false)
     private boolean isArchived = false;
 
+    @JsonProperty("active")
     @Column(name = "is_active", nullable = false)
     private boolean isActive = false;
 
@@ -103,17 +105,20 @@ public class CourseVersion {
 
     /**
      * Atsauce uz akadēmisko gadu, kurā šī kursa versija ir spēkā.
+     * Nullable — jaunas Melnraksts versijas tiek izveidotas bez piesaistes konkrētam gadam;
+     * apstiprinātājs piesaista versiju gadam tikai pirms apstiprināšanas.
      */
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "academic_year_id", nullable = false)
+    @JoinColumn(name = "academic_year_id")
     @JsonIgnoreProperties({"courseVersions"})
     private AcademicYear academicYear;
 
     /**
      * Atsauce uz semestri – rudens, pavasara u.c.
+     * Nullable tāpat kā academicYear.
      */
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "semester_id", nullable = false)
+    @JoinColumn(name = "semester_id")
     @JsonIgnoreProperties({"courseVersions"})
     private Semester semester;
 

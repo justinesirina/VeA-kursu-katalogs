@@ -1,11 +1,15 @@
 package lv.venta.coursecatalog.model.courseinfo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.user.User;
 
 import java.time.LocalDateTime;
 
+// courseInfo: iekļauts deserializācijā (allowSetters), izslēgts no serializācijas (novērš ByteBuddy)
+@JsonIgnoreProperties(value = {"courseInfo"}, allowSetters = true)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -44,10 +48,12 @@ public class CourseContent {
 
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
     private User updatedBy;

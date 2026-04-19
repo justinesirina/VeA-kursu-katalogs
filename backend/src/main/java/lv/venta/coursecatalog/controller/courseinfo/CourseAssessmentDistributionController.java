@@ -46,9 +46,10 @@ public class CourseAssessmentDistributionController {
      * Atjauno sadalījumu.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CourseAssessmentDistribution> updateDistribution(@PathVariable int id,
-                                                                           @Valid @RequestBody CourseAssessmentDistribution updated) {
-        return ResponseEntity.ok(distributionService.updateDistribution(id, updated));
+    public ResponseEntity<Void> updateDistribution(@PathVariable int id,
+                                                   @Valid @RequestBody CourseAssessmentDistribution updated) {
+        distributionService.updateDistribution(id, updated);
+        return ResponseEntity.noContent().build();
     }
 
     /**
