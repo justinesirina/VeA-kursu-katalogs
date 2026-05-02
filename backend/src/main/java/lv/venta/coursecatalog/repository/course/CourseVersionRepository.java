@@ -37,4 +37,33 @@ public interface CourseVersionRepository extends JpaRepository<CourseVersion, UU
 
     Optional<CourseVersion> findTopByCourseAndIsActiveTrueOrderByVersionNumberDesc(Course course);
 
+    /**
+     * Atgriež soft-delete'tās (arhivētās) versijas.
+     * Native query, lai apietu Hibernate {@code @SQLRestriction("deleted_at IS NULL")}.
+     */
+    @Query(value = "SELECT * FROM course_versions WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC", nativeQuery = true)
+    List<CourseVersion> findAllArchived();
+
+    /**
+     * Atrod versiju pēc ID, neignorējot soft-delete'tās.
+     * Vajadzīgs atjaunošanas plūsmā, kur jāatrod arhivēta versija.
+     */
+    @Query(value = "SELECT * FROM course_versions WHERE id = :id", nativeQuery = true)
+    Optional<CourseVersion> findByIdIncludingArchived(@Param("id") UUID id);
+
+    /**
+     * Soft-delete versija: uzstāda deleted_at kārtējo laiku, izmantojot native UPDATE,
+     * lai apietu @SQLRestriction.
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "UPDATE course_versions SET deleted_at = CURRENT_TIMESTAMP, is_active = false WHERE id = :id", nativeQuery = true)
+    int softDeleteById(@Param("id") UUID id);
+
+    /**
+     * Atjauno arhivētu versiju: noņem deleted_at.
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "UPDATE course_versions SET deleted_at = NULL WHERE id = :id", nativeQuery = true)
+    int restoreById(@Param("id") UUID id);
+
 }

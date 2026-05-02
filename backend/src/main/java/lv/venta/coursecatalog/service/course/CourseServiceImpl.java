@@ -1,9 +1,12 @@
 package lv.venta.coursecatalog.service.course;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lv.venta.coursecatalog.model.course.Course;
 import lv.venta.coursecatalog.repository.course.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +23,9 @@ import java.util.UUID;
 public class CourseServiceImpl implements ICourseService {
 
     private final CourseRepository courseRepo;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     public CourseServiceImpl(CourseRepository courseRepo) {
@@ -90,6 +96,77 @@ public class CourseServiceImpl implements ICourseService {
     @Override
     public List<Course> getAllActiveCourses() {
         return courseRepo.findAllByActiveTrueAndDeletedAtIsNull();
+    }
+
+    @Override
+    public List<Course> getAllArchivedCourses() {
+        return courseRepo.findAllArchived();
+    }
+
+    @Override
+    @Transactional
+    public void restoreCourseById(UUID id) throws Exception {
+        Course archived = courseRepo.findByIdIncludingArchived(id)
+                .orElseThrow(() -> new Exception("Kurss ar ID " + id + " nav atrasts."));
+        if (archived.getDeletedAt() == null) {
+            throw new Exception("Kurss ar ID " + id + " nav arhivēts.");
+        }
+        int updated = courseRepo.restoreById(id);
+        if (updated == 0) {
+            throw new Exception("Neizdevās atjaunot kursu ar ID " + id);
+        }
+    }
+
+    /**
+     * Veic neatgriezenisku kursa fizisko dzēšanu no datubāzes.
+     * Pieļaujams tikai jau arhivētiem (soft-delete'tiem) kursiem.
+     *
+     * <p>Veic manuālu kaskādi caur native vaicājumiem, jo Hibernate cascade nedarbojas
+     * uz arhivētiem ierakstiem (@SQLRestriction filtrē LAZY relācijas).</p>
+     */
+    @Override
+    @Transactional
+    public void hardDeleteArchivedCourseById(UUID id) throws Exception {
+        Course archived = courseRepo.findByIdIncludingArchived(id)
+                .orElseThrow(() -> new Exception("Kurss ar ID " + id + " nav atrasts."));
+        if (archived.getDeletedAt() == null) {
+            throw new Exception("Tikai arhivētus kursus var dzēst neatgriezeniski. Vispirms arhivē kursu.");
+        }
+
+        // Dzēšana secībā no apakšas uz augšu (no FK leaf līdz course)
+        // Atsauces uz course_versions caur course_info bērniem
+        runDelete("DELETE FROM calendar_sessions WHERE topic_id IN (SELECT id FROM calendar_topics WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id)))", id);
+        runDelete("DELETE FROM calendar_topics WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id))", id);
+        runDelete("DELETE FROM course_content WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id))", id);
+        runDelete("DELETE FROM course_prerequisites WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id))", id);
+        runDelete("DELETE FROM literature_sources WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id))", id);
+        runDelete("DELETE FROM course_assessment_distribution WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id))", id);
+        runDelete("DELETE FROM course_self_study_distribution WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id))", id);
+        runDelete("DELETE FROM course_to_programme_results WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id))", id);
+        runDelete("DELETE FROM course_info WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id)", id);
+
+        // Course versijas log un komentāri
+        runDelete("DELETE FROM course_version_log WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id)", id);
+        runDelete("DELETE FROM course_version_comments WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id)", id);
+
+        // CourseResult un tā bērni
+        runDelete("DELETE FROM course_result_assessments WHERE course_result_id IN (SELECT id FROM course_results WHERE course_id = :id)", id);
+        runDelete("DELETE FROM course_to_programme_results WHERE course_result_id IN (SELECT id FROM course_results WHERE course_id = :id)", id);
+        runDelete("DELETE FROM course_results WHERE course_id = :id", id);
+
+        // Tiešas Course atsauces
+        runDelete("DELETE FROM course_teachers WHERE course_id = :id", id);
+        runDelete("DELETE FROM course_authors WHERE course_id = :id", id);
+        runDelete("DELETE FROM course_to_study_programs WHERE course_id = :id", id);
+        runDelete("DELETE FROM course_prerequisites WHERE required_course_id = :id", id);
+
+        // Visas versijas un kurss
+        runDelete("DELETE FROM course_versions WHERE course_id = :id", id);
+        runDelete("DELETE FROM courses WHERE id = :id", id);
+    }
+
+    private void runDelete(String sql, UUID id) {
+        entityManager.createNativeQuery(sql).setParameter("id", id).executeUpdate();
     }
 
 }

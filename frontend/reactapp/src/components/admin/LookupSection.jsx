@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Edit2, Trash2, Check, X, Plus } from 'lucide-react';
 import api from '../../services/axiosConfig';
 
-function LookupSection({ title, subtitle, endpoint, fields }) {
+const LookupSection = forwardRef(function LookupSection(
+    { title, subtitle, endpoint, fields, hideTitle = false, externalAddButton = false },
+    ref,
+) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -47,6 +50,8 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
         setDraft(emptyDraft);
         setConfirmDeleteId(null);
     };
+
+    useImperativeHandle(ref, () => ({ startAdd }), [emptyDraft]);
 
     const cancelEdit = () => {
         setEditingId(null);
@@ -105,23 +110,31 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
 
     if (loading) return <div className="text-gray-500 py-4">Ielādē...</div>;
 
+    const showInternalHeader = !hideTitle || !externalAddButton;
+
     return (
         <div>
-            <div className="flex items-start justify-between mb-4">
-                <div>
-                    <h2 className="text-2xl font-semibold font-heading text-vea-neutral">{title}</h2>
-                    {subtitle && (
-                        <p className="text-sm text-gray-500 mt-1 max-w-2xl">{subtitle}</p>
+            {showInternalHeader && (
+                <div className={`flex items-start mb-4 ${hideTitle ? 'justify-end' : 'justify-between'}`}>
+                    {!hideTitle && (
+                        <div>
+                            <h2 className="text-2xl font-semibold font-heading text-vea-neutral">{title}</h2>
+                            {subtitle && (
+                                <p className="text-sm text-gray-500 mt-1 max-w-2xl">{subtitle}</p>
+                            )}
+                        </div>
+                    )}
+                    {!externalAddButton && (
+                        <button
+                            onClick={startAdd}
+                            disabled={editingId !== null}
+                            className="flex items-center gap-1 bg-vea-green text-white px-3 py-1.5 rounded hover:bg-vea-green-dark disabled:opacity-50 text-sm shrink-0 ml-4"
+                        >
+                            <Plus className="w-4 h-4" aria-hidden="true" /> Pievienot
+                        </button>
                     )}
                 </div>
-                <button
-                    onClick={startAdd}
-                    disabled={editingId !== null}
-                    className="flex items-center gap-1 bg-vea-green text-white px-3 py-1.5 rounded hover:bg-vea-green-dark disabled:opacity-50 text-sm shrink-0 ml-4"
-                >
-                    <Plus className="w-4 h-4" aria-hidden="true" /> Pievienot
-                </button>
-            </div>
+            )}
 
             {error && (
                 <p className="text-red-600 bg-red-50 border border-red-200 rounded p-3 mb-3 text-sm">{error}</p>
@@ -290,6 +303,6 @@ function LookupSection({ title, subtitle, endpoint, fields }) {
             </div>
         </div>
     );
-}
+});
 
 export default LookupSection;

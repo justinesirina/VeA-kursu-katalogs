@@ -175,13 +175,6 @@ function CourseDetailsForm() {
 
     return (
         <div className="p-6 max-w-3xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-4xl md:text-[2.5rem] font-bold font-heading text-vea-neutral">Jauna kursa izveide</h1>
-                <button onClick={() => navigate('/')} className="text-vea-green hover:underline text-base">
-                    ← Atpakaļ uz sarakstu
-                </button>
-            </div>
-
             <p className="text-base text-vea-text">
                 Ievadi kursa pamata datus. Pēc izveides turpināsi aizpildīt saturu rediģēšanas skatā, kurā varēsi pievienot detalizētus kursa datus.
             </p>

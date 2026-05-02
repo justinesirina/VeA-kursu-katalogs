@@ -351,16 +351,6 @@ function CourseEditForm() {
 
     return (
         <div className="p-6 max-w-6xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-4xl md:text-[2.5rem] font-bold font-heading text-vea-neutral">Kursa rediģēšana</h1>
-                <button
-                    onClick={() => navigate(`/courses/${id}`)}
-                    className="text-vea-green hover:underline text-base"
-                >
-                    ← Atpakaļ uz kursu
-                </button>
-            </div>
-
             {/* Tab navigation */}
             <nav className="flex border-b border-gray-200 overflow-x-auto" aria-label="Rediģēšanas sadaļas">
                 {TABS.map((tab, idx) => (
