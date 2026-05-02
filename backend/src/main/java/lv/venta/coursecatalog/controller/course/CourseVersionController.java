@@ -67,13 +67,50 @@ public class CourseVersionController {
     }
 
     /**
-     * Dzēš kursa versiju pēc ID (pilnīga dzēšana no DB).
-     * Nākotnē aizstājama ar "soft delete".
+     * Mīkstā dzēšana — versija saglabājas DB ar deletedAt zīmogu un isActive=false.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVersion(@PathVariable UUID id) {
-        courseVersionService.deleteCourseVersionById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteVersion(@PathVariable UUID id) {
+        try {
+            courseVersionService.deleteCourseVersionById(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Arhivēto (soft-delete'to) versiju saraksts.
+     */
+    @GetMapping("/archived")
+    public List<CourseVersion> getAllArchivedVersions() {
+        return courseVersionService.getAllArchivedVersions();
+    }
+
+    /**
+     * Atjauno arhivētu versiju.
+     */
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<?> restoreVersion(@PathVariable UUID id) {
+        try {
+            courseVersionService.restoreCourseVersionById(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Neatgriezeniski dzēš arhivētu versiju (tikai arhivētām).
+     */
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<?> hardDeleteVersion(@PathVariable UUID id) {
+        try {
+            courseVersionService.hardDeleteArchivedVersionById(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 
 }

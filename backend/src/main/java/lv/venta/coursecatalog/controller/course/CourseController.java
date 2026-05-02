@@ -42,6 +42,42 @@ public class CourseController {
         return courseService.getAllActiveCourses();
     }
 
+    @Operation(summary = "Iegūt arhivētos kursus", description = "Atgriež soft-delete'tos kursus (deletedAt nav null)")
+    @ApiResponse(responseCode = "200", description = "Arhivēto kursu saraksts")
+    @GetMapping("/archived")
+    public List<Course> getAllArchivedCourses() {
+        return courseService.getAllArchivedCourses();
+    }
+
+    @Operation(summary = "Atjaunot arhivētu kursu", description = "Noņem deletedAt un uzstāda active=true")
+    @ApiResponse(responseCode = "204", description = "Kurss atjaunots")
+    @ApiResponse(responseCode = "404", description = "Kurss nav atrasts vai nav arhivēts")
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<?> restoreCourse(@PathVariable UUID id) {
+        try {
+            courseService.restoreCourseById(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @Operation(
+            summary = "Neatgriezeniski dzēst arhivētu kursu",
+            description = "Pilnīgi izdzēš kursu un visus tā pakārtotos ierakstus no datubāzes. Pieejams tikai arhivētiem (soft-delete'tiem) kursiem."
+    )
+    @ApiResponse(responseCode = "204", description = "Kurss neatgriezeniski dzēsts")
+    @ApiResponse(responseCode = "404", description = "Kurss nav atrasts vai nav arhivēts")
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<?> hardDeleteCourse(@PathVariable UUID id) {
+        try {
+            courseService.hardDeleteArchivedCourseById(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
     @Operation(summary = "Izveidot kursu", description = "Izveido jaunu studiju kursu")
     @ApiResponse(responseCode = "200", description = "Izveidotais kurss")
     @ApiResponse(responseCode = "400", description = "Validācijas kļūda")

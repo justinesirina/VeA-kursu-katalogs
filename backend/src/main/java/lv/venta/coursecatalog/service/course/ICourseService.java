@@ -45,5 +45,23 @@ public interface ICourseService {
 
     List<Course> getAllActiveCourses();
 
+    /**
+     * Atgriež arhivētos (soft-delete'tos) kursus.
+     */
+    List<Course> getAllArchivedCourses();
+
+    /**
+     * Atjauno arhivētu kursu (noņem deletedAt, uzstāda active=true).
+     * @param id atjaunojama kursa ID
+     * @throws Exception ja kurss nav atrasts
+     */
+    void restoreCourseById(UUID id) throws Exception;
+
+    /**
+     * Veic neatgriezenisku kursa fizisko dzēšanu — pieejams tikai arhivētiem.
+     * @param id arhivēta kursa ID
+     * @throws Exception ja kurss nav atrasts vai nav arhivēts
+     */
+    void hardDeleteArchivedCourseById(UUID id) throws Exception;
 
 }

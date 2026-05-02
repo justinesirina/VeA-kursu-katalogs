@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Edit2, Trash2, Check, X, Plus } from 'lucide-react';
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { Edit2, Trash2, Check, X } from 'lucide-react';
 import api from '../../services/axiosConfig';
 
 const EMPTY = { name: '', nameEn: '', description: '' };
 
-function StudyProgramPartSection() {
+const StudyProgramPartSection = forwardRef(function StudyProgramPartSection(props, ref) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -49,6 +49,8 @@ function StudyProgramPartSection() {
         setDraft(EMPTY);
         setConfirmDeleteId(null);
     };
+
+    useImperativeHandle(ref, () => ({ startAdd }), []);
 
     const cancelEdit = () => { setEditingId(null); setDraft(EMPTY); };
 
@@ -135,13 +137,6 @@ function StudyProgramPartSection() {
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Studiju programmas daļas</h2>
-                <button onClick={startAdd} disabled={editingId !== null}
-                    className="flex items-center gap-1 bg-vea-green text-white px-3 py-1.5 rounded hover:bg-vea-green-dark disabled:opacity-50 text-sm">
-                    <Plus className="w-4 h-4" /> Pievienot
-                </button>
-            </div>
 
             {error && <p className="text-red-600 bg-red-50 border border-red-200 rounded p-3 mb-3 text-sm">{error}</p>}
             {successMsg && <p className="text-green-600 bg-green-50 border border-green-200 rounded px-3 py-2 mb-3 text-sm">{successMsg}</p>}
@@ -205,6 +200,6 @@ function StudyProgramPartSection() {
             </div>
         </div>
     );
-}
+});
 
 export default StudyProgramPartSection;

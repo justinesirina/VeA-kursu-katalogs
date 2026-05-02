@@ -1,5 +1,7 @@
 package lv.venta.coursecatalog.service.course;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lv.venta.coursecatalog.model.course.CourseVersion;
 import lv.venta.coursecatalog.repository.course.CourseRepository;
 import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
@@ -26,6 +28,9 @@ public class CourseVersionService {
     private final VersionStatusRepository versionStatusRepository;
     private final AcademicYearRepository academicYearRepository;
     private final SemesterRepository semesterRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     //Precizēts konstruktors
     @Autowired
@@ -101,10 +106,68 @@ public class CourseVersionService {
 
 
     /**
-     * Dzēš (pilnībā) kursa versiju pēc tās ID.
-     * Šī metode izmanto fizisko dzēšanu – vēlāk ieviesīsim "soft delete".
+     * Veic versijas mīksto dzēšanu (soft delete) — uzstāda deletedAt un isActive=false.
+     * Native UPDATE bypass'o @SQLRestriction filtru.
      */
+    @Transactional
     public void deleteCourseVersionById(UUID id) {
-        courseVersionRepository.deleteById(id);
+        int updated = courseVersionRepository.softDeleteById(id);
+        if (updated == 0) {
+            throw new RuntimeException("Versija ar ID " + id + " nav atrasta.");
+        }
+    }
+
+    /**
+     * Atgriež visas arhivētās (soft-delete'tās) versijas.
+     */
+    public List<CourseVersion> getAllArchivedVersions() {
+        return courseVersionRepository.findAllArchived();
+    }
+
+    /**
+     * Atjauno arhivētu versiju, noņemot deletedAt.
+     */
+    @Transactional
+    public void restoreCourseVersionById(UUID id) {
+        CourseVersion archived = courseVersionRepository.findByIdIncludingArchived(id)
+                .orElseThrow(() -> new RuntimeException("Versija ar ID " + id + " nav atrasta."));
+        if (archived.getDeletedAt() == null) {
+            throw new RuntimeException("Versija ar ID " + id + " nav arhivēta.");
+        }
+        int updated = courseVersionRepository.restoreById(id);
+        if (updated == 0) {
+            throw new RuntimeException("Neizdevās atjaunot versiju ar ID " + id);
+        }
+    }
+
+    /**
+     * Veic neatgriezenisku versijas fizisko dzēšanu — pieejams tikai arhivētai versijai.
+     * Manuālā kaskāde caur native vaicājumiem (skat. CourseServiceImpl.hardDeleteArchivedCourseById).
+     */
+    @Transactional
+    public void hardDeleteArchivedVersionById(UUID id) {
+        CourseVersion archived = courseVersionRepository.findByIdIncludingArchived(id)
+                .orElseThrow(() -> new RuntimeException("Versija ar ID " + id + " nav atrasta."));
+        if (archived.getDeletedAt() == null) {
+            throw new RuntimeException("Tikai arhivētas versijas var dzēst neatgriezeniski.");
+        }
+
+        // Dzēš no zemākā līmeņa uz augšu
+        runDelete("DELETE FROM calendar_sessions WHERE topic_id IN (SELECT id FROM calendar_topics WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id = :id))", id);
+        runDelete("DELETE FROM calendar_topics WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id = :id)", id);
+        runDelete("DELETE FROM course_content WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id = :id)", id);
+        runDelete("DELETE FROM course_prerequisites WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id = :id)", id);
+        runDelete("DELETE FROM literature_sources WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id = :id)", id);
+        runDelete("DELETE FROM course_assessment_distribution WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id = :id)", id);
+        runDelete("DELETE FROM course_self_study_distribution WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id = :id)", id);
+        runDelete("DELETE FROM course_to_programme_results WHERE course_info_id IN (SELECT id FROM course_info WHERE course_version_id = :id)", id);
+        runDelete("DELETE FROM course_info WHERE course_version_id = :id", id);
+        runDelete("DELETE FROM course_version_log WHERE course_version_id = :id", id);
+        runDelete("DELETE FROM course_version_comments WHERE course_version_id = :id", id);
+        runDelete("DELETE FROM course_versions WHERE id = :id", id);
+    }
+
+    private void runDelete(String sql, UUID id) {
+        entityManager.createNativeQuery(sql).setParameter("id", id).executeUpdate();
     }
 }

@@ -15,9 +15,9 @@ function CourseDetails() {
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [deleting, setDeleting] = useState(false);
-    const [deleteError, setDeleteError] = useState(null);
+    const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+    const [archiving, setArchiving] = useState(false);
+    const [archiveError, setArchiveError] = useState(null);
 
     useEffect(() => {
         setLoading(true);
@@ -28,15 +28,15 @@ function CourseDetails() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    const handleDelete = async () => {
-        setDeleting(true);
-        setDeleteError(null);
+    const handleArchive = async () => {
+        setArchiving(true);
+        setArchiveError(null);
         try {
             await api.delete(`/courses/${id}`);
             navigate('/');
         } catch {
-            setDeleteError('Neizdevās dzēst kursu. Lūdzu, mēģini vēlreiz.');
-            setDeleting(false);
+            setArchiveError('Neizdevās arhivēt kursu. Lūdzu, mēģini vēlreiz.');
+            setArchiving(false);
         }
     };
 
@@ -126,11 +126,6 @@ function CourseDetails() {
 
     return (
         <div className="p-6 space-y-6 max-w-6xl mx-auto text-vea-text print:text-black">
-
-            <button onClick={() => navigate('/')} className="text-vea-green hover:underline text-base mb-1">
-                ← Atpakaļ uz kursiem
-            </button>
-
             {/* ── 1. DARBĪBAS POGAS ── */}
             <div className="flex gap-2 flex-wrap">
                 <button className="bg-vea-green text-white px-4 py-2 rounded text-base hover:bg-vea-green-dark">
@@ -143,10 +138,10 @@ function CourseDetails() {
                     Rediģēt
                 </button>
                 <button
-                    onClick={() => setShowDeleteConfirm(true)}
+                    onClick={() => setShowArchiveConfirm(true)}
                     className="bg-red-600 text-white px-4 py-2 rounded text-base hover:bg-red-700 ml-auto"
                 >
-                    Dzēst
+                    Arhivēt
                 </button>
             </div>
 
@@ -179,25 +174,25 @@ function CourseDetails() {
                 </div>
             </div>
 
-            {/* Dzēšanas apstiprinājums */}
-            {showDeleteConfirm && (
-                <div className="bg-red-50 border border-red-300 rounded-lg p-4 flex flex-wrap items-center gap-4">
-                    <p className="text-red-700 font-medium flex-1 text-base">
-                        Vai tiešām vēlies dzēst šo kursu? Šo darbību nevar atsaukt.
+            {/* Arhivēšanas apstiprinājums */}
+            {showArchiveConfirm && (
+                <div className="bg-vea-orange-light border border-vea-orange/40 rounded-lg p-4 flex flex-wrap items-center gap-4">
+                    <p className="text-vea-neutral flex-1 text-base">
+                        Pārvietot kursu uz arhīvu? Tas pazudīs no aktīvā kataloga. Ja to būs nepieciešams atjaunot, sazinies ar Administratoru.
                     </p>
                     <button
-                        onClick={handleDelete} disabled={deleting}
+                        onClick={handleArchive} disabled={archiving}
                         className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 text-base"
                     >
-                        {deleting ? 'Dzēš...' : 'Jā, dzēst'}
+                        {archiving ? 'Arhivē...' : 'Jā, arhivēt'}
                     </button>
                     <button
-                        onClick={() => setShowDeleteConfirm(false)}
-                        className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 text-base"
+                        onClick={() => setShowArchiveConfirm(false)}
+                        className="border border-gray-300 bg-white px-4 py-2 rounded hover:bg-gray-100 text-base"
                     >
                         Atcelt
                     </button>
-                    {deleteError && <p className="w-full text-red-600 text-base">{deleteError}</p>}
+                    {archiveError && <p className="w-full text-red-600 text-base">{archiveError}</p>}
                 </div>
             )}
 
