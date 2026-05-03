@@ -153,7 +153,7 @@ public class CourseInfoService {
     }
 
     /**
-     * Izveido sākotnējo CourseDetailsDTO ar pamatinformāciju par kursu, versiju un saturu.
+     * Izveido CourseDetailsDTO aktīvajai kursa versijai (galvenais publiskais skats).
      */
     public CourseDetailsDTO getCourseDetailsById(UUID courseId) {
         Optional<Course> courseOpt = courseRepo.findById(courseId);
@@ -168,6 +168,29 @@ public class CourseInfoService {
                 .orElse(null);
         if (info == null) return null;
 
+        return buildDetailsDTO(course, version, info);
+    }
+
+    /**
+     * Izveido CourseDetailsDTO konkrētai vēsturiskai versijai (versiju vēstures read-only skatam).
+     * Atšķirībā no {@link #getCourseDetailsById} neprasa, lai versija būtu aktīvā.
+     */
+    public CourseDetailsDTO getCourseDetailsByVersionId(UUID versionId) {
+        CourseVersion version = versionRepo.findById(versionId).orElse(null);
+        if (version == null) return null;
+
+        Course course = version.getCourse();
+        if (course == null) return null;
+
+        CourseInfo info = infoRepo.findByCourseAndCourseVersion(course, version).orElse(null);
+        if (info == null) return null;
+
+        CourseDetailsDTO dto = buildDetailsDTO(course, version, info);
+        dto.setVersionNumber(version.getVersionNumber());
+        return dto;
+    }
+
+    private CourseDetailsDTO buildDetailsDTO(Course course, CourseVersion version, CourseInfo info) {
         CourseDetailsDTO dto = new CourseDetailsDTO();
 
         dto.setCourseInfoId(info.getId());
@@ -203,8 +226,8 @@ public class CourseInfoService {
 
         dto.setFacultyName(version.getFaculty() != null ? version.getFaculty().getName() : null);
 
-        // --- Kursa autori ---
-        List<CourseAuthor> authors = courseAuthorRepo.findByCourseId(course.getId());
+        // --- Kursa autori (versionēti) ---
+        List<CourseAuthor> authors = courseAuthorRepo.findByCourseVersionId(version.getId());
         List<StaffMemberDTO> authorDtos = authors.stream()
                 .filter(a -> a.getUser() != null)
                 .map(a -> {
@@ -221,8 +244,8 @@ public class CourseInfoService {
                 .or(() -> authorDtos.stream().findFirst())
                 .ifPresent(a -> dto.setAuthorFullTitle(a.getFullTitle()));
 
-        // --- Kursa mācībspēki ---
-        List<CourseTeacher> teachers = courseTeacherRepo.findByCourseId(course.getId());
+        // --- Kursa mācībspēki (versionēti) ---
+        List<CourseTeacher> teachers = courseTeacherRepo.findByCourseVersionId(version.getId());
         List<StaffMemberDTO> teacherDtos = teachers.stream()
                 .filter(t -> t.getUser() != null)
                 .map(t -> {
@@ -253,9 +276,9 @@ public class CourseInfoService {
         dto.setGoal(info.getGoal());
         dto.setAnnotation(info.getAnnotation());
 
-        // --- Piesaistītās studiju programmas ar programmas daļu ---
+        // --- Piesaistītās studiju programmas ar programmas daļu (versionētas) ---
         List<StudyProgramLinkDTO> studyProgramLinks = new ArrayList<>();
-        courseToProgramRepo.findByCourseId(course.getId()).forEach(link -> {
+        courseToProgramRepo.findByCourseVersionId(version.getId()).forEach(link -> {
             lv.venta.coursecatalog.model.program.StudyProgramPart part = link.getProgramPart();
             studyProgramLinks.add(new StudyProgramLinkDTO(
                     link.getId(),

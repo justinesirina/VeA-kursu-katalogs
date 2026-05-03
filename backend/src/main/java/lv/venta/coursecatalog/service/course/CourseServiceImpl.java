@@ -154,10 +154,12 @@ public class CourseServiceImpl implements ICourseService {
         runDelete("DELETE FROM course_to_programme_results WHERE course_result_id IN (SELECT id FROM course_results WHERE course_id = :id)", id);
         runDelete("DELETE FROM course_results WHERE course_id = :id", id);
 
-        // Tiešas Course atsauces
-        runDelete("DELETE FROM course_teachers WHERE course_id = :id", id);
-        runDelete("DELETE FROM course_authors WHERE course_id = :id", id);
-        runDelete("DELETE FROM course_to_study_programs WHERE course_id = :id", id);
+        // Versijas līmeņa sasaistes (autori, pasniedzēji, programmas tagad ir versionētas)
+        runDelete("DELETE FROM course_teachers WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id)", id);
+        runDelete("DELETE FROM course_authors WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id)", id);
+        runDelete("DELETE FROM course_to_study_programs WHERE course_version_id IN (SELECT id FROM course_versions WHERE course_id = :id)", id);
+
+        // Tiešas Course atsauces (citi kursi, kas norāda šo kā priekšnosacījumu)
         runDelete("DELETE FROM course_prerequisites WHERE required_course_id = :id", id);
 
         // Visas versijas un kurss
