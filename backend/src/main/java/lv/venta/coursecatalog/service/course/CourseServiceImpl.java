@@ -3,7 +3,9 @@ package lv.venta.coursecatalog.service.course;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lv.venta.coursecatalog.model.course.Course;
+import lv.venta.coursecatalog.model.dto.ArchivedCourseDTO;
 import lv.venta.coursecatalog.repository.course.CourseRepository;
+import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,13 +25,15 @@ import java.util.UUID;
 public class CourseServiceImpl implements ICourseService {
 
     private final CourseRepository courseRepo;
+    private final CourseVersionRepository courseVersionRepo;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Autowired
-    public CourseServiceImpl(CourseRepository courseRepo) {
+    public CourseServiceImpl(CourseRepository courseRepo, CourseVersionRepository courseVersionRepo) {
         this.courseRepo = courseRepo;
+        this.courseVersionRepo = courseVersionRepo;
     }
 
     /**
@@ -101,6 +105,17 @@ public class CourseServiceImpl implements ICourseService {
     @Override
     public List<Course> getAllArchivedCourses() {
         return courseRepo.findAllArchived();
+    }
+
+    /**
+     * Atgriež arhivētos kursus DTO formā ar agregētu versiju info
+     * (skaits + jaunākās versijas Nr. un statuss).
+     */
+    @Override
+    public List<ArchivedCourseDTO> getAllArchivedCoursesAsDTO() {
+        return courseRepo.findAllArchived().stream()
+                .map(c -> ArchivedCourseDTO.from(c, courseVersionRepo.findByCourseId(c.getId())))
+                .toList();
     }
 
     @Override

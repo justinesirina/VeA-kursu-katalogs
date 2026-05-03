@@ -1,6 +1,12 @@
 package lv.venta.coursecatalog.controller.course;
 
 import lv.venta.coursecatalog.model.course.CourseVersion;
+import lv.venta.coursecatalog.model.dto.ApproveVersionRequest;
+import lv.venta.coursecatalog.model.dto.ArchivedVersionDTO;
+import lv.venta.coursecatalog.model.dto.RejectVersionRequest;
+import lv.venta.coursecatalog.model.dto.ReopenVersionRequest;
+import lv.venta.coursecatalog.model.dto.SubmitVersionRequest;
+import lv.venta.coursecatalog.service.course.CourseVersionApprovalService;
 import lv.venta.coursecatalog.service.course.CourseVersionDuplicationService;
 import lv.venta.coursecatalog.service.course.CourseVersionService;
 import jakarta.validation.Valid;
@@ -22,11 +28,14 @@ public class CourseVersionController {
 
     private final CourseVersionService courseVersionService;
     private final CourseVersionDuplicationService duplicationService;
+    private final CourseVersionApprovalService approvalService;
 
     public CourseVersionController(CourseVersionService courseVersionService,
-                                   CourseVersionDuplicationService duplicationService) {
+                                   CourseVersionDuplicationService duplicationService,
+                                   CourseVersionApprovalService approvalService) {
         this.courseVersionService = courseVersionService;
         this.duplicationService = duplicationService;
+        this.approvalService = approvalService;
     }
 
     /**
@@ -85,11 +94,11 @@ public class CourseVersionController {
     }
 
     /**
-     * Arhivēto (soft-delete'to) versiju saraksts.
+     * Arhivēto (soft-delete'to) versiju saraksts ar saistītā kursa pamatinformāciju.
      */
     @GetMapping("/archived")
-    public List<CourseVersion> getAllArchivedVersions() {
-        return courseVersionService.getAllArchivedVersions();
+    public List<ArchivedVersionDTO> getAllArchivedVersions() {
+        return courseVersionService.getAllArchivedVersionsAsDTO();
     }
 
     /**
@@ -130,6 +139,44 @@ public class CourseVersionController {
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    // ----- F8: apstiprināšanas plūsmas pārejas -----
+
+    @PostMapping("/{id}/submit")
+    public ResponseEntity<?> submit(@PathVariable UUID id, @RequestBody SubmitVersionRequest req) {
+        return runTransition(() -> approvalService.submit(id, req.getActorUserId(), req.getComment()));
+    }
+
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<?> approve(@PathVariable UUID id, @RequestBody ApproveVersionRequest req) {
+        return runTransition(() -> approvalService.approve(
+                id,
+                req.getActorUserId(),
+                req.getDecisionNumber(),
+                req.getApprovalDate(),
+                req.getDecisionReference(),
+                req.getComment()));
+    }
+
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<?> reject(@PathVariable UUID id, @RequestBody RejectVersionRequest req) {
+        return runTransition(() -> approvalService.reject(id, req.getActorUserId(), req.getComment()));
+    }
+
+    @PostMapping("/{id}/reopen")
+    public ResponseEntity<?> reopen(@PathVariable UUID id, @RequestBody ReopenVersionRequest req) {
+        return runTransition(() -> approvalService.reopenToDraft(id, req.getActorUserId(), req.getComment()));
+    }
+
+    private ResponseEntity<?> runTransition(java.util.function.Supplier<CourseVersion> action) {
+        try {
+            return ResponseEntity.ok(action.get());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

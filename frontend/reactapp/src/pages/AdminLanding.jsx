@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Database, Users, GraduationCap, Archive, ChevronRight } from 'lucide-react';
+import { Database, Users, GraduationCap, Archive, ChevronRight, History } from 'lucide-react';
 
 const TILES = [
     {
@@ -22,6 +22,13 @@ const TILES = [
         title: 'Studiju programmas',
         description: 'Programmas un to daļas',
         Icon: GraduationCap,
+    },
+    {
+        key: 'version-log',
+        path: '/admin/version-log',
+        title: 'Versiju žurnāls',
+        description: 'Visu kursa versiju statusu pāreju vēsture',
+        Icon: History,
     },
     {
         key: 'archive',

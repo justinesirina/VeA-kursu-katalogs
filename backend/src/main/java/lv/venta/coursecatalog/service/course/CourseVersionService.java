@@ -3,6 +3,7 @@ package lv.venta.coursecatalog.service.course;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lv.venta.coursecatalog.model.course.CourseVersion;
+import lv.venta.coursecatalog.model.dto.ArchivedVersionDTO;
 import lv.venta.coursecatalog.repository.course.CourseRepository;
 import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
 import lv.venta.coursecatalog.repository.support.AcademicYearRepository;
@@ -79,15 +80,36 @@ public class CourseVersionService {
 
     /**
      * Saglabā jaunu vai atjaunotu kursa versiju.
-     * Ja versijai ir ID, tiks veikta atjaunināšana; ja nav – izveide.
+     * Ja versijai ir ID un tā jau eksistē, statuss un apstiprināšanas metadati tiek
+     * pārmantoti no DB — tos drīkst mainīt tikai F8 apstiprināšanas plūsmas
+     * galapunkti (/submit, /approve, /reject, /reopen).
      */
     @Transactional
     public CourseVersion saveCourseVersion(CourseVersion version) {
         UUID courseId = version.getCourse().getId();
-        int statusId = version.getStatus().getId();
-
         version.setCourse(courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found")));
-        version.setStatus(versionStatusRepository.findById(statusId).orElseThrow(() -> new RuntimeException("Status not found")));
+
+        Optional<CourseVersion> existing = version.getId() != null
+                ? courseVersionRepository.findById(version.getId())
+                : Optional.empty();
+
+        if (existing.isPresent()) {
+            // F8: ģenēriskā saglabāšana nedrīkst mainīt status, isActive vai apstiprināšanas metadatus.
+            CourseVersion current = existing.get();
+            version.setStatus(current.getStatus());
+            version.setActive(current.isActive());
+            version.setApprovalDate(current.getApprovalDate());
+            version.setDecisionNumber(current.getDecisionNumber());
+            version.setDecisionReference(current.getDecisionReference());
+        } else if (version.getStatus() != null && version.getStatus().getId() != 0) {
+            int statusId = version.getStatus().getId();
+            version.setStatus(versionStatusRepository.findById(statusId)
+                    .orElseThrow(() -> new RuntimeException("Status not found")));
+        } else {
+            // Jaunas versijas bez norādīta statusa noklusē uz Melnrakstu (F8 plūsmas sākums).
+            version.setStatus(versionStatusRepository.findByName("Melnraksts")
+                    .orElseThrow(() -> new RuntimeException("Status 'Melnraksts' not seeded")));
+        }
 
         // academicYear un semester ir nullable (Melnraksts versijā vēl nav piesaistes gadam)
         if (version.getAcademicYear() != null) {
@@ -122,6 +144,17 @@ public class CourseVersionService {
      */
     public List<CourseVersion> getAllArchivedVersions() {
         return courseVersionRepository.findAllArchived();
+    }
+
+    /**
+     * Atgriež arhivētās versijas plakanas DTO formā ar saistītā kursa pamatinformāciju.
+     * Risina problēmu, ka {@code CourseVersion.course} ir ar {@code @JsonBackReference}
+     * un netiktu serializēts JSON atbildē.
+     */
+    public List<ArchivedVersionDTO> getAllArchivedVersionsAsDTO() {
+        return courseVersionRepository.findAllArchived().stream()
+                .map(ArchivedVersionDTO::from)
+                .toList();
     }
 
     /**

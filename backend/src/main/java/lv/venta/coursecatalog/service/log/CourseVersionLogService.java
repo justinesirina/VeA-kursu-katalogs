@@ -1,10 +1,12 @@
 package lv.venta.coursecatalog.service.log;
 
+import lv.venta.coursecatalog.model.dto.CourseVersionLogDTO;
 import lv.venta.coursecatalog.model.log.CourseVersionLog;
 import lv.venta.coursecatalog.repository.log.CourseVersionLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -18,6 +20,18 @@ public class CourseVersionLogService {
 
     public List<CourseVersionLog> getAll() {
         return repository.findAll();
+    }
+
+    /**
+     * F9 — atgriež plakanu žurnāla projekciju, sakārtotu pēc laika dilstoši.
+     */
+    public List<CourseVersionLogDTO> getAllAsDTO() {
+        return repository.findAll().stream()
+                .sorted(Comparator.comparing(
+                        CourseVersionLog::getCreatedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(CourseVersionLogDTO::from)
+                .toList();
     }
 
     public CourseVersionLog create(CourseVersionLog input) {

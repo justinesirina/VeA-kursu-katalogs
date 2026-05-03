@@ -303,7 +303,15 @@ function CourseDetails() {
                             <InfoRow label="Kredītpunkti / ECTS" value={d.credits} />
                             {d.studyPrograms && d.studyPrograms.length > 0 ? (
                                 <li className="flex flex-col gap-0.5 text-base">
-                                    <span className="text-gray-500">Studiju programma un daļa:</span>
+                                    <span className="text-gray-500">
+                                        Studiju programma un daļa
+                                        {!(d.versionStatus || '').toLowerCase().includes('apstip') && (
+                                            <span className="ml-2 text-xs bg-vea-orange-light text-vea-orange px-1.5 py-0.5 rounded-full font-medium align-middle">
+                                                Gaida apstiprināšanu
+                                            </span>
+                                        )}
+                                        :
+                                    </span>
                                     <ul className="space-y-0.5 pl-1">
                                         {d.studyPrograms.map(p => (
                                             <li key={p.id} className="flex items-baseline gap-2 flex-wrap">

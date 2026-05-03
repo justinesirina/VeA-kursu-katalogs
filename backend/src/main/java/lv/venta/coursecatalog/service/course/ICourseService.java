@@ -1,6 +1,7 @@
 package lv.venta.coursecatalog.service.course;
 
 import lv.venta.coursecatalog.model.course.Course;
+import lv.venta.coursecatalog.model.dto.ArchivedCourseDTO;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,6 +50,11 @@ public interface ICourseService {
      * Atgriež arhivētos (soft-delete'tos) kursus.
      */
     List<Course> getAllArchivedCourses();
+
+    /**
+     * Atgriež arhivētos kursus DTO formā ar versiju agregātiem.
+     */
+    List<ArchivedCourseDTO> getAllArchivedCoursesAsDTO();
 
     /**
      * Atjauno arhivētu kursu (noņem deletedAt, uzstāda active=true).

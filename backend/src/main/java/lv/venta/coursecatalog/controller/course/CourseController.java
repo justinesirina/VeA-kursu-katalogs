@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lv.venta.coursecatalog.model.course.Course;
+import lv.venta.coursecatalog.model.dto.ArchivedCourseDTO;
 import lv.venta.coursecatalog.service.course.ICourseService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -42,11 +43,12 @@ public class CourseController {
         return courseService.getAllActiveCourses();
     }
 
-    @Operation(summary = "Iegūt arhivētos kursus", description = "Atgriež soft-delete'tos kursus (deletedAt nav null)")
+    @Operation(summary = "Iegūt arhivētos kursus",
+            description = "Atgriež soft-delete'tos kursus (deletedAt nav null) ar versiju agregātiem")
     @ApiResponse(responseCode = "200", description = "Arhivēto kursu saraksts")
     @GetMapping("/archived")
-    public List<Course> getAllArchivedCourses() {
-        return courseService.getAllArchivedCourses();
+    public List<ArchivedCourseDTO> getAllArchivedCourses() {
+        return courseService.getAllArchivedCoursesAsDTO();
     }
 
     @Operation(summary = "Atjaunot arhivētu kursu", description = "Noņem deletedAt un uzstāda active=true")

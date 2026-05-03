@@ -1,5 +1,6 @@
 package lv.venta.coursecatalog.controller.log;
 
+import lv.venta.coursecatalog.model.dto.CourseVersionLogDTO;
 import lv.venta.coursecatalog.model.log.CourseVersionLog;
 import lv.venta.coursecatalog.service.log.CourseVersionLogService;
 import jakarta.validation.Valid;
@@ -19,8 +20,8 @@ public class CourseVersionLogController {
     private CourseVersionLogService service;
 
     @GetMapping
-    public List<CourseVersionLog> getAll() {
-        return service.getAll();
+    public List<CourseVersionLogDTO> getAll() {
+        return service.getAllAsDTO();
     }
 
     @PostMapping

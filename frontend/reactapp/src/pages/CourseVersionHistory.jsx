@@ -1,24 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Eye, Plus } from 'lucide-react';
+import { Eye, Plus, Archive } from 'lucide-react';
 import api from '../services/axiosConfig';
 import { useToast } from '../components/ui/ToastProvider';
+import { statusBadgeClass } from '../utils/statusBadge';
+import WarningDialog from '../components/ui/WarningDialog';
 
 function formatDate(iso) {
     if (!iso) return '—';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
     return d.toLocaleDateString('lv-LV', { year: 'numeric', month: '2-digit', day: '2-digit' });
-}
-
-function statusBadgeClass(name) {
-    if (!name) return 'vea-badge vea-badge-neutral';
-    const lower = name.toLowerCase();
-    if (lower.includes('apstip')) return 'vea-badge bg-green-100 text-green-700';
-    if (lower.includes('iesniegts')) return 'vea-badge bg-blue-100 text-blue-700';
-    if (lower.includes('noraid')) return 'vea-badge bg-red-100 text-red-700';
-    if (lower.includes('arhiv')) return 'vea-badge bg-gray-200 text-gray-600';
-    return 'vea-badge bg-vea-orange-light text-vea-orange';
 }
 
 function personLabel(user) {
@@ -36,6 +28,8 @@ function CourseVersionHistory() {
     const [versions, setVersions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
+    const [archiveTarget, setArchiveTarget] = useState(null);
+    const [archiving, setArchiving] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -58,6 +52,35 @@ function CourseVersionHistory() {
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
     }, [id, showToast]);
+
+    const reload = () => {
+        setLoading(true);
+        api.get(`/course-versions/by-course/${id}`)
+            .then(res => {
+                const sorted = [...(res.data || [])].sort(
+                    (a, b) => (b.versionNumber || 0) - (a.versionNumber || 0)
+                );
+                setVersions(sorted);
+            })
+            .catch(() => showToast('Neizdevās ielādēt versijas.', 'error'))
+            .finally(() => setLoading(false));
+    };
+
+    const handleArchive = async () => {
+        if (!archiveTarget) return;
+        setArchiving(true);
+        try {
+            await api.delete(`/course-versions/${archiveTarget.id}`);
+            showToast(`Versija Nr. ${archiveTarget.versionNumber} arhivēta.`);
+            setArchiveTarget(null);
+            reload();
+        } catch (err) {
+            console.error('Kļūda arhivējot versiju:', err);
+            showToast(err?.response?.data || 'Neizdevās arhivēt versiju.', 'error');
+        } finally {
+            setArchiving(false);
+        }
+    };
 
     const handleCreateNewVersion = async () => {
         if (creating || versions.length === 0) return;
@@ -145,16 +168,28 @@ function CourseVersionHistory() {
                                         <td className="vea-td text-sm text-gray-500">{formatDate(v.createdAt)}</td>
                                         <td className="vea-td text-sm text-gray-500">{formatDate(v.updatedAt)}</td>
                                         <td className="vea-td text-right">
-                                            <button
-                                                type="button"
-                                                onClick={() => navigate(v.active
-                                                    ? `/courses/${id}`
-                                                    : `/courses/${id}/versions/${v.id}/view`)}
-                                                className="inline-flex items-center gap-1.5 bg-white text-vea-green border border-vea-green px-3 py-1.5 rounded text-sm hover:bg-vea-green-light transition-colors"
-                                            >
-                                                <Eye className="w-4 h-4" aria-hidden="true" />
-                                                Skatīt
-                                            </button>
+                                            <div className="inline-flex gap-1.5">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate(v.active
+                                                        ? `/courses/${id}`
+                                                        : `/courses/${id}/versions/${v.id}/view`)}
+                                                    className="inline-flex items-center gap-1.5 bg-white text-vea-green border border-vea-green px-3 py-1.5 rounded text-sm hover:bg-vea-green-light transition-colors"
+                                                >
+                                                    <Eye className="w-4 h-4" aria-hidden="true" />
+                                                    Skatīt
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setArchiveTarget(v)}
+                                                    disabled={v.active}
+                                                    title={v.active ? 'Aktīvo versiju nevar arhivēt' : 'Arhivēt šo versiju'}
+                                                    className="inline-flex items-center gap-1.5 bg-white text-vea-orange border border-vea-orange px-2.5 py-1.5 rounded text-sm hover:bg-vea-orange-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                                                    aria-label={`Arhivēt versiju ${v.versionNumber}`}
+                                                >
+                                                    <Archive className="w-4 h-4" aria-hidden="true" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -189,21 +224,48 @@ function CourseVersionHistory() {
                                     <dt className="text-gray-400">Atjaunots</dt>
                                     <dd>{formatDate(v.updatedAt)}</dd>
                                 </dl>
-                                <button
-                                    type="button"
-                                    onClick={() => navigate(v.active
-                                        ? `/courses/${id}`
-                                        : `/courses/${id}/versions/${v.id}/view`)}
-                                    className="w-full inline-flex items-center justify-center gap-1.5 bg-white text-vea-green border border-vea-green px-3 py-2 rounded text-sm hover:bg-vea-green-light transition-colors"
-                                >
-                                    <Eye className="w-4 h-4" aria-hidden="true" />
-                                    Skatīt versiju
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(v.active
+                                            ? `/courses/${id}`
+                                            : `/courses/${id}/versions/${v.id}/view`)}
+                                        className="flex-1 inline-flex items-center justify-center gap-1.5 bg-white text-vea-green border border-vea-green px-3 py-2 rounded text-sm hover:bg-vea-green-light transition-colors"
+                                    >
+                                        <Eye className="w-4 h-4" aria-hidden="true" />
+                                        Skatīt versiju
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setArchiveTarget(v)}
+                                        disabled={v.active}
+                                        className="inline-flex items-center justify-center gap-1.5 bg-white text-vea-orange border border-vea-orange px-3 py-2 rounded text-sm hover:bg-vea-orange-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                                        aria-label="Arhivēt versiju"
+                                    >
+                                        <Archive className="w-4 h-4" aria-hidden="true" />
+                                    </button>
+                                </div>
                             </li>
                         ))}
                     </ul>
                 </>
             )}
+
+            <WarningDialog
+                open={!!archiveTarget}
+                title="Arhivēt versiju"
+                description={
+                    <p>
+                        Vai tiešām vēlies arhivēt <span className="font-semibold">versiju Nr. {archiveTarget?.versionNumber}</span>
+                        {archiveTarget?.status?.name && <> (statuss: <span className="font-semibold">{archiveTarget.status.name}</span>)</>}?
+                        {' '}Versiju varēs atjaunot administrācijas arhīva sadaļā.
+                    </p>
+                }
+                primaryLabel={archiving ? 'Arhivē…' : 'Arhivēt'}
+                primaryTone="danger"
+                onPrimary={handleArchive}
+                onClose={() => !archiving && setArchiveTarget(null)}
+            />
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, matchPath } from 'react-router-dom';
-import { Database, Users, GraduationCap, Archive, Settings, BookOpen, FilePlus, FileEdit, History } from 'lucide-react';
+import { Database, Users, GraduationCap, Archive, Settings, BookOpen, FilePlus, FileEdit, History, ScrollText } from 'lucide-react';
 import AllCourses from './pages/AllCourses';
 import CourseDetails from './pages/CourseDetails';
 import CourseDetailsForm from "./components/CourseDetailsForm";
@@ -9,9 +9,11 @@ import AdminPage from "./pages/AdminPage";
 import AdminLanding from "./pages/AdminLanding";
 import AdminUsers from "./pages/AdminUsers";
 import AdminPrograms from "./pages/AdminPrograms";
+import AdminVersionLog from "./pages/AdminVersionLog";
 import ArchivedCourses from "./pages/ArchivedCourses";
 import DesignPreview from "./pages/DesignPreview";
 import { ToastProvider } from './components/ui/ToastProvider';
+import CurrentUserSwitcher from './components/ui/CurrentUserSwitcher';
 import veaLogo from './assets/vea-logo.svg';
 
 const SECTION_CONFIGS = [
@@ -19,6 +21,7 @@ const SECTION_CONFIGS = [
     { match: '/admin/system-fields',                  label: 'Sistēmas lauki',     Icon: Database },
     { match: '/admin/users',                          label: 'Lietotāji',          Icon: Users },
     { match: '/admin/programs',                       label: 'Studiju programmas', Icon: GraduationCap },
+    { match: '/admin/version-log',                    label: 'Versiju žurnāls',    Icon: ScrollText },
     { match: '/admin/archive',                        label: 'Arhīvs',             Icon: Archive },
     { match: '/courses/new',                          label: 'Jauns kurss',        Icon: FilePlus },
     { match: '/courses/:id/edit',                     label: 'Kursa rediģēšana',   Icon: FileEdit },
@@ -109,6 +112,7 @@ function NavBar() {
                         {backLabel}
                     </button>
                 )}
+                <CurrentUserSwitcher />
             </nav>
         </header>
     );
@@ -138,6 +142,7 @@ function App() {
                         <Route path="/admin/system-fields" element={<AdminPage />} />
                         <Route path="/admin/users" element={<AdminUsers />} />
                         <Route path="/admin/programs" element={<AdminPrograms />} />
+                        <Route path="/admin/version-log" element={<AdminVersionLog />} />
                         <Route path="/admin/archive" element={<ArchivedCourses />} />
                         <Route path="/design-preview" element={<DesignPreview />} />
                     </Routes>

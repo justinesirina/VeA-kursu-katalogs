@@ -23,17 +23,20 @@ public class CourseVersionLog implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    // courseVersion paliek LAZY, jo CourseVersion entītijai ir @SQLRestriction("deleted_at IS NULL");
+    // EAGER fetch izgāztos, kad žurnāla ieraksts norāda uz arhivētu (soft-deleted) versiju.
+    // DTO mapping handle null/exception gracefully.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_version_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private CourseVersion courseVersion;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "action_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private CourseVersionAction action;

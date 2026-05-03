@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { RotateCcw, Trash2, AlertTriangle } from 'lucide-react';
 import api from '../services/axiosConfig';
 import { useToast } from '../components/ui/ToastProvider';
+import { statusBadgeClass } from '../utils/statusBadge';
 
 const TABS = [
     { key: 'courses', label: 'Kursi' },
@@ -269,22 +270,54 @@ function ArchivedCoursesTable({ rows, onRestore, onPermanentDelete }) {
     }
     return (
         <div className="vea-table-wrap">
-            <table className="vea-table">
+            <table className="vea-table table-fixed w-full">
+                <colgroup>
+                    <col />{/* Kurss — paplašinās */}
+                    <col className="w-16" />
+                    <col className="w-28" />
+                    <col className="w-36" />
+                    <col className="w-28" />
+                    <col className="w-56" />
+                </colgroup>
                 <thead>
                     <tr>
-                        <th scope="col">Kods</th>
-                        <th scope="col">Nosaukums (LV)</th>
-                        <th scope="col" className="w-20 text-center">KP</th>
-                        <th scope="col" className="w-40">Arhivēts</th>
-                        <th scope="col" className="w-64 text-right" aria-label="Darbības" />
+                        <th scope="col">Kurss</th>
+                        <th scope="col" className="text-center">KP</th>
+                        <th scope="col" className="text-center whitespace-nowrap">Versijas</th>
+                        <th scope="col" className="whitespace-nowrap">Statuss</th>
+                        <th scope="col">Arhivēts</th>
+                        <th scope="col" className="text-right" aria-label="Darbības" />
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map(c => (
                         <tr key={c.id}>
-                            <td className="vea-td font-mono text-sm">{c.courseCode || '—'}</td>
-                            <td className="vea-td">{c.titleLv}</td>
-                            <td className="vea-td text-center font-semibold text-vea-neutral">{c.credits}</td>
+                            <td className="vea-td text-sm">
+                                <div className="flex flex-col leading-tight">
+                                    {c.courseCode && (
+                                        <span className="text-vea-neutral font-medium">{c.courseCode}</span>
+                                    )}
+                                    <span className="text-gray-700">{c.titleLv || '(bez nosaukuma)'}</span>
+                                    {c.titleEn && (
+                                        <span className="text-gray-400 italic">{c.titleEn}</span>
+                                    )}
+                                </div>
+                            </td>
+                            <td className="vea-td text-sm text-center">{c.credits}</td>
+                            <td className="vea-td text-sm text-center">
+                                {c.versionCount > 0
+                                    ? c.versionCount
+                                    : <span className="text-gray-400">—</span>}
+                            </td>
+                            <td className="vea-td text-sm">
+                                {c.latestVersionStatus ? (
+                                    <span className="vea-badge vea-badge-neutral">
+                                        {c.latestVersionStatus}
+                                    </span>
+                                ) : (
+                                    <span className="text-gray-400">—</span>
+                                )}
+                            </td>
                             <td className="vea-td text-sm text-gray-500">{formatDate(c.deletedAt)}</td>
                             <td className="vea-td text-right">
                                 <div className="inline-flex gap-2">
@@ -312,28 +345,46 @@ function ArchivedVersionsTable({ rows, onRestore, onPermanentDelete }) {
     }
     return (
         <div className="vea-table-wrap">
-            <table className="vea-table">
+            <table className="vea-table table-fixed w-full">
+                <colgroup>
+                    <col />{/* Kurss — paplašinās */}
+                    <col className="w-20" />
+                    <col className="w-32" />
+                    <col className="w-28" />
+                    <col className="w-24" />
+                    <col className="w-28" />
+                    <col className="w-56" />
+                </colgroup>
                 <thead>
                     <tr>
                         <th scope="col">Kurss</th>
-                        <th scope="col" className="w-24 text-center">Versija</th>
+                        <th scope="col" className="text-center whitespace-nowrap">Versija</th>
                         <th scope="col">Statuss</th>
-                        <th scope="col">Akad. gads</th>
+                        <th scope="col" className="whitespace-nowrap">Akad. gads</th>
                         <th scope="col">Semestris</th>
-                        <th scope="col" className="w-40">Arhivēts</th>
-                        <th scope="col" className="w-64 text-right" aria-label="Darbības" />
+                        <th scope="col">Arhivēts</th>
+                        <th scope="col" className="text-right" aria-label="Darbības" />
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map(v => {
-                        const courseLabel = v.course
-                            ? `${v.course.courseCode ? v.course.courseCode + ' · ' : ''}${v.course.titleLv ?? '(bez nosaukuma)'}`
-                            : '—';
                         const label = `Versija ${v.versionNumber} kursam ${v.course?.titleLv ?? ''}`;
                         return (
                             <tr key={v.id}>
-                                <td className="vea-td">{courseLabel}</td>
-                                <td className="vea-td text-center font-semibold">{v.versionNumber}</td>
+                                <td className="vea-td text-sm">
+                                    {v.course ? (
+                                        <div className="flex flex-col leading-tight">
+                                            {v.course.courseCode && (
+                                                <span className="text-vea-neutral font-medium">{v.course.courseCode}</span>
+                                            )}
+                                            <span className="text-gray-700">{v.course.titleLv ?? '(bez nosaukuma)'}</span>
+                                            {v.course.titleEn && (
+                                                <span className="text-gray-400 italic">{v.course.titleEn}</span>
+                                            )}
+                                        </div>
+                                    ) : '—'}
+                                </td>
+                                <td className="vea-td text-sm text-center">{v.versionNumber}</td>
                                 <td className="vea-td">
                                     {v.status?.name && (
                                         <span className="vea-badge vea-badge-neutral">{v.status.name}</span>
