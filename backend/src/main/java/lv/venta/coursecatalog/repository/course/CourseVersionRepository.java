@@ -38,6 +38,13 @@ public interface CourseVersionRepository extends JpaRepository<CourseVersion, UU
     Optional<CourseVersion> findTopByCourseAndIsActiveTrueOrderByVersionNumberDesc(Course course);
 
     /**
+     * Atgriež augstāko versionNumber konkrētam kursam (jaunas versijas izveidei).
+     * Atgriež null, ja kursam vēl nav versiju.
+     */
+    @Query("SELECT MAX(v.versionNumber) FROM CourseVersion v WHERE v.course.id = :courseId")
+    Integer findMaxVersionNumberByCourseId(@Param("courseId") UUID courseId);
+
+    /**
      * Atgriež soft-delete'tās (arhivētās) versijas.
      * Native query, lai apietu Hibernate {@code @SQLRestriction("deleted_at IS NULL")}.
      */

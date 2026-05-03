@@ -164,6 +164,12 @@ public class CourseVersionService {
         runDelete("DELETE FROM course_info WHERE course_version_id = :id", id);
         runDelete("DELETE FROM course_version_log WHERE course_version_id = :id", id);
         runDelete("DELETE FROM course_version_comments WHERE course_version_id = :id", id);
+
+        // Versijas līmeņa sasaistes (autori, pasniedzēji, programmas)
+        runDelete("DELETE FROM course_authors WHERE course_version_id = :id", id);
+        runDelete("DELETE FROM course_teachers WHERE course_version_id = :id", id);
+        runDelete("DELETE FROM course_to_study_programs WHERE course_version_id = :id", id);
+
         runDelete("DELETE FROM course_versions WHERE id = :id", id);
     }
 

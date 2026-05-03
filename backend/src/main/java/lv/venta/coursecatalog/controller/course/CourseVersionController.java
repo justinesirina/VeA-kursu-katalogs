@@ -1,8 +1,10 @@
 package lv.venta.coursecatalog.controller.course;
 
 import lv.venta.coursecatalog.model.course.CourseVersion;
+import lv.venta.coursecatalog.service.course.CourseVersionDuplicationService;
 import lv.venta.coursecatalog.service.course.CourseVersionService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +21,12 @@ import java.util.UUID;
 public class CourseVersionController {
 
     private final CourseVersionService courseVersionService;
+    private final CourseVersionDuplicationService duplicationService;
 
-    public CourseVersionController(CourseVersionService courseVersionService) {
+    public CourseVersionController(CourseVersionService courseVersionService,
+                                   CourseVersionDuplicationService duplicationService) {
         this.courseVersionService = courseVersionService;
+        this.duplicationService = duplicationService;
     }
 
     /**
@@ -97,6 +102,21 @@ public class CourseVersionController {
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Dzili duplicē esošu versiju — izveido jaunu Melnraksts versiju ar nokopētu CourseInfo saturu.
+     */
+    @PostMapping("/{id}/duplicate")
+    public ResponseEntity<?> duplicateVersion(@PathVariable UUID id) {
+        try {
+            CourseVersion created = duplicationService.duplicateVersion(id);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
