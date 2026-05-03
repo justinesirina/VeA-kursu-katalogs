@@ -1,5 +1,6 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { History } from 'lucide-react';
 import api from '../services/axiosConfig';
 import PercentageStackBar from '../components/ui/PercentageStackBar';
 
@@ -7,10 +8,15 @@ import PercentageStackBar from '../components/ui/PercentageStackBar';
  * Kursa detaļu skats — tikai lasīšana.
  * Sadaļu secība atbilst oficiālajam VeA kursa apraksta paraugam.
  * Rediģēšana notiek /courses/:id/edit lapā.
+ *
+ * Maršruti:
+ *   /courses/:id                          → aktīvā versija (rediģējamas darbības redzamas)
+ *   /courses/:id/versions/:versionId/view → vēsturiska versija (read-only ar brīdinājuma josliņu)
  */
 function CourseDetails() {
-    const { id } = useParams();
+    const { id, versionId } = useParams();
     const navigate = useNavigate();
+    const isHistoricalView = !!versionId;
 
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -18,14 +24,24 @@ function CourseDetails() {
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
     const [archiving, setArchiving] = useState(false);
     const [archiveError, setArchiveError] = useState(null);
+    const [versionsCount, setVersionsCount] = useState(null);
 
     useEffect(() => {
         setLoading(true);
         setError(null);
-        api.get(`/course-info/details/${id}`)
+        const url = isHistoricalView
+            ? `/course-info/details-by-version/${versionId}`
+            : `/course-info/details/${id}`;
+        api.get(url)
             .then(res => setCourse(res.data))
             .catch(() => setError('Neizdevās ielādēt kursa datus. Lūdzu, mēģini vēlreiz.'))
             .finally(() => setLoading(false));
+    }, [id, versionId, isHistoricalView]);
+
+    useEffect(() => {
+        api.get(`/course-versions/by-course/${id}`)
+            .then(res => setVersionsCount((res.data || []).length))
+            .catch(() => setVersionsCount(null));
     }, [id]);
 
     const handleArchive = async () => {
@@ -124,25 +140,102 @@ function CourseDetails() {
         </p>
     );
 
+    // Konteksta-pamatots banneris versijas-specifiskajam skatam
+    const renderVersionBanner = () => {
+        if (!isHistoricalView) return null;
+        const status = (d.versionStatus || '').toLowerCase();
+        const isApproved = status.includes('apstip');
+        const isDraft = status.includes('melnraksts');
+        const isSubmitted = status.includes('iesniegts');
+        const isRejected = status.includes('noraid');
+
+        let message;
+        if (isApproved) {
+            message = (
+                <>
+                    Šī ir <strong>vēsturiska</strong> apstiprināta versija (Nr. {d.versionNumber ?? '?'}).
+                    Tā nav pašreiz aktīvā kursa versija.
+                </>
+            );
+        } else if (isDraft) {
+            message = (
+                <>
+                    Šī ir <strong>Melnraksta</strong> versija (Nr. {d.versionNumber ?? '?'}) – tā vēl nav apstiprināta un nav publiski redzama.
+                </>
+            );
+        } else if (isSubmitted) {
+            message = (
+                <>
+                    Šī versija (Nr. {d.versionNumber ?? '?'}) ir <strong>iesniegta apstiprināšanai</strong>. Tā vēl nav publiski redzama.
+                </>
+            );
+        } else if (isRejected) {
+            message = (
+                <>
+                    Šī versija (Nr. {d.versionNumber ?? '?'}) ir <strong>noraidīta</strong>. Tā nav publiski redzama.
+                </>
+            );
+        } else {
+            message = (
+                <>
+                    Šī ir kursa versija Nr. {d.versionNumber ?? '?'}{d.versionStatus && <> ({d.versionStatus})</>}. Tā nav pašreiz aktīvā versija.
+                </>
+            );
+        }
+
+        return (
+            <div className="bg-vea-orange-light border border-vea-orange/40 rounded-lg p-4 text-vea-neutral text-base print:hidden">
+                <p>
+                    {message}{' '}
+                    <Link to={`/courses/${id}`} className="underline text-vea-green hover:text-vea-green-dark">
+                        Pāriet uz aktīvo kursa versiju →
+                    </Link>
+                </p>
+            </div>
+        );
+    };
+
     return (
         <div className="p-6 space-y-6 max-w-6xl mx-auto text-vea-text print:text-black">
+            {renderVersionBanner()}
+
             {/* ── 1. DARBĪBAS POGAS ── */}
             <div className="flex gap-2 flex-wrap">
                 <button className="bg-vea-green text-white px-4 py-2 rounded text-base hover:bg-vea-green-dark">
                     PDF
                 </button>
+                {!isHistoricalView && (
+                    <button
+                        onClick={() => navigate(`/courses/${id}/edit`)}
+                        className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90"
+                    >
+                        Rediģēt
+                    </button>
+                )}
+                {/* Vēsturiskā skatā: Rediģēt pieejams Melnrakstam, Iesniegtam un Noraidītam (ne Apstiprinātam) */}
+                {isHistoricalView && d.versionStatus && !d.versionStatus.toLowerCase().includes('apstip') && (
+                    <button
+                        onClick={() => navigate(`/courses/${id}/edit?version=${versionId}`)}
+                        className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90"
+                    >
+                        Rediģēt šo versiju
+                    </button>
+                )}
                 <button
-                    onClick={() => navigate(`/courses/${id}/edit`)}
-                    className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90"
+                    onClick={() => navigate(`/courses/${id}/versions`)}
+                    className="bg-white text-vea-green border border-vea-green px-4 py-2 rounded text-base hover:bg-vea-green-light inline-flex items-center gap-1.5"
                 >
-                    Rediģēt
+                    <History className="w-4 h-4" aria-hidden="true" />
+                    Versiju vēsture{versionsCount != null && <> ({versionsCount})</>}
                 </button>
-                <button
-                    onClick={() => setShowArchiveConfirm(true)}
-                    className="bg-red-600 text-white px-4 py-2 rounded text-base hover:bg-red-700 ml-auto"
-                >
-                    Arhivēt
-                </button>
+                {!isHistoricalView && (
+                    <button
+                        onClick={() => setShowArchiveConfirm(true)}
+                        className="bg-red-600 text-white px-4 py-2 rounded text-base hover:bg-red-700 ml-auto"
+                    >
+                        Arhivēt
+                    </button>
+                )}
             </div>
 
             {/* ── 2. VIRSRAKSTS + VERSIJAS STATUSS ── */}
