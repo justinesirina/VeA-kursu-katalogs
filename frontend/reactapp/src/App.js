@@ -1,27 +1,33 @@
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, matchPath } from 'react-router-dom';
-import { Database, Users, GraduationCap, Archive, Settings, BookOpen, FilePlus, FileEdit } from 'lucide-react';
+import { Database, Users, GraduationCap, Archive, Settings, BookOpen, FilePlus, FileEdit, History, ScrollText } from 'lucide-react';
 import AllCourses from './pages/AllCourses';
 import CourseDetails from './pages/CourseDetails';
 import CourseDetailsForm from "./components/CourseDetailsForm";
 import CourseEditForm from "./components/CourseEditForm";
+import CourseVersionHistory from "./pages/CourseVersionHistory";
 import AdminPage from "./pages/AdminPage";
 import AdminLanding from "./pages/AdminLanding";
 import AdminUsers from "./pages/AdminUsers";
 import AdminPrograms from "./pages/AdminPrograms";
+import AdminCourseActivityLog from "./pages/AdminCourseActivityLog";
 import ArchivedCourses from "./pages/ArchivedCourses";
 import DesignPreview from "./pages/DesignPreview";
 import { ToastProvider } from './components/ui/ToastProvider';
+import CurrentUserSwitcher from './components/ui/CurrentUserSwitcher';
 import veaLogo from './assets/vea-logo.svg';
 
 const SECTION_CONFIGS = [
-    { match: '/admin',                 label: 'Administrācija',     Icon: Settings },
-    { match: '/admin/system-fields',   label: 'Sistēmas lauki',     Icon: Database },
-    { match: '/admin/users',           label: 'Lietotāji',          Icon: Users },
-    { match: '/admin/programs',        label: 'Studiju programmas', Icon: GraduationCap },
-    { match: '/admin/archive',         label: 'Arhīvs',             Icon: Archive },
-    { match: '/courses/new',           label: 'Jauns kurss',        Icon: FilePlus },
-    { match: '/courses/:id/edit',      label: 'Kursa rediģēšana',   Icon: FileEdit },
-    { match: '/courses/:id',           label: 'Kurss',              Icon: BookOpen },
+    { match: '/admin',                                label: 'Administrācija',     Icon: Settings },
+    { match: '/admin/system-fields',                  label: 'Sistēmas lauki',     Icon: Database },
+    { match: '/admin/users',                          label: 'Lietotāji',          Icon: Users },
+    { match: '/admin/programs',                       label: 'Studiju programmas', Icon: GraduationCap },
+    { match: '/admin/activity-log',                   label: 'Kursu darbību žurnāls', Icon: ScrollText },
+    { match: '/admin/archive',                        label: 'Arhīvs',             Icon: Archive },
+    { match: '/courses/new',                          label: 'Jauns kurss',        Icon: FilePlus },
+    { match: '/courses/:id/edit',                     label: 'Kursa rediģēšana',   Icon: FileEdit },
+    { match: '/courses/:id/versions',                 label: 'Versiju vēsture',    Icon: History },
+    { match: '/courses/:id/versions/:versionId/view', label: 'Vēsturiska versija', Icon: History },
+    { match: '/courses/:id',                          label: 'Kurss',              Icon: BookOpen },
 ];
 
 function getSection(pathname) {
@@ -41,9 +47,17 @@ function NavBar() {
     const section = getSection(path);
 
     const editMatch = matchPath('/courses/:id/edit', path);
+    const versionViewMatch = matchPath('/courses/:id/versions/:versionId/view', path);
+    const versionsListMatch = matchPath('/courses/:id/versions', path);
     let backTo = null;
     let backLabel = null;
-    if (editMatch) {
+    if (versionViewMatch) {
+        backTo = `/courses/${versionViewMatch.params.id}/versions`;
+        backLabel = '← Versiju vēsture';
+    } else if (versionsListMatch) {
+        backTo = `/courses/${versionsListMatch.params.id}`;
+        backLabel = '← Uz kursu';
+    } else if (editMatch) {
         backTo = `/courses/${editMatch.params.id}`;
         backLabel = '← Uz kursu';
     } else if (isAdminSub) {
@@ -98,6 +112,7 @@ function NavBar() {
                         {backLabel}
                     </button>
                 )}
+                <CurrentUserSwitcher />
             </nav>
         </header>
     );
@@ -120,11 +135,14 @@ function App() {
                         <Route path="/" element={<AllCourses />} />
                         <Route path="/courses/new" element={<CourseDetailsForm />} />
                         <Route path="/courses/:id/edit" element={<CourseEditForm />} />
+                        <Route path="/courses/:id/versions" element={<CourseVersionHistory />} />
+                        <Route path="/courses/:id/versions/:versionId/view" element={<CourseDetails />} />
                         <Route path="/courses/:id" element={<CourseDetails />} />
                         <Route path="/admin" element={<AdminLanding />} />
                         <Route path="/admin/system-fields" element={<AdminPage />} />
                         <Route path="/admin/users" element={<AdminUsers />} />
                         <Route path="/admin/programs" element={<AdminPrograms />} />
+                        <Route path="/admin/activity-log" element={<AdminCourseActivityLog />} />
                         <Route path="/admin/archive" element={<ArchivedCourses />} />
                         <Route path="/design-preview" element={<DesignPreview />} />
                     </Routes>

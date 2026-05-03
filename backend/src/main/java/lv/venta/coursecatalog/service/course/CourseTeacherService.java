@@ -21,8 +21,8 @@ public class CourseTeacherService {
         return repository.findAll();
     }
 
-    public List<CourseTeacher> getByCourseId(UUID courseId) {
-        return repository.findByCourseId(courseId);
+    public List<CourseTeacher> getByCourseVersionId(UUID courseVersionId) {
+        return repository.findByCourseVersionId(courseVersionId);
     }
 
     public CourseTeacher create(CourseTeacher input) {
@@ -32,7 +32,7 @@ public class CourseTeacherService {
     public CourseTeacher update(int id, CourseTeacher input) throws Exception {
         CourseTeacher existing = repository.findById(id)
                 .orElseThrow(() -> new Exception("Docētāja ieraksts nav atrasts pēc ID = " + id));
-        existing.setCourse(input.getCourse());
+        existing.setCourseVersion(input.getCourseVersion());
         existing.setUser(input.getUser());
         existing.setRole(input.getRole());
         return repository.save(existing);

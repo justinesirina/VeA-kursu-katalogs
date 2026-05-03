@@ -3,11 +3,13 @@ package lv.venta.coursecatalog.service.course;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lv.venta.coursecatalog.model.course.CourseVersion;
+import lv.venta.coursecatalog.model.dto.ArchivedVersionDTO;
 import lv.venta.coursecatalog.repository.course.CourseRepository;
 import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
 import lv.venta.coursecatalog.repository.support.AcademicYearRepository;
 import lv.venta.coursecatalog.repository.support.SemesterRepository;
 import lv.venta.coursecatalog.repository.support.VersionStatusRepository;
+import lv.venta.coursecatalog.service.log.CourseVersionLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ public class CourseVersionService {
     private final VersionStatusRepository versionStatusRepository;
     private final AcademicYearRepository academicYearRepository;
     private final SemesterRepository semesterRepository;
+    private final CourseVersionLogService logService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -39,12 +42,14 @@ public class CourseVersionService {
             CourseRepository courseRepository,
             VersionStatusRepository versionStatusRepository,
             AcademicYearRepository academicYearRepository,
-            SemesterRepository semesterRepository) {
+            SemesterRepository semesterRepository,
+            CourseVersionLogService logService) {
         this.courseVersionRepository = courseVersionRepository;
         this.courseRepository = courseRepository;
         this.versionStatusRepository = versionStatusRepository;
         this.academicYearRepository = academicYearRepository;
         this.semesterRepository = semesterRepository;
+        this.logService = logService;
     }
 
     /**
@@ -79,15 +84,41 @@ public class CourseVersionService {
 
     /**
      * Saglabā jaunu vai atjaunotu kursa versiju.
-     * Ja versijai ir ID, tiks veikta atjaunināšana; ja nav – izveide.
+     * Ja versijai ir ID un tā jau eksistē, statuss un apstiprināšanas metadati tiek
+     * pārmantoti no DB — tos drīkst mainīt tikai F8 apstiprināšanas plūsmas
+     * galapunkti (/submit, /approve, /reject, /reopen).
      */
     @Transactional
     public CourseVersion saveCourseVersion(CourseVersion version) {
-        UUID courseId = version.getCourse().getId();
-        int statusId = version.getStatus().getId();
+        return saveCourseVersion(version, null);
+    }
 
+    @Transactional
+    public CourseVersion saveCourseVersion(CourseVersion version, Integer actorUserId) {
+        UUID courseId = version.getCourse().getId();
         version.setCourse(courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found")));
-        version.setStatus(versionStatusRepository.findById(statusId).orElseThrow(() -> new RuntimeException("Status not found")));
+
+        Optional<CourseVersion> existing = version.getId() != null
+                ? courseVersionRepository.findById(version.getId())
+                : Optional.empty();
+
+        if (existing.isPresent()) {
+            // F8: ģenēriskā saglabāšana nedrīkst mainīt status, isActive vai apstiprināšanas metadatus.
+            CourseVersion current = existing.get();
+            version.setStatus(current.getStatus());
+            version.setActive(current.isActive());
+            version.setApprovalDate(current.getApprovalDate());
+            version.setDecisionNumber(current.getDecisionNumber());
+            version.setDecisionReference(current.getDecisionReference());
+        } else if (version.getStatus() != null && version.getStatus().getId() != 0) {
+            int statusId = version.getStatus().getId();
+            version.setStatus(versionStatusRepository.findById(statusId)
+                    .orElseThrow(() -> new RuntimeException("Status not found")));
+        } else {
+            // Jaunas versijas bez norādīta statusa noklusē uz Melnrakstu (F8 plūsmas sākums).
+            version.setStatus(versionStatusRepository.findByName("Melnraksts")
+                    .orElseThrow(() -> new RuntimeException("Status 'Melnraksts' not seeded")));
+        }
 
         // academicYear un semester ir nullable (Melnraksts versijā vēl nav piesaistes gadam)
         if (version.getAcademicYear() != null) {
@@ -101,7 +132,12 @@ public class CourseVersionService {
                     .orElseThrow(() -> new RuntimeException("Semester not found")));
         }
 
-        return courseVersionRepository.save(version);
+        boolean isNew = !existing.isPresent();
+        CourseVersion saved = courseVersionRepository.save(version);
+        if (isNew) {
+            logService.append(saved.getCourse(), saved, actorUserId, "version_create", null);
+        }
+        return saved;
     }
 
 
@@ -111,9 +147,18 @@ public class CourseVersionService {
      */
     @Transactional
     public void deleteCourseVersionById(UUID id) {
+        deleteCourseVersionById(id, null);
+    }
+
+    @Transactional
+    public void deleteCourseVersionById(UUID id, Integer actorUserId) {
+        CourseVersion v = courseVersionRepository.findById(id).orElse(null);
         int updated = courseVersionRepository.softDeleteById(id);
         if (updated == 0) {
             throw new RuntimeException("Versija ar ID " + id + " nav atrasta.");
+        }
+        if (v != null) {
+            logService.append(v.getCourse(), v, actorUserId, "version_archive", null);
         }
     }
 
@@ -125,10 +170,26 @@ public class CourseVersionService {
     }
 
     /**
+     * Atgriež arhivētās versijas plakanas DTO formā ar saistītā kursa pamatinformāciju.
+     * Risina problēmu, ka {@code CourseVersion.course} ir ar {@code @JsonBackReference}
+     * un netiktu serializēts JSON atbildē.
+     */
+    public List<ArchivedVersionDTO> getAllArchivedVersionsAsDTO() {
+        return courseVersionRepository.findAllArchived().stream()
+                .map(ArchivedVersionDTO::from)
+                .toList();
+    }
+
+    /**
      * Atjauno arhivētu versiju, noņemot deletedAt.
      */
     @Transactional
     public void restoreCourseVersionById(UUID id) {
+        restoreCourseVersionById(id, null);
+    }
+
+    @Transactional
+    public void restoreCourseVersionById(UUID id, Integer actorUserId) {
         CourseVersion archived = courseVersionRepository.findByIdIncludingArchived(id)
                 .orElseThrow(() -> new RuntimeException("Versija ar ID " + id + " nav atrasta."));
         if (archived.getDeletedAt() == null) {
@@ -138,6 +199,7 @@ public class CourseVersionService {
         if (updated == 0) {
             throw new RuntimeException("Neizdevās atjaunot versiju ar ID " + id);
         }
+        logService.append(archived.getCourse(), archived, actorUserId, "version_restore", null);
     }
 
     /**
@@ -164,6 +226,12 @@ public class CourseVersionService {
         runDelete("DELETE FROM course_info WHERE course_version_id = :id", id);
         runDelete("DELETE FROM course_version_log WHERE course_version_id = :id", id);
         runDelete("DELETE FROM course_version_comments WHERE course_version_id = :id", id);
+
+        // Versijas līmeņa sasaistes (autori, pasniedzēji, programmas)
+        runDelete("DELETE FROM course_authors WHERE course_version_id = :id", id);
+        runDelete("DELETE FROM course_teachers WHERE course_version_id = :id", id);
+        runDelete("DELETE FROM course_to_study_programs WHERE course_version_id = :id", id);
+
         runDelete("DELETE FROM course_versions WHERE id = :id", id);
     }
 

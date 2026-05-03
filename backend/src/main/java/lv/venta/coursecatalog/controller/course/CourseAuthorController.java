@@ -24,9 +24,9 @@ public class CourseAuthorController {
         return service.getAll();
     }
 
-    @GetMapping("/by-course/{courseId}")
-    public List<CourseAuthor> getByCourse(@PathVariable UUID courseId) {
-        return service.getByCourseId(courseId);
+    @GetMapping("/by-version/{versionId}")
+    public List<CourseAuthor> getByVersion(@PathVariable UUID versionId) {
+        return service.getByCourseVersionId(versionId);
     }
 
     @PostMapping

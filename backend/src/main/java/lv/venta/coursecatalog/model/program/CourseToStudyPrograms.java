@@ -3,13 +3,13 @@ package lv.venta.coursecatalog.model.program;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-import lv.venta.coursecatalog.model.course.Course;
-import lv.venta.coursecatalog.model.program.StudyProgram;
+import lv.venta.coursecatalog.model.course.CourseVersion;
 
 import java.io.Serializable;
 
 /**
- * Entītija, kas attēlo daudz-pret-daudz (n:m) attiecību starp kursiem un studiju programmām.
+ * Entītija, kas attēlo daudz-pret-daudz (n:m) attiecību starp kursa versijām un studiju programmām.
+ * Sasaiste ir versionēta — katra CourseVersion var pievienot/noņemt programmas, neietekmējot citas versijas.
  */
 @Entity
 @Table(name = "course_to_study_programs")
@@ -23,12 +23,12 @@ public class CourseToStudyPrograms implements Serializable {
     private int id;
 
     /**
-     * Studiju kurss, kas ir piesaistīts studiju programmai.
+     * Kursa versija, kas ir piesaistīta studiju programmai.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
+    @JoinColumn(name = "course_version_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private Course course;
+    private CourseVersion courseVersion;
 
     /**
      * Studiju programma, kurai piesaistīts kurss.

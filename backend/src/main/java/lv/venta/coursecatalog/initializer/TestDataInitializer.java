@@ -104,7 +104,6 @@ public class TestDataInitializer {
         version.setCourse(course);
         version.setVersionNumber(1);
         version.setStatus(status);
-        version.setSlug("itb101-v1");
         version.setCreatedBy(author);
         version.setUpdatedBy(author);
         version.setActive(true);

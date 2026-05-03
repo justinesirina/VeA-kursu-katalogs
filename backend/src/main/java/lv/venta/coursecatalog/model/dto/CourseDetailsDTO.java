@@ -24,6 +24,7 @@ public class CourseDetailsDTO {
     private String approvalDate;       // datums kā teksts (piemēram, "2022-08-31")
     private String decisionNumber;
     private String decisionReference;
+    private Integer versionNumber;     // tikai vēsturiska skata gadījumā (versijas numura banneram)
 
     // --- Kursa pamata informācija ---
     private String titleLv;

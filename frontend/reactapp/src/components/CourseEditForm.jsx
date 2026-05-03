@@ -1,14 +1,36 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/axiosConfig';
 import { useToast } from './ui/ToastProvider';
 import StickyBar from './ui/StickyBar';
+import WarningDialog from './ui/WarningDialog';
+import ApprovalActionDialog from './ui/ApprovalActionDialog';
 import CourseInfoBasicSection from './courseinfo/CourseInfoBasicSection';
 import CourseTopicsSection from './courseinfo/CourseTopicsSection';
 import CourseAssessmentSection from './courseinfo/CourseAssessmentSection';
 import CourseLiteratureSection from './courseinfo/CourseLiteratureSection';
 import CourseSKRSection from './courseinfo/CourseSKRSection';
 import CourseCalendarSection from './courseinfo/CourseCalendarSection';
+import { statusBadgeClass, STATUS_NAMES } from '../utils/statusBadge';
+import { submitVersion, approveVersion, rejectVersion, reopenVersion } from '../services/approvalService';
+import { useCurrentUserId } from './ui/CurrentUserSwitcher';
+
+/**
+ * Izvēlas rediģējamo versiju no kursa versiju saraksta.
+ * Prioritāte: ?version=<uuid> URL parametrs → jaunākā pēc versionNumber → isActive=true.
+ */
+function pickVersion(versions, requestedId) {
+    if (!versions || versions.length === 0) return null;
+    if (requestedId) {
+        const match = versions.find(v => v.id === requestedId);
+        if (match) return match;
+    }
+    return [...versions].sort((a, b) => {
+        const cmp = (b.versionNumber || 0) - (a.versionNumber || 0);
+        if (cmp !== 0) return cmp;
+        return (b.active === true ? 1 : 0) - (a.active === true ? 1 : 0);
+    })[0];
+}
 
 const AUTHOR_ROLES = ['Autors', 'Līdzautors'];
 const TEACHER_ROLES = ['Atbildīgais mācībspēks', 'Mācībspēks'];
@@ -27,12 +49,34 @@ const TABS = [
 function CourseEditForm() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const requestedVersionId = searchParams.get('version');
     const showToast = useToast();
 
     // Tab 0 — Course + Version state
     const [courseData, setCourseData] = useState(null);
     const [versionData, setVersionData] = useState(null);
     const [versionId, setVersionId] = useState(null);
+
+    // Brīdinājuma dialogs apstiprinātas versijas rediģēšanai
+    const [showApprovedWarning, setShowApprovedWarning] = useState(false);
+    const [duplicating, setDuplicating] = useState(false);
+
+    // F8 — apstiprināšanas plūsmas dialogs (submit/approve/reject/reopen)
+    const [approvalDialog, setApprovalDialog] = useState(null); // { kind, ... }
+    const [approvalSubmitting, setApprovalSubmitting] = useState(false);
+    const [versionStatusName, setVersionStatusName] = useState(null);
+    const [versionApprovalMeta, setVersionApprovalMeta] = useState({
+        approvalDate: '', decisionNumber: '', decisionReference: ''
+    });
+    const currentUserId = useCurrentUserId();
+
+    // Pamatdati cilnes (Tab 0) izmaiņu izsekošana — brīdina pirms iziešanas, ja ir nesaglabātas izmaiņas
+    const initialSnapshotRef = useRef(null);
+    const isDirty = useMemo(() => {
+        if (!initialSnapshotRef.current || !courseData || !versionData) return false;
+        return JSON.stringify({ c: courseData, v: versionData }) !== initialSnapshotRef.current;
+    }, [courseData, versionData]);
 
     // Tab 0 — Autors un mācībspēks
     const [authors, setAuthors] = useState([]);
@@ -70,15 +114,14 @@ function CourseEditForm() {
         const load = async () => {
             try {
                 const [
-                    courseRes, versionsRes, detailsRes,
+                    courseRes, versionsRes,
                     ayRes, semRes, facRes, stRes,
                     afRes, acRes, ssaRes, ltRes, rcRes, sessionTypesRes,
-                    authorsRes, teachersRes, usersRes,
+                    usersRes,
                     spRes, sppRes
                 ] = await Promise.all([
                     api.get(`/courses/${id}`),
                     api.get(`/course-versions/by-course/${id}`),
-                    api.get(`/course-info/details/${id}`),
                     api.get('/academic-years'),
                     api.get('/semesters'),
                     api.get('/faculties'),
@@ -89,8 +132,6 @@ function CourseEditForm() {
                     api.get('/literature-types'),
                     api.get('/results-categories'),
                     api.get('/session-types'),
-                    api.get(`/course-authors/by-course/${id}`),
-                    api.get(`/course-teachers/by-course/${id}`),
                     api.get('/users'),
                     api.get('/study-programs'),
                     api.get('/study-program-parts'),
@@ -98,7 +139,18 @@ function CourseEditForm() {
 
                 const course = courseRes.data;
                 const versions = versionsRes.data;
-                const version = versions && versions.length > 0 ? versions[0] : null;
+                const version = pickVersion(versions, requestedVersionId);
+
+                // Versijas-specifiskie dati: autori, pasniedzēji un CourseInfo detaļas
+                // (catch — jaunajām versijām CourseInfo var vēl neeksistēt)
+                const [authorsRes, teachersRes, detailsRes] = version
+                    ? await Promise.all([
+                        api.get(`/course-authors/by-version/${version.id}`),
+                        api.get(`/course-teachers/by-version/${version.id}`),
+                        api.get(`/course-info/details-by-version/${version.id}`)
+                            .catch(() => ({ data: null })),
+                    ])
+                    : [{ data: [] }, { data: [] }, { data: null }];
 
                 setCourseData({
                     titleLv: course.titleLv || '',
@@ -118,18 +170,26 @@ function CourseEditForm() {
                         semesterId: version.semester ? String(version.semester.id) : '',
                         facultyId: version.faculty ? String(version.faculty.id) : '',
                         statusId: version.status ? String(version.status.id) : '',
-                        approvalDate: version.approvalDate || '',
-                        decisionNumber: version.decisionNumber || '',
-                        decisionReference: version.decisionReference || '',
                         versionNumber: version.versionNumber || 1,
                         isActive: version.active !== undefined ? version.active : true
                     });
+                    setVersionStatusName(version.status?.name || null);
+                    setVersionApprovalMeta({
+                        approvalDate: version.approvalDate || '',
+                        decisionNumber: version.decisionNumber || '',
+                        decisionReference: version.decisionReference || '',
+                    });
+
+                    if (version.status?.name === STATUS_NAMES.APPROVED) {
+                        setShowApprovedWarning(true);
+                    }
                 } else {
                     setVersionData({
-                        academicYearId: '', semesterId: '', facultyId: '', statusId: '',
-                        approvalDate: '', decisionNumber: '', decisionReference: '',
-                        versionNumber: 1, isActive: true
+                        academicYearId: '', semesterId: '', facultyId: '',
+                        statusId: '', versionNumber: 1, isActive: true
                     });
+                    setVersionStatusName(null);
+                    setVersionApprovalMeta({ approvalDate: '', decisionNumber: '', decisionReference: '' });
                 }
 
                 const details = detailsRes.data || null;
@@ -162,7 +222,108 @@ function CourseEditForm() {
         };
 
         load();
-    }, [id]);
+    }, [id, requestedVersionId]);
+
+    // Pēc tam, kad sākotnējie dati ielādēti, fiksējam snapshot izmaiņu izsekošanai
+    useEffect(() => {
+        if (!loading && courseData && versionData && initialSnapshotRef.current === null) {
+            initialSnapshotRef.current = JSON.stringify({ c: courseData, v: versionData });
+        }
+    }, [loading, courseData, versionData]);
+
+    // Browser close/refresh — brīdina, ja ir nesaglabātas izmaiņas.
+    // Iekšējās React Router navigācijas šobrīd nav bloķētas (varētu ieviest pāreju uz data router arhitektūru).
+    useEffect(() => {
+        const handler = (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+        window.addEventListener('beforeunload', handler);
+        return () => window.removeEventListener('beforeunload', handler);
+    }, [isDirty]);
+
+    const handleDuplicateVersion = async () => {
+        if (!versionId || duplicating) return;
+        setDuplicating(true);
+        try {
+            const res = await api.post(`/course-versions/${versionId}/duplicate`);
+            const newVersion = res.data;
+            setShowApprovedWarning(false);
+            showToast(`Izveidota jauna versija (Nr. ${newVersion.versionNumber}). Status: Melnraksts.`);
+            navigate(`/courses/${id}/edit?version=${newVersion.id}`);
+        } catch (err) {
+            console.error('Kļūda dublējot versiju:', err);
+            showToast('Neizdevās izveidot jaunu versiju. Mēģini vēlreiz.', 'error');
+        } finally {
+            setDuplicating(false);
+        }
+    };
+
+    const handleCancelApprovedEdit = () => {
+        setShowApprovedWarning(false);
+        navigate(`/courses/${id}`);
+    };
+
+    // F8 — pārlādē versijas datus pēc statusa pārejas (lai attēlotu jaunu statusu un metadatus).
+    // Atjauno arī isDirty snapshot, jo serveris ir veiksmīgi mainījis stāvokli.
+    const refreshVersion = async (updated) => {
+        if (!updated) return;
+        setVersionStatusName(updated.status?.name || null);
+        setVersionApprovalMeta({
+            approvalDate: updated.approvalDate || '',
+            decisionNumber: updated.decisionNumber || '',
+            decisionReference: updated.decisionReference || '',
+        });
+        setVersionData(prev => {
+            if (!prev) return prev;
+            const next = {
+                ...prev,
+                statusId: updated.status ? String(updated.status.id) : prev.statusId,
+                isActive: updated.active !== undefined ? updated.active : prev.isActive,
+            };
+            if (courseData) {
+                initialSnapshotRef.current = JSON.stringify({ c: courseData, v: next });
+            }
+            return next;
+        });
+    };
+
+    const handleApprovalAction = async (kind, payload) => {
+        if (!versionId) {
+            showToast('Versija nav atrasta.', 'error');
+            return;
+        }
+        if (currentUserId == null) {
+            showToast('Vispirms izvēlies aktīvo lietotāju (augšējā joslā).', 'error');
+            return;
+        }
+        setApprovalSubmitting(true);
+        try {
+            let updated;
+            if (kind === 'submit')      updated = await submitVersion(versionId, payload?.comment);
+            else if (kind === 'approve') updated = await approveVersion(versionId, payload);
+            else if (kind === 'reject')  updated = await rejectVersion(versionId, payload?.comment);
+            else if (kind === 'reopen')  updated = await reopenVersion(versionId, payload?.comment);
+            await refreshVersion(updated);
+
+            const messageByKind = {
+                submit:  'Versija iesniegta apstiprināšanai.',
+                approve: 'Versija apstiprināta.',
+                reject:  'Versija noraidīta.',
+                reopen:  'Versija atvērta labošanai (Melnraksts).',
+            };
+            showToast(messageByKind[kind] || 'Darbība veiksmīga.');
+            setApprovalDialog(null);
+        } catch (err) {
+            console.error('F8 darbības kļūda:', err);
+            const msg = err?.response?.data || err?.message || 'Neizdevās izpildīt darbību.';
+            showToast(typeof msg === 'string' ? msg : 'Neizdevās izpildīt darbību.', 'error');
+        } finally {
+            setApprovalSubmitting(false);
+        }
+    };
 
     const blockNonNumeric = e => {
         if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault();
@@ -190,7 +351,6 @@ function CourseEditForm() {
             errors.credits = 'Kredītpunkti ir obligāti (min. 1)';
         if (!versionData.academicYearId) errors.academicYearId = 'Akadēmiskais gads ir obligāts';
         if (!versionData.semesterId) errors.semesterId = 'Semestris ir obligāts';
-        if (!versionData.statusId) errors.statusId = 'Statuss ir obligāts';
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
@@ -211,17 +371,14 @@ function CourseEditForm() {
                 deletedAt: courseData.deletedAt
             });
 
+            // F8: status, isActive un apstiprināšanas metadati netiek sūtīti — backend tos
+            // pārmanto no DB un drīkst mainīt tikai caur /submit, /approve, /reject, /reopen.
             const versionPayload = {
                 course: { id },
-                status: { id: Number(versionData.statusId) },
                 academicYear: { id: Number(versionData.academicYearId) },
                 semester: { id: Number(versionData.semesterId) },
                 faculty: versionData.facultyId ? { id: Number(versionData.facultyId) } : null,
                 versionNumber: versionData.versionNumber,
-                active: versionData.isActive,
-                approvalDate: versionData.approvalDate || null,
-                decisionNumber: versionData.decisionNumber || null,
-                decisionReference: versionData.decisionReference || null
             };
             if (versionId) {
                 await api.put(`/course-versions/${versionId}`, versionPayload);
@@ -229,6 +386,8 @@ function CourseEditForm() {
                 const res = await api.post('/course-versions', versionPayload);
                 setVersionId(res.data.id);
             }
+            // Atjauno snapshot — pēc save state vairs nav "dirty"
+            initialSnapshotRef.current = JSON.stringify({ c: courseData, v: versionData });
             showToast('Pamatdati saglabāti veiksmīgi!');
         } catch (err) {
             console.error('Kļūda saglabājot izmaiņas:', err);
@@ -239,9 +398,10 @@ function CourseEditForm() {
     };
 
     const reloadStaff = async () => {
+        if (!versionId) return;
         const [aRes, tRes] = await Promise.all([
-            api.get(`/course-authors/by-course/${id}`),
-            api.get(`/course-teachers/by-course/${id}`),
+            api.get(`/course-authors/by-version/${versionId}`),
+            api.get(`/course-teachers/by-version/${versionId}`),
         ]);
         setAuthors(aRes.data || []);
         setTeachers(tRes.data || []);
@@ -265,9 +425,10 @@ function CourseEditForm() {
     };
 
     const handleAddAuthor = async (userId) => {
+        if (!versionId) { showToast('Vispirms saglabā versiju.', 'error'); return; }
         setStaffSaving(true);
         try {
-            await api.post('/course-authors', { course: { id }, user: { id: Number(userId) }, role: selectedAuthorRole });
+            await api.post('/course-authors', { courseVersion: { id: versionId }, user: { id: Number(userId) }, role: selectedAuthorRole });
             setAuthorSearch('');
             await reloadStaff();
         } catch { showToast('Neizdevās pievienot autoru.', 'error'); }
@@ -284,10 +445,11 @@ function CourseEditForm() {
     };
 
     const handleAddTeacher = async (userId) => {
+        if (!versionId) { showToast('Vispirms saglabā versiju.', 'error'); return; }
         const hasAtbildigais = teachers.some(t => t.role === 'Atbildīgais mācībspēks');
         setStaffSaving(true);
         try {
-            await api.post('/course-teachers', { course: { id }, user: { id: Number(userId) }, role: selectedTeacherRole });
+            await api.post('/course-teachers', { courseVersion: { id: versionId }, user: { id: Number(userId) }, role: selectedTeacherRole });
             setTeacherSearch('');
             setSelectedTeacherRole('Mācībspēks');
             await reloadStaff();
@@ -306,10 +468,11 @@ function CourseEditForm() {
 
     const handleAddStudyProgram = async () => {
         if (!selectedProgramId) return;
+        if (!versionId) { showToast('Vispirms saglabā versiju.', 'error'); return; }
         setProgramSaving(true);
         try {
             await api.post('/course-to-study-programs', {
-                course: { id },
+                courseVersion: { id: versionId },
                 program: { id: Number(selectedProgramId) },
                 programPart: selectedPartId ? { id: Number(selectedPartId) } : null,
             });
@@ -330,7 +493,8 @@ function CourseEditForm() {
     };
 
     const handleSectionSaved = () => {
-        api.get(`/course-info/details/${id}`)
+        if (!versionId) return;
+        api.get(`/course-info/details-by-version/${versionId}`)
             .then(res => {
                 setCourseDetails(res.data);
                 setCourseInfoId(res.data?.courseInfoId || null);
@@ -349,8 +513,121 @@ function CourseEditForm() {
     const FieldError = ({ field }) =>
         fieldErrors[field] ? <p className="text-red-500 text-sm mt-0.5">{fieldErrors[field]}</p> : null;
 
+    const isApproved  = versionStatusName === STATUS_NAMES.APPROVED;
+    const isDraft     = versionStatusName === STATUS_NAMES.DRAFT;
+    const isSubmitted = versionStatusName === STATUS_NAMES.SUBMITTED;
+    const isRejected  = versionStatusName === STATUS_NAMES.REJECTED;
+
+    const dialogConfig = {
+        submit: {
+            title: 'Iesniegt apstiprināšanai',
+            description: <p>Versija Nr. {versionData?.versionNumber} tiks nodota Programmas direktoram apstiprināšanai. Pēc iesniegšanas to vairs nevarēsi rediģēt, ja vien tā netiks noraidīta.</p>,
+            fields: [{ name: 'comment', label: 'Komentārs (neobligāts)', type: 'textarea' }],
+            primaryLabel: 'Iesniegt',
+            primaryTone: 'success',
+        },
+        approve: {
+            title: 'Apstiprināt versiju',
+            description: <p>Apstiprinot versiju, tā kļūs aktīvā, un iepriekšējā aktīvā versija (ja tāda ir) automātiski tiks deaktivizēta.</p>,
+            fields: [
+                { name: 'decisionNumber',    label: 'Lēmuma numurs',     type: 'text', required: true, placeholder: 'Piem.: Nr. ITF-2026/05' },
+                { name: 'approvalDate',      label: 'Apstiprināšanas datums', type: 'date', defaultValue: new Date().toISOString().slice(0, 10) },
+                { name: 'decisionReference', label: 'Atsauce (neobligāti)', type: 'text', placeholder: 'Piem.: ITF domes sēde' },
+                { name: 'comment',           label: 'Komentārs (neobligāts)', type: 'textarea' },
+            ],
+            primaryLabel: 'Apstiprināt',
+            primaryTone: 'success',
+        },
+        reject: {
+            title: 'Noraidīt versiju',
+            description: <p>Lūdzu, norādi noraidījuma iemeslu! Pamatojums tiks ierakstīts versijas žurnālā un būs redzams autoram.</p>,
+            fields: [{ name: 'comment', label: 'Noraidījuma iemesls', type: 'textarea', required: true }],
+            primaryLabel: 'Noraidīt',
+            primaryTone: 'danger',
+        },
+        reopen: {
+            title: 'Atvērt labošanai',
+            description: <p>Versija atgriezīsies <span className="font-semibold">Melnraksts</span> statusā. Pēc labojumiem to varēs iesniegt no jauna.</p>,
+            fields: [{ name: 'comment', label: 'Komentārs (neobligāts)', type: 'textarea' }],
+            primaryLabel: 'Atvērt labošanai',
+            primaryTone: 'warning',
+        },
+    };
+
     return (
         <div className="p-6 max-w-6xl mx-auto space-y-6">
+            <WarningDialog
+                open={showApprovedWarning}
+                title="Apstiprinātas versijas rediģēšana"
+                description={
+                    <p>
+                        Versijas Nr. {versionData?.versionNumber} statuss ir <span className="font-semibold">Apstiprināts</span>.
+                        Apstiprinātu versiju nevar mainīt — lai veiktu labojumus, jāizveido jauna versija.
+                    </p>
+                }
+                primaryLabel={duplicating ? 'Veido…' : 'Veidot jaunu versiju'}
+                onPrimary={handleDuplicateVersion}
+                onClose={handleCancelApprovedEdit}
+            />
+
+            {approvalDialog && dialogConfig[approvalDialog] && (
+                <ApprovalActionDialog
+                    open={true}
+                    title={dialogConfig[approvalDialog].title}
+                    description={dialogConfig[approvalDialog].description}
+                    fields={dialogConfig[approvalDialog].fields}
+                    primaryLabel={dialogConfig[approvalDialog].primaryLabel}
+                    primaryTone={dialogConfig[approvalDialog].primaryTone}
+                    submitting={approvalSubmitting}
+                    onConfirm={(payload) => handleApprovalAction(approvalDialog, payload)}
+                    onClose={() => approvalSubmitting ? null : setApprovalDialog(null)}
+                />
+            )}
+
+            {/* F8 — versijas darbību panelis */}
+            {versionId && versionStatusName && (
+                <section className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-2 text-sm text-vea-text">
+                        <span className="text-gray-500">Versija Nr. {versionData?.versionNumber}. Statuss: </span>
+                        <span className={statusBadgeClass(versionStatusName)}>{versionStatusName}</span>
+                        {versionData?.isActive && (
+                            <span className="vea-badge bg-vea-green-light text-vea-green">Aktīvā</span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {isDraft && (
+                            <button type="button" onClick={() => setApprovalDialog('submit')}
+                                className="bg-vea-green text-white px-4 py-2 rounded text-sm font-medium hover:bg-vea-green-dark transition-colors">
+                                Iesniegt apstiprināšanai
+                            </button>
+                        )}
+                        {isSubmitted && (
+                            <>
+                                <button type="button" onClick={() => setApprovalDialog('approve')}
+                                    className="bg-vea-green text-white px-4 py-2 rounded text-sm font-medium hover:bg-vea-green-dark transition-colors">
+                                    Apstiprināt
+                                </button>
+                                <button type="button" onClick={() => setApprovalDialog('reject')}
+                                    className="bg-red-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-red-700 transition-colors">
+                                    Noraidīt
+                                </button>
+                            </>
+                        )}
+                        {isRejected && (
+                            <button type="button" onClick={() => setApprovalDialog('reopen')}
+                                className="bg-vea-orange text-white px-4 py-2 rounded text-sm font-medium hover:bg-vea-orange/90 transition-colors">
+                                Atvērt labošanai
+                            </button>
+                        )}
+                        {isApproved && (
+                            <span className="text-xs text-gray-500 italic">
+                                Apstiprinātu versiju nevar mainīt! Izveido jaunu, lai veiktu labojumus.
+                            </span>
+                        )}
+                    </div>
+                </section>
+            )}
+
             {/* Tab navigation */}
             <nav className="flex border-b border-gray-200 overflow-x-auto" aria-label="Rediģēšanas sadaļas">
                 {TABS.map((tab, idx) => (
@@ -408,7 +685,7 @@ function CourseEditForm() {
                             <FieldError field="courseCode" />
                         </div>
                         <div>
-                            <label className={labelClass}>Slug</label>
+                            <label className={labelClass}>Īsais nosaukums</label>
                             <input type="text" className={inputClassPlain}
                                 value={courseData.slug}
                                 onChange={e => setCourseData({ ...courseData, slug: e.target.value })} />
@@ -622,7 +899,14 @@ function CourseEditForm() {
 
                     {versionData && (
                         <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-3">
-                            <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Versijas informācija</h2>
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                                <h2 className="text-2xl font-semibold font-heading text-vea-neutral">Versijas informācija</h2>
+                                {versionStatusName && (
+                                    <span className={statusBadgeClass(versionStatusName)}>
+                                        {versionStatusName}
+                                    </span>
+                                )}
+                            </div>
 
                             <div>
                                 <label className={labelClass}>Akadēmiskais gads <span className="text-red-500">*</span></label>
@@ -647,17 +931,6 @@ function CourseEditForm() {
                                 <FieldError field="semesterId" />
                             </div>
                             <div>
-                                <label className={labelClass}>Statuss <span className="text-red-500">*</span></label>
-                                <select className={inputClass('statusId')} value={versionData.statusId}
-                                    onChange={e => { setVersionData({ ...versionData, statusId: e.target.value }); if (fieldErrors.statusId) setFieldErrors(p => { const n={...p}; delete n.statusId; return n; }); }}>
-                                    <option value="">— izvēlies —</option>
-                                    {lookups.versionStatuses.map(s => (
-                                        <option key={s.id} value={s.id}>{s.name}</option>
-                                    ))}
-                                </select>
-                                <FieldError field="statusId" />
-                            </div>
-                            <div>
                                 <label className={labelClass}>Fakultāte</label>
                                 <select className={inputClassPlain} value={versionData.facultyId}
                                     onChange={e => setVersionData({ ...versionData, facultyId: e.target.value })}>
@@ -667,21 +940,24 @@ function CourseEditForm() {
                                     ))}
                                 </select>
                             </div>
-                            <div>
-                                <label className={labelClass}>Apstiprināšanas datums</label>
-                                <input type="date" className={inputClassPlain} value={versionData.approvalDate}
-                                    onChange={e => setVersionData({ ...versionData, approvalDate: e.target.value })} />
-                            </div>
-                            <div>
-                                <label className={labelClass}>Lēmuma numurs</label>
-                                <input type="text" className={inputClassPlain} value={versionData.decisionNumber}
-                                    onChange={e => setVersionData({ ...versionData, decisionNumber: e.target.value })} />
-                            </div>
-                            <div>
-                                <label className={labelClass}>Atsauce</label>
-                                <input type="text" className={inputClassPlain} value={versionData.decisionReference}
-                                    onChange={e => setVersionData({ ...versionData, decisionReference: e.target.value })} />
-                            </div>
+
+                            {versionStatusName === STATUS_NAMES.APPROVED && (
+                                <div className="bg-green-50 border border-green-200 rounded p-3 text-sm space-y-1">
+                                    <p className="text-green-800 font-medium">Apstiprināšanas dati</p>
+                                    <dl className="grid grid-cols-[140px_1fr] gap-x-3 gap-y-1 text-vea-text">
+                                        <dt className="text-gray-500">Datums</dt>
+                                        <dd>{versionApprovalMeta.approvalDate || '—'}</dd>
+                                        <dt className="text-gray-500">Lēmuma numurs</dt>
+                                        <dd>{versionApprovalMeta.decisionNumber || '—'}</dd>
+                                        {versionApprovalMeta.decisionReference && (
+                                            <>
+                                                <dt className="text-gray-500">Atsauce</dt>
+                                                <dd>{versionApprovalMeta.decisionReference}</dd>
+                                            </>
+                                        )}
+                                    </dl>
+                                </div>
+                            )}
                         </section>
                     )}
 

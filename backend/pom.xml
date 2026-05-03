@@ -41,6 +41,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Flyway DB migrations (Spring Boot 3.2 lieto Flyway 9.x; postgres atbalsts iekļauts core'ā) -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>

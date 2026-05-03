@@ -114,14 +114,7 @@ function CourseDetailsForm() {
             });
             createdCourseId = courseRes.data.id;
 
-            // 2. Piesaista autoru
-            await api.post('/course-authors', {
-                course: { id: createdCourseId },
-                user: { id: selectedAuthor.id },
-                role: 'Autors',
-            });
-
-            // 3. Izveido Melnraksts versiju (bez ay/semestra/apstiprinājuma)
+            // 2. Izveido Melnraksts versiju (bez ay/semestra/apstiprinājuma)
             const versionRes = await api.post('/course-versions', {
                 course: { id: createdCourseId },
                 status: { id: draftStatusId },
@@ -130,6 +123,13 @@ function CourseDetailsForm() {
                 archived: false,
             });
             const versionId = versionRes.data.id;
+
+            // 3. Piesaista autoru jaunajai versijai (autori tagad ir versionēti)
+            await api.post('/course-authors', {
+                courseVersion: { id: versionId },
+                user: { id: selectedAuthor.id },
+                role: 'Autors',
+            });
 
             // 4. Tukšs CourseInfo, lai redaktora cilnes darbotos uzreiz
             await api.post('/course-info', {

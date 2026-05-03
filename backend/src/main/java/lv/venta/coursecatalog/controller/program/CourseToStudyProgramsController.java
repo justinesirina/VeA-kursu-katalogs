@@ -7,9 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
- * Kontrolieris, kas nodrošina kursu un studiju programmu sasaistes API.
+ * Kontrolieris, kas nodrošina kursa versiju un studiju programmu sasaistes API.
  */
 @RestController
 @RequestMapping("/api/course-to-study-programs")
@@ -21,6 +22,11 @@ public class CourseToStudyProgramsController {
     @GetMapping
     public List<CourseToStudyPrograms> getAll() {
         return service.getAll();
+    }
+
+    @GetMapping("/by-version/{versionId}")
+    public List<CourseToStudyPrograms> getByVersion(@PathVariable UUID versionId) {
+        return service.getByCourseVersionId(versionId);
     }
 
     @PostMapping

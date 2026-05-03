@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CourseToStudyProgramsService {
@@ -17,6 +18,10 @@ public class CourseToStudyProgramsService {
         return repository.findAll();
     }
 
+    public List<CourseToStudyPrograms> getByCourseVersionId(UUID courseVersionId) {
+        return repository.findByCourseVersionId(courseVersionId);
+    }
+
     public CourseToStudyPrograms create(CourseToStudyPrograms input) {
         return repository.save(input);
     }
@@ -24,7 +29,7 @@ public class CourseToStudyProgramsService {
     public CourseToStudyPrograms update(int id, CourseToStudyPrograms input) throws Exception {
         CourseToStudyPrograms existing = repository.findById(id)
                 .orElseThrow(() -> new Exception("Sasaistes ieraksts nav atrasts pēc ID = " + id));
-        existing.setCourse(input.getCourse());
+        existing.setCourseVersion(input.getCourseVersion());
         existing.setProgram(input.getProgram());
         existing.setProgramPart(input.getProgramPart());
         return repository.save(existing);

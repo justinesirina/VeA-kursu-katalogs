@@ -1,6 +1,5 @@
 package lv.venta.coursecatalog.model.course;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +8,8 @@ import lv.venta.coursecatalog.model.user.User;
 import java.io.Serializable;
 
 /**
- * Entītija, kas attēlo kursa docētāju piesaisti ar norādi uz lietotāju un lomu.
+ * Entītija, kas attēlo kursa docētāju piesaisti konkrētai versijai.
+ * Sasaiste ir versionēta — katra CourseVersion var saturēt savu docētāju sarakstu.
  */
 @Entity
 @Table(name = "course_teachers")
@@ -23,12 +23,12 @@ public class CourseTeacher implements Serializable {
     private int id;
 
     /**
-     * Studiju kurss, kuram piesaistīts docētājs.
+     * Kursa versija, kuram piesaistīts docētājs.
      */
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @JoinColumn(name = "course_version_id", nullable = false)
+    private CourseVersion courseVersion;
 
     /**
      * Lietotājs, kurš ir kursa docētājs.
@@ -38,7 +38,7 @@ public class CourseTeacher implements Serializable {
     private User user;
 
     /**
-     * Docētāja loma: piemēram, "vadītājs", "asistents".
+     * Docētāja loma: piemēram, "Atbildīgais mācībspēks", "Mācībspēks".
      */
     private String role;
 }

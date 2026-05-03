@@ -86,4 +86,20 @@ public class CourseInfoController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @Operation(
+        summary = "Iegūt konkrētas kursa versijas detaļu skatu",
+        description = "Atgriež CourseDetailsDTO konkrētai vēsturiskai versijai (neatkarīgi no isActive). " +
+                      "Izmanto versiju vēstures lapā, lai parādītu read-only skatu vēsturiskām versijām."
+    )
+    @ApiResponse(responseCode = "200", description = "Versijas detaļu DTO")
+    @ApiResponse(responseCode = "404", description = "Versija vai tās CourseInfo nav atrasta")
+    @GetMapping("/details-by-version/{versionId}")
+    public ResponseEntity<CourseDetailsDTO> getCourseDetailsByVersion(@PathVariable UUID versionId) {
+        CourseDetailsDTO dto = infoService.getCourseDetailsByVersionId(versionId);
+        if (dto != null) {
+            return ResponseEntity.ok(dto);
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

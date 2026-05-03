@@ -4,9 +4,13 @@ import lv.venta.coursecatalog.model.support.VersionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * Datu piekļuves slāņa interfeiss versijas statusiem (piemēram: Apstiprināta, Sagatavošanā).
  */
 @Repository
 public interface VersionStatusRepository extends JpaRepository<VersionStatus, Integer> {
+
+    Optional<VersionStatus> findByName(String name);
 }

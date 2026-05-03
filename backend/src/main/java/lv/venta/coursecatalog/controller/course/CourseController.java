@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lv.venta.coursecatalog.model.course.Course;
+import lv.venta.coursecatalog.model.dto.ArchivedCourseDTO;
 import lv.venta.coursecatalog.service.course.ICourseService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -42,20 +43,22 @@ public class CourseController {
         return courseService.getAllActiveCourses();
     }
 
-    @Operation(summary = "Iegūt arhivētos kursus", description = "Atgriež soft-delete'tos kursus (deletedAt nav null)")
+    @Operation(summary = "Iegūt arhivētos kursus",
+            description = "Atgriež soft-delete'tos kursus (deletedAt nav null) ar versiju agregātiem")
     @ApiResponse(responseCode = "200", description = "Arhivēto kursu saraksts")
     @GetMapping("/archived")
-    public List<Course> getAllArchivedCourses() {
-        return courseService.getAllArchivedCourses();
+    public List<ArchivedCourseDTO> getAllArchivedCourses() {
+        return courseService.getAllArchivedCoursesAsDTO();
     }
 
     @Operation(summary = "Atjaunot arhivētu kursu", description = "Noņem deletedAt un uzstāda active=true")
     @ApiResponse(responseCode = "204", description = "Kurss atjaunots")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts vai nav arhivēts")
     @PutMapping("/{id}/restore")
-    public ResponseEntity<?> restoreCourse(@PathVariable UUID id) {
+    public ResponseEntity<?> restoreCourse(@PathVariable UUID id,
+                                           @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
         try {
-            courseService.restoreCourseById(id);
+            courseService.restoreCourseById(id, actorUserId);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -82,8 +85,9 @@ public class CourseController {
     @ApiResponse(responseCode = "200", description = "Izveidotais kurss")
     @ApiResponse(responseCode = "400", description = "Validācijas kļūda")
     @PostMapping
-    public Course createCourse(@Valid @RequestBody Course course) {
-        return courseService.createNewCourse(course);
+    public Course createCourse(@Valid @RequestBody Course course,
+                               @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+        return courseService.createNewCourse(course, actorUserId);
     }
 
     @Operation(summary = "Atjaunināt kursu", description = "Atjaunina esošu kursu pēc UUID")
@@ -102,9 +106,10 @@ public class CourseController {
     @ApiResponse(responseCode = "200", description = "Kurss dzēsts")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCourse(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteCourse(@PathVariable UUID id,
+                                          @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
         try {
-            courseService.deleteCourseById(id);
+            courseService.deleteCourseById(id, actorUserId);
             return ResponseEntity.ok("Kurss veiksmīgi dzēsts");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

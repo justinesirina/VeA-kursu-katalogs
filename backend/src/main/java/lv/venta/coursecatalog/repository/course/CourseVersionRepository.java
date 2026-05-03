@@ -35,7 +35,20 @@ public interface CourseVersionRepository extends JpaRepository<CourseVersion, UU
      */
     List<CourseVersion> findByIsActiveTrue();
 
+    /**
+     * Atrod aktīvās, ne-arhivētās versijas konkrētam kursam.
+     * Tiek izmantots F8 plūsmā, lai apstiprināšanas brīdī deaktivētu iepriekšējo aktīvo versiju.
+     */
+    List<CourseVersion> findByCourseIdAndIsActiveTrueAndDeletedAtIsNull(UUID courseId);
+
     Optional<CourseVersion> findTopByCourseAndIsActiveTrueOrderByVersionNumberDesc(Course course);
+
+    /**
+     * Atgriež augstāko versionNumber konkrētam kursam (jaunas versijas izveidei).
+     * Atgriež null, ja kursam vēl nav versiju.
+     */
+    @Query("SELECT MAX(v.versionNumber) FROM CourseVersion v WHERE v.course.id = :courseId")
+    Integer findMaxVersionNumberByCourseId(@Param("courseId") UUID courseId);
 
     /**
      * Atgriež soft-delete'tās (arhivētās) versijas.
