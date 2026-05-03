@@ -5,10 +5,20 @@ import api from '../services/axiosConfig';
 import { useToast } from '../components/ui/ToastProvider';
 
 const ACTION_BADGE_CLASSES = {
-    submit:          'bg-blue-100 text-blue-700',
-    approve:         'bg-green-100 text-green-700',
-    reject:          'bg-red-100 text-red-700',
-    reopen_to_draft: 'bg-vea-orange-light text-vea-orange',
+    // F8 versiju statusu pārejas
+    submit:              'bg-blue-100 text-blue-700',
+    approve:             'bg-green-100 text-green-700',
+    reject:              'bg-red-100 text-red-700',
+    reopen_to_draft:     'bg-vea-orange-light text-vea-orange',
+    // F9 paplašinātais kursu darbību žurnāls
+    course_create:       'bg-vea-green-light text-vea-green',
+    course_archive:      'bg-gray-200 text-gray-600',
+    course_restore:      'bg-blue-100 text-blue-700',
+    course_hard_delete:  'bg-red-100 text-red-700',
+    version_create:      'bg-vea-green-light text-vea-green',
+    version_archive:     'bg-gray-200 text-gray-600',
+    version_restore:     'bg-blue-100 text-blue-700',
+    version_hard_delete: 'bg-red-100 text-red-700',
 };
 
 function actionBadgeClass(code) {
@@ -25,7 +35,7 @@ function formatDateTime(iso) {
     });
 }
 
-function AdminVersionLog() {
+function AdminCourseActivityLog() {
     const showToast = useToast();
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -41,7 +51,7 @@ function AdminVersionLog() {
         let cancelled = false;
         api.get('/course-version-logs')
             .then(res => { if (!cancelled) setLogs(res.data || []); })
-            .catch(() => { if (!cancelled) showToast('Neizdevās ielādēt versiju žurnālu.', 'error'); })
+            .catch(() => { if (!cancelled) showToast('Neizdevās ielādēt kursu darbību žurnālu.', 'error'); })
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
     }, [showToast]);
@@ -96,16 +106,14 @@ function AdminVersionLog() {
 
     const selectClass = 'p-2 border border-gray-300 rounded text-sm focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none';
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Ielādē versiju žurnālu…</div>;
+    if (loading) return <div className="p-8 text-center text-gray-500">Ielādē kursu darbību žurnālu…</div>;
 
     return (
         <div className="max-w-7xl mx-auto p-6 space-y-4">
-            <header className="space-y-1">
-                <h1 className="text-3xl font-bold font-heading text-vea-neutral">Versiju žurnāls</h1>
-                <p className="text-sm text-gray-500">
-                    Visi kursa versiju statusu pārejas ieraksti ar laiku, lietotāju un komentāru.
-                </p>
-            </header>
+            <p className="text-sm text-gray-500">
+                Visi kursu un to versiju darbību ieraksti: izveide, statusu pārejas, arhivēšana
+                un atjaunošana. 
+            </p>
 
             {/* Filtri */}
             <section className="bg-white rounded-lg border border-gray-200 p-4">
@@ -229,4 +237,4 @@ function AdminVersionLog() {
     );
 }
 
-export default AdminVersionLog;
+export default AdminCourseActivityLog;

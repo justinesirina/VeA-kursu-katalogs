@@ -67,26 +67,29 @@ public class CourseVersionController {
      * Izveido vai atjaunina kursa versiju.
      */
     @PostMapping
-    public CourseVersion createOrUpdateVersion(@Valid @RequestBody CourseVersion version) {
-        return courseVersionService.saveCourseVersion(version);
+    public CourseVersion createOrUpdateVersion(@Valid @RequestBody CourseVersion version,
+                                               @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+        return courseVersionService.saveCourseVersion(version, actorUserId);
     }
 
     /**
      * Atjaunina esošu kursa versiju pēc tās ID.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CourseVersion> updateVersion(@PathVariable UUID id, @Valid @RequestBody CourseVersion version) {
+    public ResponseEntity<CourseVersion> updateVersion(@PathVariable UUID id, @Valid @RequestBody CourseVersion version,
+                                                       @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
         version.setId(id);
-        return ResponseEntity.ok(courseVersionService.saveCourseVersion(version));
+        return ResponseEntity.ok(courseVersionService.saveCourseVersion(version, actorUserId));
     }
 
     /**
      * Mīkstā dzēšana — versija saglabājas DB ar deletedAt zīmogu un isActive=false.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteVersion(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteVersion(@PathVariable UUID id,
+                                           @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
         try {
-            courseVersionService.deleteCourseVersionById(id);
+            courseVersionService.deleteCourseVersionById(id, actorUserId);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
@@ -105,9 +108,10 @@ public class CourseVersionController {
      * Atjauno arhivētu versiju.
      */
     @PutMapping("/{id}/restore")
-    public ResponseEntity<?> restoreVersion(@PathVariable UUID id) {
+    public ResponseEntity<?> restoreVersion(@PathVariable UUID id,
+                                            @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
         try {
-            courseVersionService.restoreCourseVersionById(id);
+            courseVersionService.restoreCourseVersionById(id, actorUserId);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
@@ -118,9 +122,10 @@ public class CourseVersionController {
      * Dzili duplicē esošu versiju — izveido jaunu Melnraksts versiju ar nokopētu CourseInfo saturu.
      */
     @PostMapping("/{id}/duplicate")
-    public ResponseEntity<?> duplicateVersion(@PathVariable UUID id) {
+    public ResponseEntity<?> duplicateVersion(@PathVariable UUID id,
+                                              @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
         try {
-            CourseVersion created = duplicationService.duplicateVersion(id);
+            CourseVersion created = duplicationService.duplicateVersion(id, actorUserId);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

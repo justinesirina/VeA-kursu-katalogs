@@ -1,15 +1,12 @@
 package lv.venta.coursecatalog.service.course;
 
 import lv.venta.coursecatalog.model.course.CourseVersion;
-import lv.venta.coursecatalog.model.log.CourseVersionAction;
-import lv.venta.coursecatalog.model.log.CourseVersionLog;
 import lv.venta.coursecatalog.model.support.VersionStatus;
 import lv.venta.coursecatalog.model.user.User;
 import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
-import lv.venta.coursecatalog.repository.log.CourseVersionActionRepository;
-import lv.venta.coursecatalog.repository.log.CourseVersionLogRepository;
 import lv.venta.coursecatalog.repository.support.VersionStatusRepository;
 import lv.venta.coursecatalog.repository.user.UserRepository;
+import lv.venta.coursecatalog.service.log.CourseVersionLogService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,19 +40,16 @@ public class CourseVersionApprovalService {
     private final CourseVersionRepository versionRepo;
     private final VersionStatusRepository statusRepo;
     private final UserRepository userRepo;
-    private final CourseVersionActionRepository actionRepo;
-    private final CourseVersionLogRepository logRepo;
+    private final CourseVersionLogService logService;
 
     public CourseVersionApprovalService(CourseVersionRepository versionRepo,
                                         VersionStatusRepository statusRepo,
                                         UserRepository userRepo,
-                                        CourseVersionActionRepository actionRepo,
-                                        CourseVersionLogRepository logRepo) {
+                                        CourseVersionLogService logService) {
         this.versionRepo = versionRepo;
         this.statusRepo = statusRepo;
         this.userRepo = userRepo;
-        this.actionRepo = actionRepo;
-        this.logRepo = logRepo;
+        this.logService = logService;
     }
 
     @Transactional
@@ -180,14 +174,6 @@ public class CourseVersionApprovalService {
     }
 
     private void appendLog(CourseVersion version, User user, String actionCode, String comment) {
-        CourseVersionAction action = actionRepo.findByCode(actionCode)
-                .orElseThrow(() -> new IllegalStateException("Darbības kods '" + actionCode + "' nav atrasts datubāzē."));
-        CourseVersionLog entry = new CourseVersionLog();
-        entry.setCourseVersion(version);
-        entry.setUser(user);
-        entry.setAction(action);
-        entry.setComment(comment != null && !comment.isBlank() ? comment.trim() : null);
-        entry.setCreatedAt(LocalDateTime.now());
-        logRepo.save(entry);
+        logService.append(version.getCourse(), version, user != null ? user.getId() : null, actionCode, comment);
     }
 }

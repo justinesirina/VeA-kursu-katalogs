@@ -9,6 +9,7 @@ import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
 import lv.venta.coursecatalog.repository.support.AcademicYearRepository;
 import lv.venta.coursecatalog.repository.support.SemesterRepository;
 import lv.venta.coursecatalog.repository.support.VersionStatusRepository;
+import lv.venta.coursecatalog.service.log.CourseVersionLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ public class CourseVersionService {
     private final VersionStatusRepository versionStatusRepository;
     private final AcademicYearRepository academicYearRepository;
     private final SemesterRepository semesterRepository;
+    private final CourseVersionLogService logService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -40,12 +42,14 @@ public class CourseVersionService {
             CourseRepository courseRepository,
             VersionStatusRepository versionStatusRepository,
             AcademicYearRepository academicYearRepository,
-            SemesterRepository semesterRepository) {
+            SemesterRepository semesterRepository,
+            CourseVersionLogService logService) {
         this.courseVersionRepository = courseVersionRepository;
         this.courseRepository = courseRepository;
         this.versionStatusRepository = versionStatusRepository;
         this.academicYearRepository = academicYearRepository;
         this.semesterRepository = semesterRepository;
+        this.logService = logService;
     }
 
     /**
@@ -86,6 +90,11 @@ public class CourseVersionService {
      */
     @Transactional
     public CourseVersion saveCourseVersion(CourseVersion version) {
+        return saveCourseVersion(version, null);
+    }
+
+    @Transactional
+    public CourseVersion saveCourseVersion(CourseVersion version, Integer actorUserId) {
         UUID courseId = version.getCourse().getId();
         version.setCourse(courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found")));
 
@@ -123,7 +132,12 @@ public class CourseVersionService {
                     .orElseThrow(() -> new RuntimeException("Semester not found")));
         }
 
-        return courseVersionRepository.save(version);
+        boolean isNew = !existing.isPresent();
+        CourseVersion saved = courseVersionRepository.save(version);
+        if (isNew) {
+            logService.append(saved.getCourse(), saved, actorUserId, "version_create", null);
+        }
+        return saved;
     }
 
 
@@ -133,9 +147,18 @@ public class CourseVersionService {
      */
     @Transactional
     public void deleteCourseVersionById(UUID id) {
+        deleteCourseVersionById(id, null);
+    }
+
+    @Transactional
+    public void deleteCourseVersionById(UUID id, Integer actorUserId) {
+        CourseVersion v = courseVersionRepository.findById(id).orElse(null);
         int updated = courseVersionRepository.softDeleteById(id);
         if (updated == 0) {
             throw new RuntimeException("Versija ar ID " + id + " nav atrasta.");
+        }
+        if (v != null) {
+            logService.append(v.getCourse(), v, actorUserId, "version_archive", null);
         }
     }
 
@@ -162,6 +185,11 @@ public class CourseVersionService {
      */
     @Transactional
     public void restoreCourseVersionById(UUID id) {
+        restoreCourseVersionById(id, null);
+    }
+
+    @Transactional
+    public void restoreCourseVersionById(UUID id, Integer actorUserId) {
         CourseVersion archived = courseVersionRepository.findByIdIncludingArchived(id)
                 .orElseThrow(() -> new RuntimeException("Versija ar ID " + id + " nav atrasta."));
         if (archived.getDeletedAt() == null) {
@@ -171,6 +199,7 @@ public class CourseVersionService {
         if (updated == 0) {
             throw new RuntimeException("Neizdevās atjaunot versiju ar ID " + id);
         }
+        logService.append(archived.getCourse(), archived, actorUserId, "version_restore", null);
     }
 
     /**

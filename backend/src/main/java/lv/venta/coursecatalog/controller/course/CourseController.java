@@ -55,9 +55,10 @@ public class CourseController {
     @ApiResponse(responseCode = "204", description = "Kurss atjaunots")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts vai nav arhivēts")
     @PutMapping("/{id}/restore")
-    public ResponseEntity<?> restoreCourse(@PathVariable UUID id) {
+    public ResponseEntity<?> restoreCourse(@PathVariable UUID id,
+                                           @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
         try {
-            courseService.restoreCourseById(id);
+            courseService.restoreCourseById(id, actorUserId);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -84,8 +85,9 @@ public class CourseController {
     @ApiResponse(responseCode = "200", description = "Izveidotais kurss")
     @ApiResponse(responseCode = "400", description = "Validācijas kļūda")
     @PostMapping
-    public Course createCourse(@Valid @RequestBody Course course) {
-        return courseService.createNewCourse(course);
+    public Course createCourse(@Valid @RequestBody Course course,
+                               @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+        return courseService.createNewCourse(course, actorUserId);
     }
 
     @Operation(summary = "Atjaunināt kursu", description = "Atjaunina esošu kursu pēc UUID")
@@ -104,9 +106,10 @@ public class CourseController {
     @ApiResponse(responseCode = "200", description = "Kurss dzēsts")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCourse(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteCourse(@PathVariable UUID id,
+                                          @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
         try {
-            courseService.deleteCourseById(id);
+            courseService.deleteCourseById(id, actorUserId);
             return ResponseEntity.ok("Kurss veiksmīgi dzēsts");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

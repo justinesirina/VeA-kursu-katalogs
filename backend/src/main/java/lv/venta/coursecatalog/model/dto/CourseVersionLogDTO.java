@@ -60,18 +60,28 @@ public class CourseVersionLogDTO {
             if (u.getRole() != null) dto.userRole = u.getRole().getRoleName();
         }
 
+        // Kurss tiek glabāts tieši žurnāla ierakstā — neatkarīgi no tā, vai darbība
+        // ir versijas vai kursa līmeņa.
+        Course c = log.getCourse();
+        if (c != null) {
+            dto.courseId = c.getId();
+            dto.courseCode = c.getCourseCode();
+            dto.courseTitleLv = c.getTitleLv();
+        }
+
+        // Versijas info — tikai versiju līmeņa darbībām.
         // LAZY proxy var izgāzties, ja saistītā versija ir arhivēta (@SQLRestriction filtrē)
-        // vai dzēsta. Žurnāla ieraksts paliek redzams, bet ar tukšiem versijas/kursa laukiem.
+        // vai neatgriezeniski dzēsta. Tādos gadījumos versijas lauki paliek tukši.
         try {
             CourseVersion v = log.getCourseVersion();
             if (v != null) {
                 dto.versionId = v.getId();
                 dto.versionNumber = v.getVersionNumber();
-                Course c = v.getCourse();
-                if (c != null) {
-                    dto.courseId = c.getId();
-                    dto.courseCode = c.getCourseCode();
-                    dto.courseTitleLv = c.getTitleLv();
+                // Ja kurss vēl nav iegūts no log.course (vēsturiski ieraksti), izgūstam no versijas.
+                if (dto.courseId == null && v.getCourse() != null) {
+                    dto.courseId = v.getCourse().getId();
+                    dto.courseCode = v.getCourse().getCourseCode();
+                    dto.courseTitleLv = v.getCourse().getTitleLv();
                 }
             }
         } catch (Exception ignored) {

@@ -14,6 +14,7 @@ import lv.venta.coursecatalog.repository.courseinfo.*;
 import lv.venta.coursecatalog.repository.program.CourseToProgrammeResultsRepository;
 import lv.venta.coursecatalog.repository.program.CourseToStudyProgramsRepository;
 import lv.venta.coursecatalog.repository.support.VersionStatusRepository;
+import lv.venta.coursecatalog.service.log.CourseVersionLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +51,7 @@ public class CourseVersionDuplicationService {
     private final CourseAuthorRepository courseAuthorRepo;
     private final CourseTeacherRepository courseTeacherRepo;
     private final CourseToStudyProgramsRepository courseToStudyProgramsRepo;
+    private final CourseVersionLogService logService;
 
     @Autowired
     public CourseVersionDuplicationService(
@@ -66,7 +68,8 @@ public class CourseVersionDuplicationService {
             CourseToProgrammeResultsRepository programmeLinkRepo,
             CourseAuthorRepository courseAuthorRepo,
             CourseTeacherRepository courseTeacherRepo,
-            CourseToStudyProgramsRepository courseToStudyProgramsRepo) {
+            CourseToStudyProgramsRepository courseToStudyProgramsRepo,
+            CourseVersionLogService logService) {
         this.versionRepo = versionRepo;
         this.versionStatusRepo = versionStatusRepo;
         this.courseInfoRepo = courseInfoRepo;
@@ -81,6 +84,7 @@ public class CourseVersionDuplicationService {
         this.courseAuthorRepo = courseAuthorRepo;
         this.courseTeacherRepo = courseTeacherRepo;
         this.courseToStudyProgramsRepo = courseToStudyProgramsRepo;
+        this.logService = logService;
     }
 
     /**
@@ -94,6 +98,11 @@ public class CourseVersionDuplicationService {
      */
     @Transactional
     public CourseVersion duplicateVersion(UUID sourceVersionId) {
+        return duplicateVersion(sourceVersionId, null);
+    }
+
+    @Transactional
+    public CourseVersion duplicateVersion(UUID sourceVersionId, Integer actorUserId) {
         CourseVersion source = versionRepo.findById(sourceVersionId)
                 .orElseThrow(() -> new IllegalArgumentException("Versija ar ID " + sourceVersionId + " nav atrasta."));
 
@@ -137,6 +146,8 @@ public class CourseVersionDuplicationService {
             cloneChildren(sourceInfo, targetInfo);
         }
 
+        logService.append(target.getCourse(), target, actorUserId, "version_create",
+                "Dublēta no versijas Nr. " + source.getVersionNumber());
         return target;
     }
 

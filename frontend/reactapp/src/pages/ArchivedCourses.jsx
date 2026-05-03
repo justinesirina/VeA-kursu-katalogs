@@ -269,7 +269,8 @@ function ArchivedCoursesTable({ rows, onRestore, onPermanentDelete }) {
         return <EmptyState>Nav arhivētu kursu.</EmptyState>;
     }
     return (
-        <div className="vea-table-wrap">
+        <>
+        <div className="hidden md:block vea-table-wrap">
             <table className="vea-table table-fixed w-full">
                 <colgroup>
                     <col />{/* Kurss — paplašinās */}
@@ -336,6 +337,46 @@ function ArchivedCoursesTable({ rows, onRestore, onPermanentDelete }) {
                 </tbody>
             </table>
         </div>
+
+        {/* Mobile: kartīšu saraksts */}
+        <ul className="md:hidden space-y-3">
+            {rows.map(c => (
+                <li key={c.id} className="bg-white rounded-lg border border-gray-200 p-4 space-y-2">
+                    <div className="flex flex-col leading-tight text-sm">
+                        {c.courseCode && (
+                            <span className="text-vea-neutral font-medium">{c.courseCode}</span>
+                        )}
+                        <span className="text-gray-700">{c.titleLv || '(bez nosaukuma)'}</span>
+                        {c.titleEn && <span className="text-gray-400 italic">{c.titleEn}</span>}
+                    </div>
+                    <dl className="text-sm text-gray-600 grid grid-cols-2 gap-x-3 gap-y-1">
+                        <dt className="text-gray-400">KP</dt>
+                        <dd>{c.credits}</dd>
+                        <dt className="text-gray-400">Versijas</dt>
+                        <dd>{c.versionCount > 0 ? c.versionCount : '—'}</dd>
+                        <dt className="text-gray-400">Statuss</dt>
+                        <dd>
+                            {c.latestVersionStatus ? (
+                                <span className="vea-badge vea-badge-neutral">{c.latestVersionStatus}</span>
+                            ) : '—'}
+                        </dd>
+                        <dt className="text-gray-400">Arhivēts</dt>
+                        <dd>{formatDate(c.deletedAt)}</dd>
+                    </dl>
+                    <div className="flex gap-2 pt-1">
+                        <RestoreButton
+                            onClick={() => onRestore(c.id, c.titleLv)}
+                            label={`Atjaunot kursu ${c.titleLv}`}
+                        />
+                        <PermanentDeleteButton
+                            onClick={() => onPermanentDelete(c)}
+                            label={`Neatgriezeniski dzēst kursu ${c.titleLv}`}
+                        />
+                    </div>
+                </li>
+            ))}
+        </ul>
+        </>
     );
 }
 
@@ -344,7 +385,8 @@ function ArchivedVersionsTable({ rows, onRestore, onPermanentDelete }) {
         return <EmptyState>Nav arhivētu kursu versiju.</EmptyState>;
     }
     return (
-        <div className="vea-table-wrap">
+        <>
+        <div className="hidden md:block vea-table-wrap">
             <table className="vea-table table-fixed w-full">
                 <colgroup>
                     <col />{/* Kurss — paplašinās */}
@@ -411,6 +453,53 @@ function ArchivedVersionsTable({ rows, onRestore, onPermanentDelete }) {
                 </tbody>
             </table>
         </div>
+
+        {/* Mobile: kartīšu saraksts */}
+        <ul className="md:hidden space-y-3">
+            {rows.map(v => {
+                const label = `Versija ${v.versionNumber} kursam ${v.course?.titleLv ?? ''}`;
+                return (
+                    <li key={v.id} className="bg-white rounded-lg border border-gray-200 p-4 space-y-2">
+                        {v.course && (
+                            <div className="flex flex-col leading-tight text-sm">
+                                {v.course.courseCode && (
+                                    <span className="text-vea-neutral font-medium">{v.course.courseCode}</span>
+                                )}
+                                <span className="text-gray-700">{v.course.titleLv ?? '(bez nosaukuma)'}</span>
+                                {v.course.titleEn && (
+                                    <span className="text-gray-400 italic">{v.course.titleEn}</span>
+                                )}
+                            </div>
+                        )}
+                        <div className="flex items-center gap-2 flex-wrap text-sm">
+                            <span className="text-vea-neutral font-medium">Versija Nr. {v.versionNumber}</span>
+                            {v.status?.name && (
+                                <span className="vea-badge vea-badge-neutral">{v.status.name}</span>
+                            )}
+                        </div>
+                        <dl className="text-sm text-gray-600 grid grid-cols-2 gap-x-3 gap-y-1">
+                            <dt className="text-gray-400">Akad. gads</dt>
+                            <dd>{v.academicYear?.year ?? v.academicYear?.name ?? '—'}</dd>
+                            <dt className="text-gray-400">Semestris</dt>
+                            <dd>{v.semester?.name ?? '—'}</dd>
+                            <dt className="text-gray-400">Arhivēts</dt>
+                            <dd>{formatDate(v.deletedAt)}</dd>
+                        </dl>
+                        <div className="flex gap-2 pt-1">
+                            <RestoreButton
+                                onClick={() => onRestore(v.id, label)}
+                                label={`Atjaunot ${label}`}
+                            />
+                            <PermanentDeleteButton
+                                onClick={() => onPermanentDelete(v)}
+                                label={`Neatgriezeniski dzēst ${label}`}
+                            />
+                        </div>
+                    </li>
+                );
+            })}
+        </ul>
+        </>
     );
 }
 

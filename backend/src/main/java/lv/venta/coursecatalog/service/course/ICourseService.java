@@ -29,6 +29,11 @@ public interface ICourseService {
     Course createNewCourse(Course course);
 
     /**
+     * F9 — saglabā jaunu kursu un ieraksta žurnāla ierakstu (course_create).
+     */
+    Course createNewCourse(Course course, Integer actorUserId);
+
+    /**
      * Atjaunina esošu kursu, balstoties uz ID un iesniegto informāciju.
      * @param id atjaunināmā kursa ID
      * @param course jaunie dati
@@ -43,6 +48,11 @@ public interface ICourseService {
      * @throws Exception ja kurss nav atrasts
      */
     void deleteCourseById(UUID id) throws Exception;
+
+    /**
+     * F9 — soft-delete kursam ar žurnāla ierakstu (course_archive).
+     */
+    void deleteCourseById(UUID id, Integer actorUserId) throws Exception;
 
     List<Course> getAllActiveCourses();
 
@@ -62,6 +72,11 @@ public interface ICourseService {
      * @throws Exception ja kurss nav atrasts
      */
     void restoreCourseById(UUID id) throws Exception;
+
+    /**
+     * F9 — atjauno kursu ar žurnāla ierakstu (course_restore).
+     */
+    void restoreCourseById(UUID id, Integer actorUserId) throws Exception;
 
     /**
      * Veic neatgriezenisku kursa fizisko dzēšanu — pieejams tikai arhivētiem.

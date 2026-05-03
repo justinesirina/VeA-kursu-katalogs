@@ -6,6 +6,7 @@ import lv.venta.coursecatalog.model.course.Course;
 import lv.venta.coursecatalog.model.dto.ArchivedCourseDTO;
 import lv.venta.coursecatalog.repository.course.CourseRepository;
 import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
+import lv.venta.coursecatalog.service.log.CourseVersionLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,14 +27,18 @@ public class CourseServiceImpl implements ICourseService {
 
     private final CourseRepository courseRepo;
     private final CourseVersionRepository courseVersionRepo;
+    private final CourseVersionLogService logService;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Autowired
-    public CourseServiceImpl(CourseRepository courseRepo, CourseVersionRepository courseVersionRepo) {
+    public CourseServiceImpl(CourseRepository courseRepo,
+                             CourseVersionRepository courseVersionRepo,
+                             CourseVersionLogService logService) {
         this.courseRepo = courseRepo;
         this.courseVersionRepo = courseVersionRepo;
+        this.logService = logService;
     }
 
     /**
@@ -61,7 +66,15 @@ public class CourseServiceImpl implements ICourseService {
      */
     @Override
     public Course createNewCourse(Course course) {
-        return courseRepo.save(course);
+        return createNewCourse(course, null);
+    }
+
+    @Override
+    @Transactional
+    public Course createNewCourse(Course course, Integer actorUserId) {
+        Course saved = courseRepo.save(course);
+        logService.append(saved, null, actorUserId, "course_create", null);
+        return saved;
     }
 
     /**
@@ -91,10 +104,17 @@ public class CourseServiceImpl implements ICourseService {
      */
     @Override
     public void deleteCourseById(UUID id) throws Exception {
+        deleteCourseById(id, null);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCourseById(UUID id, Integer actorUserId) throws Exception {
         Course existing = getCourseById(id);
         existing.setActive(false);
         existing.setDeletedAt(LocalDateTime.now());
         courseRepo.save(existing);
+        logService.append(existing, null, actorUserId, "course_archive", null);
     }
 
     @Override
@@ -121,6 +141,12 @@ public class CourseServiceImpl implements ICourseService {
     @Override
     @Transactional
     public void restoreCourseById(UUID id) throws Exception {
+        restoreCourseById(id, null);
+    }
+
+    @Override
+    @Transactional
+    public void restoreCourseById(UUID id, Integer actorUserId) throws Exception {
         Course archived = courseRepo.findByIdIncludingArchived(id)
                 .orElseThrow(() -> new Exception("Kurss ar ID " + id + " nav atrasts."));
         if (archived.getDeletedAt() == null) {
@@ -130,6 +156,7 @@ public class CourseServiceImpl implements ICourseService {
         if (updated == 0) {
             throw new Exception("Neizdevās atjaunot kursu ar ID " + id);
         }
+        logService.append(archived, null, actorUserId, "course_restore", null);
     }
 
     /**

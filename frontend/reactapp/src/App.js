@@ -9,7 +9,7 @@ import AdminPage from "./pages/AdminPage";
 import AdminLanding from "./pages/AdminLanding";
 import AdminUsers from "./pages/AdminUsers";
 import AdminPrograms from "./pages/AdminPrograms";
-import AdminVersionLog from "./pages/AdminVersionLog";
+import AdminCourseActivityLog from "./pages/AdminCourseActivityLog";
 import ArchivedCourses from "./pages/ArchivedCourses";
 import DesignPreview from "./pages/DesignPreview";
 import { ToastProvider } from './components/ui/ToastProvider';
@@ -21,7 +21,7 @@ const SECTION_CONFIGS = [
     { match: '/admin/system-fields',                  label: 'Sistēmas lauki',     Icon: Database },
     { match: '/admin/users',                          label: 'Lietotāji',          Icon: Users },
     { match: '/admin/programs',                       label: 'Studiju programmas', Icon: GraduationCap },
-    { match: '/admin/version-log',                    label: 'Versiju žurnāls',    Icon: ScrollText },
+    { match: '/admin/activity-log',                   label: 'Kursu darbību žurnāls', Icon: ScrollText },
     { match: '/admin/archive',                        label: 'Arhīvs',             Icon: Archive },
     { match: '/courses/new',                          label: 'Jauns kurss',        Icon: FilePlus },
     { match: '/courses/:id/edit',                     label: 'Kursa rediģēšana',   Icon: FileEdit },
@@ -142,7 +142,7 @@ function App() {
                         <Route path="/admin/system-fields" element={<AdminPage />} />
                         <Route path="/admin/users" element={<AdminUsers />} />
                         <Route path="/admin/programs" element={<AdminPrograms />} />
-                        <Route path="/admin/version-log" element={<AdminVersionLog />} />
+                        <Route path="/admin/activity-log" element={<AdminCourseActivityLog />} />
                         <Route path="/admin/archive" element={<ArchivedCourses />} />
                         <Route path="/design-preview" element={<DesignPreview />} />
                     </Routes>

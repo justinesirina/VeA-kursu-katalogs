@@ -24,10 +24,10 @@ const TILES = [
         Icon: GraduationCap,
     },
     {
-        key: 'version-log',
-        path: '/admin/version-log',
-        title: 'Versiju žurnāls',
-        description: 'Visu kursa versiju statusu pāreju vēsture',
+        key: 'activity-log',
+        path: '/admin/activity-log',
+        title: 'Kursu darbību žurnāls',
+        description: 'Kursu un versiju darbību vēsture (izveide, statusi, arhivēšana)',
         Icon: History,
     },
     {
