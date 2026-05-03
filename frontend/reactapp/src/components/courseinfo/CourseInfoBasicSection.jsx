@@ -2,6 +2,7 @@ import { useState } from 'react';
 import api from '../../services/axiosConfig';
 import { useToast } from '../ui/ToastProvider';
 import StickyBar from '../ui/StickyBar';
+import { computeHoursByType } from '../../utils/calendarHours';
 
 /**
  * Rediģēšanas forma CourseInfo pamata laukiem.
@@ -100,8 +101,27 @@ function CourseInfoBasicSection({ courseInfoId, data, lookups, onSaved, onCancel
         }
     };
 
+    // Salīdzinājums ar kalendāra plānu — banerīts virs stundu laukiem
+    const calendarHours = computeHoursByType(data.calendarPlan);
+    const hasCalendarData = calendarHours.total > 0;
+    const formTotal = Number(form.academicHoursTotal) || 0;
+    const formLecture = Number(form.lectureHours) || 0;
+    const formPractical = Number(form.practClassesHours) || 0;
+    const calendarMismatch = hasCalendarData && (
+        formTotal !== calendarHours.total ||
+        formLecture !== calendarHours.lecture ||
+        formPractical !== calendarHours.practical
+    );
+
     return (
         <div className="space-y-4 pb-20">
+
+            {calendarMismatch && (
+                <div className="bg-vea-orange-light border border-vea-orange/40 rounded-lg p-3 text-sm text-vea-neutral">
+                    <span className="font-semibold">⚠ Stundas neatbilst kalendāra plānam.</span>{' '}
+                    Kalendārā ir lekcijas {calendarHours.lecture} ak. st., praktiskās {calendarHours.practical} ak. st., kopā {calendarHours.total} ak. st. Pārbaudiet, lai dati sakrīt abās cilnēs.
+                </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
                 <div>

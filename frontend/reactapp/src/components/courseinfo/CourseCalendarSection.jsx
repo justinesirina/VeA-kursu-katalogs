@@ -1,102 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import api from '../../services/axiosConfig';
 import { useToast } from '../ui/ToastProvider';
+import CalendarHoursPanel from '../ui/CalendarHoursPanel';
+import { classifyType } from '../../utils/calendarHours';
 
 const NEW_TYPE_VALUE = '__new__';
-
-// Lekcijas = lekcijas. Visi pārējie kontaktu veidi (praktiskās, semināri, laboratorijas,
-// pārbaudes darbi u. c.) pieskaitāmi praktiskajām nodarbībām.
-function classifyType(name) {
-    return (name || '').toLowerCase().includes('lekcij') ? 'lecture' : 'practical';
-}
-
-function ProgressBar({ used, total }) {
-    if (total == null) {
-        return (
-            <div className="w-full h-2 bg-gray-100 rounded overflow-hidden">
-                <div className="h-full bg-gray-300 w-0" />
-            </div>
-        );
-    }
-    const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
-    const over = used > total;
-    const color = over ? 'bg-red-500' : (used === total ? 'bg-vea-green' : 'bg-vea-orange');
-    return (
-        <div className="w-full h-2 bg-gray-100 rounded overflow-hidden">
-            <div className={`h-full ${color} transition-all`} style={{ width: `${over ? 100 : pct}%` }} />
-        </div>
-    );
-}
-
-function SummaryTile({ label, total, used }) {
-    const hasTotal = total != null && total !== '';
-    const diff = hasTotal ? used - Number(total) : null;
-    const over = hasTotal && diff > 0;
-    const exact = hasTotal && diff === 0;
-    return (
-        <div className="border border-gray-200 rounded-lg p-3 bg-white">
-            <div className="flex items-baseline justify-between mb-1">
-                <span className="text-sm font-semibold text-vea-neutral uppercase tracking-wide">{label}</span>
-                <span className={`text-sm font-medium ${over ? 'text-red-500' : (exact ? 'text-vea-green' : 'text-vea-neutral')}`}>
-                    {used} / {hasTotal ? total : '—'} ak. st.
-                </span>
-            </div>
-            <ProgressBar used={used} total={hasTotal ? Number(total) : null} />
-            {hasTotal && (
-                <p className={`text-sm mt-1 ${over ? 'text-red-500' : (exact ? 'text-vea-green' : 'text-gray-500')}`}>
-                    {over
-                        ? `Pārsniegts par ${diff} ak. st.`
-                        : exact
-                            ? 'Atbilst ✓'
-                            : `Trūkst: ${-diff} ak. st.`}
-                </p>
-            )}
-            {!hasTotal && (
-                <p className="text-sm mt-1 text-gray-500">Nav norādīts "Apraksts" sadaļā</p>
-            )}
-        </div>
-    );
-}
-
-function StatusBanner({ data, hoursByType }) {
-    const parts = [];
-    if (data.lectureHours != null) {
-        const diff = hoursByType.lecture - Number(data.lectureHours);
-        if (diff > 0) parts.push({ kind: 'err', text: `Lekcijām pārsniegts par ${diff} ak. st.` });
-        else if (diff < 0) parts.push({ kind: 'warn', text: `Lekcijām trūkst ${-diff} ak. st.` });
-    }
-    if (data.practClassesHours != null) {
-        const diff = hoursByType.practical - Number(data.practClassesHours);
-        if (diff > 0) parts.push({ kind: 'err', text: `Praktiskajām nodarbībām pārsniegts par ${diff} ak. st.` });
-        else if (diff < 0) parts.push({ kind: 'warn', text: `Praktiskajām nodarbībām trūkst ${-diff} ak. st.` });
-    }
-    if (data.academicHoursTotal != null) {
-        const diff = hoursByType.total - Number(data.academicHoursTotal);
-        if (diff > 0) parts.push({ kind: 'err', text: `Kopējās kontaktstundas pārsniegtas par ${diff} ak. st.` });
-        else if (diff < 0) parts.push({ kind: 'warn', text: `Kopējām kontaktstundām trūkst ${-diff} ak. st.` });
-    }
-
-    if (parts.length === 0 && (data.academicHoursTotal != null || data.lectureHours != null || data.practClassesHours != null)) {
-        return (
-            <div className="bg-vea-green-light border border-vea-green text-vea-green-dark rounded-lg px-3 py-2 text-sm">
-                ✓ Viss sadalījums atbilst sadaļas Apraksts datiem 
-            </div>
-        );
-    }
-
-    if (parts.length === 0) return null;
-
-    const hasErr = parts.some(p => p.kind === 'err');
-    const boxClass = hasErr
-        ? 'bg-red-50 border-red-500 text-red-700'
-        : 'bg-vea-orange-light border-vea-orange text-vea-orange';
-
-    return (
-        <div className={`border rounded-lg px-3 py-2 text-sm space-y-0.5 ${boxClass}`}>
-            {parts.map((p, i) => (<p key={i}>• {p.text}</p>))}
-        </div>
-    );
-}
 
 function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSessionTypeAdded }) {
     const showToast = useToast();
@@ -155,16 +63,6 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
             }
         })();
     }, [topics, data.calendarPlan, courseInfoId, onSaved, showToast]);
-
-    // Agregētās stundas pa veidiem (lekcijas / praktiskās / kopā)
-    const hoursByType = useMemo(() => {
-        const map = { lecture: 0, practical: 0, total: 0 };
-        calendarPlan.forEach(p => (p.sessions || []).forEach(s => {
-            map[classifyType(s.sessionType)] += s.academicHours;
-            map.total += s.academicHours;
-        }));
-        return map;
-    }, [calendarPlan]);
 
     // Pievienošanas rindas stāvoklis
     const [rowInputs, setRowInputs] = useState({});
@@ -435,14 +333,12 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
             <div className="space-y-2">
                 <p className="text-sm font-medium text-vea-neutral">Stundu sadalījums</p>
                 {hasAnyTotal ? (
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <SummaryTile label="Lekcijas" total={data.lectureHours} used={hoursByType.lecture} />
-                            <SummaryTile label="Praktiskās nodarbības" total={data.practClassesHours} used={hoursByType.practical} />
-                            <SummaryTile label="Kopā kontaktstundas" total={data.academicHoursTotal} used={hoursByType.total} />
-                        </div>
-                        <StatusBanner data={data} hoursByType={hoursByType} />
-                    </>
+                    <CalendarHoursPanel
+                        calendarPlan={calendarPlan}
+                        targetTotal={data.academicHoursTotal}
+                        targetLecture={data.lectureHours}
+                        targetPractical={data.practClassesHours}
+                    />
                 ) : (
                     <p className="text-vea-orange bg-vea-orange-light border border-vea-orange rounded-lg px-3 py-2 text-sm">
                         Vispirms aizpildi "Apraksts" sadaļu (kopējās, lekciju un praktisko stundas), lai būtu pret ko validēt sadalījumu.
