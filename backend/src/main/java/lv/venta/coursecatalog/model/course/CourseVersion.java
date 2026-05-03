@@ -59,12 +59,6 @@ public class CourseVersion {
     @JsonIgnoreProperties({"courseVersions"})
     private VersionStatus status;
 
-    /**
-     * Īsais un URL-draudzīgais identifikators šai versijai.
-     */
-    @Column(name = "slug", unique = true)
-    private String slug;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
