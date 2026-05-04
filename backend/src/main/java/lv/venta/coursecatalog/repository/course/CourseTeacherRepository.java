@@ -4,6 +4,7 @@ import lv.venta.coursecatalog.model.course.CourseTeacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,4 +16,9 @@ import java.util.UUID;
 public interface CourseTeacherRepository extends JpaRepository<CourseTeacher, Integer> {
 
     List<CourseTeacher> findByCourseVersionId(UUID courseVersionId);
+
+    /**
+     * Batch ielāde kursu katalogam: visi docētāju ieraksti vairākām versijām vienā vaicājumā.
+     */
+    List<CourseTeacher> findByCourseVersionIdIn(Collection<UUID> courseVersionIds);
 }

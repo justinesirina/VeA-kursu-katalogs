@@ -2,6 +2,10 @@ package lv.venta.coursecatalog.service.course;
 
 import lv.venta.coursecatalog.model.course.Course;
 import lv.venta.coursecatalog.model.dto.ArchivedCourseDTO;
+import lv.venta.coursecatalog.model.dto.CourseCatalogItemDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -84,5 +88,13 @@ public interface ICourseService {
      * @throws Exception ja kurss nav atrasts vai nav arhivēts
      */
     void hardDeleteArchivedCourseById(UUID id) throws Exception;
+
+    /**
+     * F5 — publiskais katalogs ar meklēšanu un filtrēšanu un lapu izkārtojumu.
+     * Publiskais režīms (actorUserId nav staff) atgriež tikai aktīvas
+     * apstiprinātas versijas; staff režīmā tiek ņemts vērā statusId filtrs
+     * un atspoguļota piemērotākā versija (augstākais versionNumber).
+     */
+    Page<CourseCatalogItemDTO> getCatalog(CourseCatalogFilter filter, Pageable pageable, Integer actorUserId);
 
 }

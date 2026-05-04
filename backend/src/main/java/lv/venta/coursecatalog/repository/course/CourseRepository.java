@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.repository.course;
 
 import lv.venta.coursecatalog.model.course.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface CourseRepository extends JpaRepository<Course, UUID> {
+public interface CourseRepository extends JpaRepository<Course, UUID>, JpaSpecificationExecutor<Course> {
     List<Course> findAllByActiveTrueAndDeletedAtIsNull();
 
     /**

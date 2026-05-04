@@ -1,12 +1,19 @@
 package lv.venta.coursecatalog.controller.course;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lv.venta.coursecatalog.model.course.Course;
 import lv.venta.coursecatalog.model.dto.ArchivedCourseDTO;
+import lv.venta.coursecatalog.model.dto.CourseCatalogItemDTO;
+import lv.venta.coursecatalog.service.course.CourseCatalogFilter;
 import lv.venta.coursecatalog.service.course.ICourseService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +48,83 @@ public class CourseController {
     @GetMapping("/filter/active")
     public List<Course> getAllActiveCourses() {
         return courseService.getAllActiveCourses();
+    }
+
+    /**
+     * F5 — publiskais katalogs ar meklēšanu, filtrēšanu un lapu izkārtojumu.
+     * Visi filtri ir neobligāti. {@code statusId} darbojas tikai staff
+     * lietotājiem (skat. {@link lv.venta.coursecatalog.service.security.RoleAccessChecker});
+     * publiskie pieprasījumi vienmēr saņem tikai aktīvas apstiprinātas versijas.
+     */
+    @Operation(summary = "Kursu katalogs ar meklēšanu un filtrēšanu (F5)",
+            description = "Paginēts saraksts ar atspoguļoto versijas info; "
+                    + "filtri pēc fakultātes, programmas, gada, semestra, autora u.c.")
+    @ApiResponse(responseCode = "200", description = "Page<CourseCatalogItemDTO>")
+    @GetMapping("/catalog")
+    public Page<CourseCatalogItemDTO> getCatalog(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Integer facultyId,
+            @RequestParam(required = false) Integer academicYearId,
+            @RequestParam(required = false) Integer semesterId,
+            @RequestParam(required = false) Integer statusId,
+            @RequestParam(required = false) Integer programId,
+            @RequestParam(required = false) Integer programPartId,
+            @RequestParam(required = false) Integer authorUserId,
+            @RequestParam(required = false) Integer teacherUserId,
+            @RequestParam(required = false) Boolean freeElectiveOnly,
+            @Parameter(description = "0-bāzēts lapas numurs") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Lapas izmērs (atļauts: 25/50/100/500)") @RequestParam(defaultValue = "25") int size,
+            @Parameter(description = "Kārtošana, piem. titleLv,asc") @RequestParam(defaultValue = "titleLv,asc") String sort,
+            @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId
+    ) {
+        CourseCatalogFilter filter = CourseCatalogFilter.builder()
+                .q(q)
+                .facultyId(facultyId)
+                .academicYearId(academicYearId)
+                .semesterId(semesterId)
+                .statusId(statusId)
+                .programId(programId)
+                .programPartId(programPartId)
+                .authorUserId(authorUserId)
+                .teacherUserId(teacherUserId)
+                .freeElectiveOnly(freeElectiveOnly)
+                .build();
+
+        Pageable pageable = PageRequest.of(
+                Math.max(0, page),
+                normalizePageSize(size),
+                parseSort(sort)
+        );
+
+        return courseService.getCatalog(filter, pageable, actorUserId);
+    }
+
+    private static int normalizePageSize(int requested) {
+        if (requested <= 25) return 25;
+        if (requested <= 50) return 50;
+        if (requested <= 100) return 100;
+        return 500;
+    }
+
+    private static Sort parseSort(String value) {
+        if (value == null || value.isBlank()) return Sort.by(Sort.Direction.ASC, "titleLv");
+        String[] parts = value.split(",");
+        String property = parts[0].trim();
+        Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1].trim())
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        if (property.isEmpty() || !isAllowedSortProperty(property)) {
+            property = "titleLv";
+        }
+        return Sort.by(direction, property);
+    }
+
+    private static boolean isAllowedSortProperty(String property) {
+        return property.equals("titleLv")
+                || property.equals("titleEn")
+                || property.equals("courseCode")
+                || property.equals("credits")
+                || property.equals("createdAt")
+                || property.equals("updatedAt");
     }
 
     @Operation(summary = "Iegūt arhivētos kursus",

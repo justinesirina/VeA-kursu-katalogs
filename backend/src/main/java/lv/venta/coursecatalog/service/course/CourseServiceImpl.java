@@ -3,17 +3,33 @@ package lv.venta.coursecatalog.service.course;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lv.venta.coursecatalog.model.course.Course;
+import lv.venta.coursecatalog.model.course.CourseAuthor;
+import lv.venta.coursecatalog.model.course.CourseTeacher;
+import lv.venta.coursecatalog.model.course.CourseVersion;
 import lv.venta.coursecatalog.model.dto.ArchivedCourseDTO;
+import lv.venta.coursecatalog.model.dto.CourseCatalogItemDTO;
+import lv.venta.coursecatalog.model.program.CourseToStudyPrograms;
+import lv.venta.coursecatalog.repository.course.CourseAuthorRepository;
 import lv.venta.coursecatalog.repository.course.CourseRepository;
+import lv.venta.coursecatalog.repository.course.CourseTeacherRepository;
 import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
+import lv.venta.coursecatalog.repository.program.CourseToStudyProgramsRepository;
 import lv.venta.coursecatalog.service.log.CourseVersionLogService;
+import lv.venta.coursecatalog.service.security.RoleAccessChecker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Servisa slāņa implementācija darbībām ar studiju kursiem.
@@ -27,7 +43,11 @@ public class CourseServiceImpl implements ICourseService {
 
     private final CourseRepository courseRepo;
     private final CourseVersionRepository courseVersionRepo;
+    private final CourseAuthorRepository courseAuthorRepo;
+    private final CourseTeacherRepository courseTeacherRepo;
+    private final CourseToStudyProgramsRepository courseToProgramsRepo;
     private final CourseVersionLogService logService;
+    private final RoleAccessChecker roleAccessChecker;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -35,10 +55,18 @@ public class CourseServiceImpl implements ICourseService {
     @Autowired
     public CourseServiceImpl(CourseRepository courseRepo,
                              CourseVersionRepository courseVersionRepo,
-                             CourseVersionLogService logService) {
+                             CourseAuthorRepository courseAuthorRepo,
+                             CourseTeacherRepository courseTeacherRepo,
+                             CourseToStudyProgramsRepository courseToProgramsRepo,
+                             CourseVersionLogService logService,
+                             RoleAccessChecker roleAccessChecker) {
         this.courseRepo = courseRepo;
         this.courseVersionRepo = courseVersionRepo;
+        this.courseAuthorRepo = courseAuthorRepo;
+        this.courseTeacherRepo = courseTeacherRepo;
+        this.courseToProgramsRepo = courseToProgramsRepo;
         this.logService = logService;
+        this.roleAccessChecker = roleAccessChecker;
     }
 
     /**
@@ -128,7 +156,7 @@ public class CourseServiceImpl implements ICourseService {
     }
 
     /**
-     * Atgriež arhivētos kursus DTO formā ar agregētu versiju info
+     * Atgriež arhivētos kursus DTO formā ar apkopotu versiju info
      * (skaits + jaunākās versijas Nr. un statuss).
      */
     @Override
@@ -211,6 +239,164 @@ public class CourseServiceImpl implements ICourseService {
 
     private void runDelete(String sql, UUID id) {
         entityManager.createNativeQuery(sql).setParameter("id", id).executeUpdate();
+    }
+
+    /**
+     * F5 — publiskais katalogs ar meklēšanu, filtrēšanu un lapu izkārtojumu.
+     * Pirmais solis: filtrē Course līmenī ar {@link CourseCatalogSpecifications}.
+     * Otrais solis: katram lapā esošajam kursam izvēlas atspoguļošanai
+     * piemērotāko versiju (publiskais režīms = aktīvā apstiprinātā;
+     * staff režīms = augstākais versionNumber starp non-deleted versijām,
+     * kas atbilst statusId, ja tas ir uzdots).
+     * Trešais solis: vienā vaicājumā ielādē autorus, docētājus un programmu
+     * sasaistes visām atspoguļotajām versijām, lai izvairītos no N+1.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<CourseCatalogItemDTO> getCatalog(CourseCatalogFilter filter,
+                                                 Pageable pageable,
+                                                 Integer actorUserId) {
+        boolean staffMode = roleAccessChecker.isStaff(actorUserId);
+        CourseCatalogFilter effective = filter != null ? filter : new CourseCatalogFilter();
+
+        Page<Course> coursePage = courseRepo.findAll(
+                CourseCatalogSpecifications.withFilters(effective, staffMode),
+                pageable
+        );
+        if (coursePage.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, coursePage.getTotalElements());
+        }
+
+        List<UUID> courseIds = coursePage.getContent().stream()
+                .map(Course::getId)
+                .toList();
+
+        Map<UUID, CourseVersion> displayVersionByCourseId =
+                resolveDisplayVersions(courseIds, effective, staffMode);
+
+        Set<UUID> versionIds = displayVersionByCourseId.values().stream()
+                .map(CourseVersion::getId)
+                .collect(Collectors.toSet());
+
+        Map<UUID, List<CourseAuthor>> authorsByVersion = versionIds.isEmpty()
+                ? Map.of()
+                : courseAuthorRepo.findByCourseVersionIdIn(versionIds).stream()
+                        .collect(Collectors.groupingBy(a -> a.getCourseVersion().getId()));
+
+        Map<UUID, List<CourseTeacher>> teachersByVersion = versionIds.isEmpty()
+                ? Map.of()
+                : courseTeacherRepo.findByCourseVersionIdIn(versionIds).stream()
+                        .collect(Collectors.groupingBy(t -> t.getCourseVersion().getId()));
+
+        Map<UUID, List<CourseToStudyPrograms>> programsByVersion = versionIds.isEmpty()
+                ? Map.of()
+                : courseToProgramsRepo.findByCourseVersionIdIn(versionIds).stream()
+                        .collect(Collectors.groupingBy(p -> p.getCourseVersion().getId()));
+
+        List<CourseCatalogItemDTO> items = coursePage.getContent().stream()
+                .map(course -> toDTO(
+                        course,
+                        displayVersionByCourseId.get(course.getId()),
+                        authorsByVersion,
+                        teachersByVersion,
+                        programsByVersion
+                ))
+                .toList();
+
+        return new PageImpl<>(items, pageable, coursePage.getTotalElements());
+    }
+
+    private Map<UUID, CourseVersion> resolveDisplayVersions(List<UUID> courseIds,
+                                                            CourseCatalogFilter filter,
+                                                            boolean staffMode) {
+        if (!staffMode) {
+            List<CourseVersion> approved = courseVersionRepo.findByCourseIdsAndStatusName(
+                    courseIds, CourseCatalogSpecifications.PUBLIC_VISIBLE_STATUS);
+            return approved.stream().collect(Collectors.toMap(
+                    v -> v.getCourse().getId(),
+                    v -> v,
+                    (a, b) -> a.getVersionNumber() >= b.getVersionNumber() ? a : b
+            ));
+        }
+
+        List<CourseVersion> all = courseVersionRepo.findByCourseIdsNotDeleted(courseIds);
+        if (filter.getStatusId() != null) {
+            all = all.stream()
+                    .filter(v -> v.getStatus() != null
+                            && v.getStatus().getId() == filter.getStatusId())
+                    .toList();
+        }
+        return all.stream().collect(Collectors.toMap(
+                v -> v.getCourse().getId(),
+                v -> v,
+                (a, b) -> a.getVersionNumber() >= b.getVersionNumber() ? a : b
+        ));
+    }
+
+    private CourseCatalogItemDTO toDTO(Course course,
+                                       CourseVersion version,
+                                       Map<UUID, List<CourseAuthor>> authorsByVersion,
+                                       Map<UUID, List<CourseTeacher>> teachersByVersion,
+                                       Map<UUID, List<CourseToStudyPrograms>> programsByVersion) {
+        CourseCatalogItemDTO dto = new CourseCatalogItemDTO();
+        dto.setCourseId(course.getId());
+        dto.setCourseCode(course.getCourseCode());
+        dto.setTitleLv(course.getTitleLv());
+        dto.setTitleEn(course.getTitleEn());
+        dto.setCredits(course.getCredits());
+
+        if (version == null) {
+            dto.setAuthors(List.of());
+            dto.setTeachers(List.of());
+            dto.setPrograms(List.of());
+            return dto;
+        }
+
+        dto.setVersionId(version.getId());
+        dto.setVersionNumber(version.getVersionNumber());
+        dto.setStatusName(version.getStatus() != null ? version.getStatus().getName() : null);
+        dto.setFacultyName(version.getFaculty() != null ? version.getFaculty().getName() : null);
+        dto.setAcademicYearName(version.getAcademicYear() != null
+                ? version.getAcademicYear().getName() : null);
+        dto.setSemesterName(version.getSemester() != null ? version.getSemester().getName() : null);
+
+        List<CourseCatalogItemDTO.PersonRef> authors = authorsByVersion
+                .getOrDefault(version.getId(), List.of()).stream()
+                .filter(a -> a.getUser() != null)
+                .sorted(Comparator.comparing(a -> safe(a.getUser().getSurname())))
+                .map(a -> new CourseCatalogItemDTO.PersonRef(
+                        a.getUser().getId(),
+                        a.getUser().getName(),
+                        a.getUser().getSurname()))
+                .toList();
+        dto.setAuthors(authors);
+
+        List<CourseCatalogItemDTO.PersonRef> teachers = teachersByVersion
+                .getOrDefault(version.getId(), List.of()).stream()
+                .filter(t -> t.getUser() != null)
+                .sorted(Comparator.comparing(t -> safe(t.getUser().getSurname())))
+                .map(t -> new CourseCatalogItemDTO.PersonRef(
+                        t.getUser().getId(),
+                        t.getUser().getName(),
+                        t.getUser().getSurname()))
+                .toList();
+        dto.setTeachers(teachers);
+
+        List<CourseCatalogItemDTO.ProgramRef> programs = programsByVersion
+                .getOrDefault(version.getId(), List.of()).stream()
+                .map(p -> new CourseCatalogItemDTO.ProgramRef(
+                        p.getProgram() != null ? p.getProgram().getId() : null,
+                        p.getProgram() != null ? p.getProgram().getName() : null,
+                        p.getProgramPart() != null ? p.getProgramPart().getId() : null,
+                        p.getProgramPart() != null ? p.getProgramPart().getName() : null))
+                .toList();
+        dto.setPrograms(programs);
+
+        return dto;
+    }
+
+    private static String safe(String s) {
+        return s == null ? "" : s;
     }
 
 }

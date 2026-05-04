@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -78,5 +79,26 @@ public interface CourseVersionRepository extends JpaRepository<CourseVersion, UU
     @org.springframework.data.jpa.repository.Modifying
     @Query(value = "UPDATE course_versions SET deleted_at = NULL WHERE id = :id", nativeQuery = true)
     int restoreById(@Param("id") UUID id);
+
+    /**
+     * Batch palīgs F5 katalogam: vienā vaicājumā ielādē aktīvās apstiprinātās
+     * versijas dotajiem kursu ID. Izmanto, lai izvairītos no N+1 pie kataloga
+     * lapas renderēšanas (publiskais režīms).
+     */
+    @Query("SELECT v FROM CourseVersion v "
+            + "WHERE v.course.id IN :courseIds "
+            + "AND v.isActive = true "
+            + "AND v.status.name = :statusName")
+    List<CourseVersion> findByCourseIdsAndStatusName(
+            @Param("courseIds") Collection<UUID> courseIds,
+            @Param("statusName") String statusName);
+
+    /**
+     * Batch palīgs F5 katalogam staff režīmā: visas non-deleted versijas
+     * dotajiem kursu ID. Servis tālāk filtrē pēc statusId un izvēlas augstāko
+     * versionNumber katram kursam.
+     */
+    @Query("SELECT v FROM CourseVersion v WHERE v.course.id IN :courseIds")
+    List<CourseVersion> findByCourseIdsNotDeleted(@Param("courseIds") Collection<UUID> courseIds);
 
 }
