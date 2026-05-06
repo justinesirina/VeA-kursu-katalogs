@@ -320,10 +320,11 @@ public class CourseServiceImpl implements ICourseService {
         }
 
         List<CourseVersion> all = courseVersionRepo.findByCourseIdsNotDeleted(courseIds);
-        if (filter.getStatusId() != null) {
+        if (filter.getStatusIds() != null && !filter.getStatusIds().isEmpty()) {
+            Set<Integer> wanted = Set.copyOf(filter.getStatusIds());
             all = all.stream()
                     .filter(v -> v.getStatus() != null
-                            && v.getStatus().getId() == filter.getStatusId())
+                            && wanted.contains(v.getStatus().getId()))
                     .toList();
         }
         return all.stream().collect(Collectors.toMap(

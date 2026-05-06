@@ -178,7 +178,7 @@ class CourseCatalogServiceTest {
         when(teacherRepo.findByCourseVersionIdIn(anyCollection())).thenReturn(List.of());
         when(programsRepo.findByCourseVersionIdIn(anyCollection())).thenReturn(List.of());
 
-        CourseCatalogFilter filter = CourseCatalogFilter.builder().statusId(1).build();
+        CourseCatalogFilter filter = CourseCatalogFilter.builder().statusIds(List.of(1)).build();
         Page<CourseCatalogItemDTO> page = service.getCatalog(filter, pageable, 7);
 
         assertEquals(1, page.getContent().size());

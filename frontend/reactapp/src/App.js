@@ -28,6 +28,7 @@ const SECTION_CONFIGS = [
     { match: '/courses/:id/versions',                 label: 'Versiju vēsture',    Icon: History },
     { match: '/courses/:id/versions/:versionId/view', label: 'Vēsturiska versija', Icon: History },
     { match: '/courses/:id',                          label: 'Kurss',              Icon: BookOpen },
+    { match: '/',                                     label: 'Kursu katalogs',     Icon: BookOpen },
 ];
 
 function getSection(pathname) {

@@ -1,6 +1,7 @@
 package lv.venta.coursecatalog.service.course;
 
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
@@ -12,6 +13,7 @@ import lv.venta.coursecatalog.model.program.CourseToStudyPrograms;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +26,9 @@ import java.util.UUID;
  * tiek piemērota tieši aktīvajai/atbilstošajai versijai (nav iespējams, ka
  * kurss tiek atgriezts, ja viens filtrs atbilst vienai versijai un cits —
  * citai).</p>
+ *
+ * <p>Multi-select filtri tiek apvienoti ar IN klauzu (OR vienas dimensijas
+ * iekšienē); dažādās dimensijas tiek apvienotas ar AND.</p>
  */
 public final class CourseCatalogSpecifications {
 
@@ -33,13 +38,6 @@ public final class CourseCatalogSpecifications {
      * Statusa nosaukums, ko publisks katalogs uzskata par "publiski redzamu".
      */
     public static final String PUBLIC_VISIBLE_STATUS = "Apstiprināts";
-
-    /**
-     * Substring, ko C-Brīvās izvēles ātrais filtrs meklē StudyProgramPart.name laukā.
-     * Lower-cased; saskaņots ar reālajiem datiem ("C - Brīvās izvēles", "Brīvās
-     * izvēles" u.c. variācijām).
-     */
-    public static final String FREE_ELECTIVE_NAME_FRAGMENT = "brīvās izvēles";
 
     public static Specification<Course> withFilters(CourseCatalogFilter f, boolean staffMode) {
         return (root, query, cb) -> {
@@ -72,58 +70,45 @@ public final class CourseCatalogSpecifications {
                         cv.join("status", JoinType.INNER).get("name"),
                         PUBLIC_VISIBLE_STATUS
                 ));
-            } else if (f.getStatusId() != null) {
-                versionPreds.add(cb.equal(cv.get("status").get("id"), f.getStatusId()));
+            } else {
+                addInPredicate(versionPreds, cv.get("status").get("id"), f.getStatusIds());
             }
 
-            if (f.getFacultyId() != null) {
-                versionPreds.add(cb.equal(cv.get("faculty").get("id"), f.getFacultyId()));
-            }
-            if (f.getAcademicYearId() != null) {
-                versionPreds.add(cb.equal(cv.get("academicYear").get("id"), f.getAcademicYearId()));
-            }
-            if (f.getSemesterId() != null) {
-                versionPreds.add(cb.equal(cv.get("semester").get("id"), f.getSemesterId()));
-            }
+            addInPredicate(versionPreds, cv.get("faculty").get("id"), f.getFacultyIds());
+            addInPredicate(versionPreds, cv.get("academicYear").get("id"), f.getAcademicYearIds());
+            addInPredicate(versionPreds, cv.get("semester").get("id"), f.getSemesterIds());
 
-            if (f.getAuthorUserId() != null) {
+            if (notEmpty(f.getAuthorUserIds())) {
                 Subquery<Integer> aSq = query.subquery(Integer.class);
                 Root<CourseAuthor> ca = aSq.from(CourseAuthor.class);
                 aSq.select(ca.get("id")).where(
                         cb.equal(ca.get("courseVersion"), cv),
-                        cb.equal(ca.get("user").get("id"), f.getAuthorUserId())
+                        ca.get("user").get("id").in(f.getAuthorUserIds())
                 );
                 versionPreds.add(cb.exists(aSq));
             }
-            if (f.getTeacherUserId() != null) {
+            if (notEmpty(f.getTeacherUserIds())) {
                 Subquery<Integer> tSq = query.subquery(Integer.class);
                 Root<CourseTeacher> ct = tSq.from(CourseTeacher.class);
                 tSq.select(ct.get("id")).where(
                         cb.equal(ct.get("courseVersion"), cv),
-                        cb.equal(ct.get("user").get("id"), f.getTeacherUserId())
+                        ct.get("user").get("id").in(f.getTeacherUserIds())
                 );
                 versionPreds.add(cb.exists(tSq));
             }
 
-            boolean wantsProgramFilter = f.getProgramId() != null
-                    || f.getProgramPartId() != null
-                    || Boolean.TRUE.equals(f.getFreeElectiveOnly());
+            boolean wantsProgramFilter = notEmpty(f.getProgramIds())
+                    || notEmpty(f.getProgramPartIds());
             if (wantsProgramFilter) {
                 Subquery<Integer> pSq = query.subquery(Integer.class);
                 Root<CourseToStudyPrograms> ctsp = pSq.from(CourseToStudyPrograms.class);
                 List<Predicate> pp = new ArrayList<>();
                 pp.add(cb.equal(ctsp.get("courseVersion"), cv));
-                if (f.getProgramId() != null) {
-                    pp.add(cb.equal(ctsp.get("program").get("id"), f.getProgramId()));
+                if (notEmpty(f.getProgramIds())) {
+                    pp.add(ctsp.get("program").get("id").in(f.getProgramIds()));
                 }
-                if (f.getProgramPartId() != null) {
-                    pp.add(cb.equal(ctsp.get("programPart").get("id"), f.getProgramPartId()));
-                }
-                if (Boolean.TRUE.equals(f.getFreeElectiveOnly())) {
-                    pp.add(cb.like(
-                            cb.lower(ctsp.get("programPart").<String>get("name")),
-                            "%" + FREE_ELECTIVE_NAME_FRAGMENT + "%"
-                    ));
+                if (notEmpty(f.getProgramPartIds())) {
+                    pp.add(ctsp.get("programPart").get("id").in(f.getProgramPartIds()));
                 }
                 pSq.select(ctsp.get("id")).where(pp.toArray(new Predicate[0]));
                 versionPreds.add(cb.exists(pSq));
@@ -134,5 +119,15 @@ public final class CourseCatalogSpecifications {
 
             return cb.and(outer.toArray(new Predicate[0]));
         };
+    }
+
+    private static boolean notEmpty(Collection<?> c) {
+        return c != null && !c.isEmpty();
+    }
+
+    private static void addInPredicate(List<Predicate> preds, Path<?> path, Collection<?> values) {
+        if (notEmpty(values)) {
+            preds.add(path.in(values));
+        }
     }
 }

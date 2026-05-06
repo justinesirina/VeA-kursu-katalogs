@@ -63,15 +63,14 @@ public class CourseController {
     @GetMapping("/catalog")
     public Page<CourseCatalogItemDTO> getCatalog(
             @RequestParam(required = false) String q,
-            @RequestParam(required = false) Integer facultyId,
-            @RequestParam(required = false) Integer academicYearId,
-            @RequestParam(required = false) Integer semesterId,
-            @RequestParam(required = false) Integer statusId,
-            @RequestParam(required = false) Integer programId,
-            @RequestParam(required = false) Integer programPartId,
-            @RequestParam(required = false) Integer authorUserId,
-            @RequestParam(required = false) Integer teacherUserId,
-            @RequestParam(required = false) Boolean freeElectiveOnly,
+            @RequestParam(required = false) java.util.List<Integer> facultyIds,
+            @RequestParam(required = false) java.util.List<Integer> academicYearIds,
+            @RequestParam(required = false) java.util.List<Integer> semesterIds,
+            @RequestParam(required = false) java.util.List<Integer> statusIds,
+            @RequestParam(required = false) java.util.List<Integer> programIds,
+            @RequestParam(required = false) java.util.List<Integer> programPartIds,
+            @RequestParam(required = false) java.util.List<Integer> authorUserIds,
+            @RequestParam(required = false) java.util.List<Integer> teacherUserIds,
             @Parameter(description = "0-bāzēts lapas numurs") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Lapas izmērs (atļauts: 25/50/100/500)") @RequestParam(defaultValue = "25") int size,
             @Parameter(description = "Kārtošana, piem. titleLv,asc") @RequestParam(defaultValue = "titleLv,asc") String sort,
@@ -79,15 +78,14 @@ public class CourseController {
     ) {
         CourseCatalogFilter filter = CourseCatalogFilter.builder()
                 .q(q)
-                .facultyId(facultyId)
-                .academicYearId(academicYearId)
-                .semesterId(semesterId)
-                .statusId(statusId)
-                .programId(programId)
-                .programPartId(programPartId)
-                .authorUserId(authorUserId)
-                .teacherUserId(teacherUserId)
-                .freeElectiveOnly(freeElectiveOnly)
+                .facultyIds(facultyIds)
+                .academicYearIds(academicYearIds)
+                .semesterIds(semesterIds)
+                .statusIds(statusIds)
+                .programIds(programIds)
+                .programPartIds(programPartIds)
+                .authorUserIds(authorUserIds)
+                .teacherUserIds(teacherUserIds)
                 .build();
 
         Pageable pageable = PageRequest.of(

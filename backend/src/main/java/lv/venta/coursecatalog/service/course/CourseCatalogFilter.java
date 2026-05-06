@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+import java.util.List;
 
 /**
  * Pieprasījuma parametru kopa /api/courses/catalog endpointam.
- * Visi lauki neobligāti, null nozīmē "filtrs neaktīvs".
+ * Visi lauki neobligāti — null vai tukšs saraksts nozīmē "filtrs neaktīvs".
+ * Saraksta formātā filtri ir multi-select (atļauj pa OR-ed vērtībām vienā
+ * dimensijā, piem., faculty IN (1, 2, 3)).
  */
 @Data
 @Builder
@@ -19,16 +21,14 @@ public class CourseCatalogFilter {
 
     private String q;
 
-    private Integer facultyId;
-    private Integer academicYearId;
-    private Integer semesterId;
-    private Integer statusId;
+    private List<Integer> facultyIds;
+    private List<Integer> academicYearIds;
+    private List<Integer> semesterIds;
+    private List<Integer> statusIds;
 
-    private Integer programId;
-    private Integer programPartId;
+    private List<Integer> programIds;
+    private List<Integer> programPartIds;
 
-    private Integer authorUserId;
-    private Integer teacherUserId;
-
-    private Boolean freeElectiveOnly;
+    private List<Integer> authorUserIds;
+    private List<Integer> teacherUserIds;
 }
