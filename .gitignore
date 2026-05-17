@@ -27,6 +27,7 @@ Thumbs.db
 
 # Database
 postgres_data/
+backup-*.sql
 
 # Docker
 docker-compose.override.yml
