@@ -34,7 +34,7 @@
                 <span th:if="${course.decisionNumber != null and !#strings.isEmpty(course.decisionNumber)}"
                       th:text="'Nr. ' + ${course.decisionNumber}">Nr. ?</span>
                 <span th:if="${course.decisionReference != null and !#strings.isEmpty(course.decisionReference)}">
-                    <br/><span class="label" th:text="${course.decisionReference}">atsauce</span>
+                    <br/><span class="label" th:text="'Lēmējinstitūcija: ' + ${course.decisionReference}">Lēmējinstitūcija: ...</span>
                 </span>
             </div>
             <div th:if="${isPending}">

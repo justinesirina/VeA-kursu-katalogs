@@ -253,7 +253,7 @@ function CourseDetails() {
                         <div className="text-gray-500 space-y-0.5 text-sm">
                             {d.approvalDate && <p>Apstiprināts: {d.approvalDate}</p>}
                             {d.decisionNumber && <p>Lēmums Nr.: {d.decisionNumber}</p>}
-                            {d.decisionReference && <p>{d.decisionReference}</p>}
+                            {d.decisionReference && <p>Lēmējinstitūcija: {d.decisionReference}</p>}
                         </div>
                     </div>
                 )}

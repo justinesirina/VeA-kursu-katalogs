@@ -146,7 +146,7 @@ public class DocxRenderer {
                 addRightHeaderLine(right, "Nr. " + course.getDecisionNumber(), false);
             }
             if (course.getDecisionReference() != null && !course.getDecisionReference().isBlank()) {
-                addRightHeaderLine(right, course.getDecisionReference(), false);
+                addRightHeaderLine(right, "Lēmējinstitūcija: " + course.getDecisionReference(), false);
             }
         } else if (isPending) {
             addRightHeaderLine(right, "IESNIEGTS APSTIPRINĀŠANAI", true);
