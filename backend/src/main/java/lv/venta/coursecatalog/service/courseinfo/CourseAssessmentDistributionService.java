@@ -1,9 +1,7 @@
 package lv.venta.coursecatalog.service.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CourseAssessmentDistribution;
-import lv.venta.coursecatalog.repository.courseinfo.AssessmentComponentRepository;
 import lv.venta.coursecatalog.repository.courseinfo.CourseAssessmentDistributionRepository;
-import lv.venta.coursecatalog.repository.courseinfo.CourseInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +14,6 @@ public class CourseAssessmentDistributionService {
 
     @Autowired
     private CourseAssessmentDistributionRepository distributionRepo;
-
-    @Autowired
-    private CourseInfoRepository courseInfoRepo;
-
-    @Autowired
-    private AssessmentComponentRepository componentRepo;
 
     /**
      * Iegūst visus vērtēšanas sadalījumus.

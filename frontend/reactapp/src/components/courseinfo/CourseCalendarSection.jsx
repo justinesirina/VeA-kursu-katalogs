@@ -15,7 +15,7 @@ function CourseCalendarSection({ courseInfoId, data, lookups, onSaved, onSession
         if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault();
     };
 
-    const topics = data.topics || [];
+    const topics = useMemo(() => data.topics || [], [data.topics]);
     const sessionTypes = lookups.sessionTypes || [];
 
     // Kalendārs izmanto tieši to pašu secību, kas "Tēmas" sadaļā (courseContent.sequenceNumber).

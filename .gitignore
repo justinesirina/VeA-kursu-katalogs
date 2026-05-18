@@ -32,9 +32,8 @@ backup-*.sql
 # Docker
 docker-compose.override.yml
 
-# Claude Code
-CLAUDE.md
-.claude/
-
 # Iekšējie manuālie testi/preview helperi
 **/test/java/**/internal/
+
+# Iekšējie dokumenti
+docs/

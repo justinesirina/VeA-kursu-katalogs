@@ -2,7 +2,6 @@ package lv.venta.coursecatalog.service.user;
 
 import lv.venta.coursecatalog.model.user.UserRole;
 import lv.venta.coursecatalog.repository.user.UserRoleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +15,6 @@ public class UserRoleService {
 
     private final UserRoleRepository repository;
 
-    @Autowired
     public UserRoleService(UserRoleRepository repository) {
         this.repository = repository;
     }

@@ -222,7 +222,7 @@ function CourseEditForm() {
         };
 
         load();
-    }, [id, requestedVersionId]);
+    }, [id, requestedVersionId, showToast]);
 
     // Pēc tam, kad sākotnējie dati ielādēti, fiksējam snapshot izmaiņu izsekošanai
     useEffect(() => {
@@ -446,7 +446,6 @@ function CourseEditForm() {
 
     const handleAddTeacher = async (userId) => {
         if (!versionId) { showToast('Vispirms saglabā versiju.', 'error'); return; }
-        const hasAtbildigais = teachers.some(t => t.role === 'Atbildīgais mācībspēks');
         setStaffSaving(true);
         try {
             await api.post('/course-teachers', { courseVersion: { id: versionId }, user: { id: Number(userId) }, role: selectedTeacherRole });

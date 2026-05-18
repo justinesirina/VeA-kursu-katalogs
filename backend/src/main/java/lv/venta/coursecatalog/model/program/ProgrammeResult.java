@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lv.venta.coursecatalog.model.user.User;
-import lv.venta.coursecatalog.model.program.StudyProgram;
 import lv.venta.coursecatalog.model.courseinfo.ResultsCategory;
 
 import java.time.LocalDateTime;

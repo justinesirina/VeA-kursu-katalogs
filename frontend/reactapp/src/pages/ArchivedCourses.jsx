@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { RotateCcw, Trash2, AlertTriangle } from 'lucide-react';
 import api from '../services/axiosConfig';
 import { useToast } from '../components/ui/ToastProvider';
-import { statusBadgeClass } from '../utils/statusBadge';
 
 const TABS = [
     { key: 'courses', label: 'Kursi' },

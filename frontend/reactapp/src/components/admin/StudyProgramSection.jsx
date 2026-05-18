@@ -1,4 +1,4 @@
-import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Edit2, Trash2, Check, X } from 'lucide-react';
 import api from '../../services/axiosConfig';
 
@@ -56,13 +56,13 @@ const StudyProgramSection = forwardRef(function StudyProgramSection(props, ref) 
         setConfirmDeleteId(null);
     };
 
-    const startAdd = () => {
+    const startAdd = useCallback(() => {
         setEditingId('new');
         setDraft({ ...EMPTY, facultyId: faculties[0]?.id?.toString() ?? '' });
         setConfirmDeleteId(null);
-    };
+    }, [faculties]);
 
-    useImperativeHandle(ref, () => ({ startAdd }), [faculties]);
+    useImperativeHandle(ref, () => ({ startAdd }), [startAdd]);
 
     const cancelEdit = () => { setEditingId(null); setDraft(EMPTY); };
 

@@ -2,7 +2,6 @@ package lv.venta.coursecatalog.service.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CalendarSession;
 import lv.venta.coursecatalog.model.courseinfo.CalendarTopic;
-import lv.venta.coursecatalog.model.courseinfo.SessionType;
 import lv.venta.coursecatalog.repository.courseinfo.CalendarSessionRepository;
 import lv.venta.coursecatalog.repository.courseinfo.CalendarTopicRepository;
 import lv.venta.coursecatalog.repository.courseinfo.SessionTypeRepository;

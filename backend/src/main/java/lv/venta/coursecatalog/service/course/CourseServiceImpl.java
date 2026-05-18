@@ -16,7 +16,6 @@ import lv.venta.coursecatalog.repository.course.CourseVersionRepository;
 import lv.venta.coursecatalog.repository.program.CourseToStudyProgramsRepository;
 import lv.venta.coursecatalog.service.log.CourseVersionLogService;
 import lv.venta.coursecatalog.service.security.RoleAccessChecker;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +51,6 @@ public class CourseServiceImpl implements ICourseService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Autowired
     public CourseServiceImpl(CourseRepository courseRepo,
                              CourseVersionRepository courseVersionRepo,
                              CourseAuthorRepository courseAuthorRepo,

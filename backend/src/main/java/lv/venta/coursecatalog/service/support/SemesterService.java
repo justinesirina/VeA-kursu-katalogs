@@ -2,7 +2,6 @@ package lv.venta.coursecatalog.service.support;
 
 import lv.venta.coursecatalog.model.support.Semester;
 import lv.venta.coursecatalog.repository.support.SemesterRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +15,6 @@ public class SemesterService {
 
     private final SemesterRepository repository;
 
-    @Autowired
     public SemesterService(SemesterRepository repository) {
         this.repository = repository;
     }

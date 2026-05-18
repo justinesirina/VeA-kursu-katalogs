@@ -15,7 +15,6 @@ import lv.venta.coursecatalog.repository.program.CourseToProgrammeResultsReposit
 import lv.venta.coursecatalog.repository.program.CourseToStudyProgramsRepository;
 import lv.venta.coursecatalog.repository.support.VersionStatusRepository;
 import lv.venta.coursecatalog.service.log.CourseVersionLogService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +52,6 @@ public class CourseVersionDuplicationService {
     private final CourseToStudyProgramsRepository courseToStudyProgramsRepo;
     private final CourseVersionLogService logService;
 
-    @Autowired
     public CourseVersionDuplicationService(
             CourseVersionRepository versionRepo,
             VersionStatusRepository versionStatusRepo,

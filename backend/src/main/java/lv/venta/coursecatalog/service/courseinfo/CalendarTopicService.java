@@ -1,8 +1,6 @@
 package lv.venta.coursecatalog.service.courseinfo;
 
 import lv.venta.coursecatalog.model.courseinfo.CalendarTopic;
-import lv.venta.coursecatalog.model.courseinfo.CourseContent;
-import lv.venta.coursecatalog.model.courseinfo.CourseInfo;
 import lv.venta.coursecatalog.repository.courseinfo.CalendarTopicRepository;
 import lv.venta.coursecatalog.repository.courseinfo.CourseContentRepository;
 import lv.venta.coursecatalog.repository.courseinfo.CourseInfoRepository;

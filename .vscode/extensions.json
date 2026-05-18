@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "redhat.java",
+        "dbaeumer.vscode-eslint"
+    ],
+    "unwantedRecommendations": [
+        "oracle.oracle-java",
+        "asf.apache-netbeans-java"
+    ]
+}
