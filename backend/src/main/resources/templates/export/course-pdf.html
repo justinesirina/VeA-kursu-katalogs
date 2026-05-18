@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="lv">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${course.titleLv}">Kursa apraksts</title>
+    <style th:utext="${css}"></style>
+</head>
+<body>
+
+<!-- ============================================================
+     Galvene: 3 daļas — pa kreisi sadaļas etiķete, vidū VeA logo,
+     pa labi versijas tehniskā informācija atbilstoši statusam.
+     ============================================================ -->
+<table class="doc-header">
+    <tr>
+        <td class="header-left">STUDIJU KURSA APRAKSTS</td>
+        <td class="header-center">
+            <img th:if="${logoDataUri != null and !#strings.isEmpty(logoDataUri)}"
+                 th:src="${logoDataUri}" alt="Ventspils Augstskola" />
+        </td>
+        <td class="header-right" th:with="
+                statusLower=${course.versionStatus != null ? #strings.toLowerCase(course.versionStatus) : ''},
+                isApproved=${statusLower != null and #strings.contains(statusLower, 'apstip')},
+                isPending=${statusLower != null and #strings.contains(statusLower, 'iesniegts')},
+                isDraft=${statusLower != null and #strings.contains(statusLower, 'melnraksts')},
+                isRejected=${statusLower != null and #strings.contains(statusLower, 'noraid')}
+            ">
+            <div th:if="${isApproved}">
+                <span class="status-approved">APSTIPRINĀTS</span><br/>
+                <span th:if="${course.approvalDate != null and !#strings.isEmpty(course.approvalDate)}"
+                      th:text="'ar ' + ${course.approvalDate} + ' lēmumu'">ar datumu lēmumu</span>
+                <span th:if="${course.approvalDate == null or #strings.isEmpty(course.approvalDate)}">
+                    ar Senāta lēmumu</span><br/>
+                <span th:if="${course.decisionNumber != null and !#strings.isEmpty(course.decisionNumber)}"
+                      th:text="'Nr. ' + ${course.decisionNumber}">Nr. ?</span>
+                <span th:if="${course.decisionReference != null and !#strings.isEmpty(course.decisionReference)}">
+                    <br/><span class="label" th:text="${course.decisionReference}">atsauce</span>
+                </span>
+            </div>
+            <div th:if="${isPending}">
+                <span class="status-pending">IESNIEGTS APSTIPRINĀŠANAI</span>
+            </div>
+            <div th:if="${isDraft}">
+                <span class="status-pending">MELNRAKSTS</span>
+            </div>
+            <div th:if="${isRejected}">
+                <span class="status-historical">NORAIDĪTA VERSIJA</span>
+            </div>
+            <div th:if="${!isApproved and !isPending and !isDraft and !isRejected and course.versionStatus != null}"
+                 th:text="${course.versionStatus}">statuss</div>
+
+            <div th:if="${course.versionNumber != null}" style="margin-top:3px;">
+                <span class="label">Versija Nr. </span><span th:text="${course.versionNumber}">N</span>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<!-- Kursa nosaukums -->
+<h1 class="course-title" th:text="${course.titleLv}">Kursa nosaukums</h1>
+<p class="course-title-en"
+   th:if="${course.titleEn != null and !#strings.isEmpty(course.titleEn)}"
+   th:text="${course.titleEn}">English title</p>
+
+
+<!-- ===== 1. Pamatdati ===== -->
+<section>
+    <h2>1. Pamatdati</h2>
+    <table class="info-table">
+        <tr><th>Kursa kods</th><td th:text="${course.courseCode != null and !#strings.isEmpty(course.courseCode) ? course.courseCode : '—'}"></td></tr>
+        <tr><th>Kredītpunkti</th><td th:text="${course.credits}"></td></tr>
+        <tr><th>Fakultāte</th><td th:text="${course.facultyName != null ? course.facultyName : '—'}"></td></tr>
+        <tr><th>Akadēmiskais gads</th><td th:text="${course.academicYear != null ? course.academicYear : '—'}"></td></tr>
+        <tr><th>Semestris</th><td th:text="${course.semester != null ? course.semester : '—'}"></td></tr>
+        <tr><th>Mācību valoda</th><td th:text="${course.language != null ? course.language : '—'}"></td></tr>
+        <tr><th>Pārbaudes forma</th><td th:text="${course.assessmentForm != null ? course.assessmentForm : '—'}"></td></tr>
+        <tr>
+            <th>Autors(-i)</th>
+            <td>
+                <th:block th:if="${course.authors != null and !#lists.isEmpty(course.authors)}">
+                    <div th:each="a, it : ${course.authors}"
+                         th:text="${a.fullTitle + (a.role != null and !#strings.isEmpty(a.role) ? ' (' + a.role + ')' : '')}">
+                    </div>
+                </th:block>
+                <span class="empty-note"
+                      th:if="${course.authors == null or #lists.isEmpty(course.authors)}">—</span>
+            </td>
+        </tr>
+        <tr>
+            <th>Pasniedzējs(-i)</th>
+            <td>
+                <th:block th:if="${course.teachers != null and !#lists.isEmpty(course.teachers)}">
+                    <div th:each="t : ${course.teachers}"
+                         th:text="${t.fullTitle + (t.role != null and !#strings.isEmpty(t.role) ? ' (' + t.role + ')' : '')}">
+                    </div>
+                </th:block>
+                <span class="empty-note"
+                      th:if="${course.teachers == null or #lists.isEmpty(course.teachers)}">—</span>
+            </td>
+        </tr>
+        <tr>
+            <th>Studiju programmas</th>
+            <td>
+                <th:block th:if="${course.studyPrograms != null and !#lists.isEmpty(course.studyPrograms)}">
+                    <div th:each="p : ${course.studyPrograms}"
+                         th:text="${p.programName + (p.partName != null and !#strings.isEmpty(p.partName) ? ' — ' + p.partName : '')}">
+                    </div>
+                </th:block>
+                <span class="empty-note"
+                      th:if="${course.studyPrograms == null or #lists.isEmpty(course.studyPrograms)}">—</span>
+            </td>
+        </tr>
+    </table>
+</section>
+
+
+<!-- ===== 2. Apraksts ===== -->
+<section>
+    <h2>2. Apraksts</h2>
+
+    <table class="info-table">
+        <tr><th>Akadēmiskās stundas (kopā)</th><td th:text="${course.academicHoursTotal}"></td></tr>
+        <tr><th>Lekcijas</th><td th:text="${course.lectureHours}"></td></tr>
+        <tr><th>Praktiskās nodarbības</th><td th:text="${course.practClassesHours}"></td></tr>
+        <tr><th>Patstāvīgais darbs</th><td th:text="${course.independentWorkHours}"></td></tr>
+    </table>
+
+    <h3>Anotācija</h3>
+    <div class="richtext"
+         th:if="${course.annotation != null and !#strings.isEmpty(course.annotation)}"
+         th:utext="${rt.sanitizeForHtml(course.annotation)}">Teksts</div>
+    <p class="empty-note"
+       th:if="${course.annotation == null or #strings.isEmpty(course.annotation)}">Nav norādīta.</p>
+
+    <h3>Mērķis</h3>
+    <div class="richtext"
+         th:if="${course.goal != null and !#strings.isEmpty(course.goal)}"
+         th:utext="${rt.sanitizeForHtml(course.goal)}">Teksts</div>
+    <p class="empty-note"
+       th:if="${course.goal == null or #strings.isEmpty(course.goal)}">Nav norādīts.</p>
+
+    <h3>Priekšnoteikumi</h3>
+    <div class="richtext"
+         th:if="${course.prerequisitesDescription != null and !#strings.isEmpty(course.prerequisitesDescription)}"
+         th:utext="${rt.sanitizeForHtml(course.prerequisitesDescription)}">Teksts</div>
+    <ul th:if="${course.prerequisites != null and !#lists.isEmpty(course.prerequisites)}">
+        <li th:each="p : ${course.prerequisites}"
+            th:text="${p.title + (p.type != null and !#strings.isEmpty(p.type) ? ' (' + p.type + ')' : '')}">
+        </li>
+    </ul>
+    <p class="empty-note"
+       th:if="${(course.prerequisitesDescription == null or #strings.isEmpty(course.prerequisitesDescription))
+               and (course.prerequisites == null or #lists.isEmpty(course.prerequisites))}">Nav norādīti.</p>
+</section>
+
+
+<!-- ===== 3. Studiju kursa rezultāti (SKR) =====
+     Tabula ar 4 kolonām (kategorija | SKR Nr. | sasniedzamais rezultāts | SPSR).
+     SKR un to numerācija sagatavoti backendā (resultAssessments saraksts jau sakārtots
+     pēc categoryOrder un katrā kategorijā SKR ir formatēts displayNumber ("SKR 1.1" u.t.t.)). -->
+<section>
+    <h2>3. Studiju kursa rezultāti (SKR)</h2>
+    <table class="data-table"
+           th:if="${course.resultAssessments != null and !#lists.isEmpty(course.resultAssessments)}">
+        <thead>
+            <tr>
+                <th style="width:18%">Kategorija</th>
+                <th style="width:10%">Nr.</th>
+                <th>Sasniedzamais rezultāts</th>
+                <th style="width:20%">SPSR</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="r : ${course.resultAssessments}">
+                <td th:text="${r.categoryOrder != null ? r.categoryOrder + '. ' + r.categoryName : r.categoryName}">Kat.</td>
+                <td th:text="${r.displayNumber != null ? r.displayNumber : '—'}">SKR</td>
+                <td th:text="${r.learningOutcome}">teksts</td>
+                <td th:text="${r.spsr != null and !#strings.isEmpty(r.spsr) ? r.spsr : '—'}">SPSR</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="empty-note"
+       th:if="${course.resultAssessments == null or #lists.isEmpty(course.resultAssessments)}">Nav norādīti.</p>
+</section>
+
+
+<!-- ===== 4. Tēmas ===== -->
+<section>
+    <h2>4. Tēmas</h2>
+    <table class="data-table"
+           th:if="${course.topics != null and !#lists.isEmpty(course.topics)}">
+        <thead>
+            <tr>
+                <th class="num">Nr.</th>
+                <th>Tēmas nosaukums</th>
+                <th>Apraksts</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="t : ${course.topics}">
+                <td class="num" th:text="${t.sequenceNumber}">1</td>
+                <td th:text="${t.title}">tēma</td>
+                <td>
+                    <div class="richtext"
+                         th:if="${t.description != null and !#strings.isEmpty(t.description)}"
+                         th:utext="${rt.sanitizeForHtml(t.description)}">apraksts</div>
+                    <span class="empty-note"
+                          th:if="${t.description == null or #strings.isEmpty(t.description)}">—</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="empty-note"
+       th:if="${course.topics == null or #lists.isEmpty(course.topics)}">Nav norādītas.</p>
+</section>
+
+
+<!-- ===== 5. Kalendārais plāns ===== -->
+<section>
+    <h2>5. Kalendārais plāns</h2>
+    <table class="data-table"
+           th:if="${course.calendarPlan != null and !#lists.isEmpty(course.calendarPlan)}">
+        <thead>
+            <tr>
+                <th class="num">Nr.</th>
+                <th>Tēmas nosaukums</th>
+                <th>Nodarbības veids</th>
+                <th class="num">Ak. st.</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="c : ${course.calendarPlan}">
+                <td class="num" th:text="${c.sequenceNumber}">1</td>
+                <td th:text="${c.topicTitle}">tēma</td>
+                <td>
+                    <th:block th:if="${c.sessions != null and !#lists.isEmpty(c.sessions)}">
+                        <span th:each="s, iter : ${c.sessions}">
+                            <span th:text="${s.sessionType}">L</span><span th:if="${!iter.last}">; </span>
+                        </span>
+                    </th:block>
+                </td>
+                <td class="num" th:text="${c.totalAcademicHours}">0</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="empty-note"
+       th:if="${course.calendarPlan == null or #lists.isEmpty(course.calendarPlan)}">Nav sastādīts.</p>
+</section>
+
+
+<!-- ===== 6. Vērtēšana =====
+     Trīs apakšsadaļas:
+       6.1. Vērtēšanas sadalījums (komponentes × %)
+       6.2. SKR × komponenšu matrica (kuras komponentes vērtē kuru SKR)
+       6.3. Patstāvīgā darba sadalījums (aktivitātes × %)
+     -->
+<section>
+    <h2>6. Vērtēšana</h2>
+
+    <h3>6.1. Vērtēšanas sadalījums</h3>
+    <table class="data-table"
+           th:if="${course.assessmentDistribution != null and !#lists.isEmpty(course.assessmentDistribution)}">
+        <thead><tr><th>Komponente</th><th class="pct">%</th></tr></thead>
+        <tbody>
+            <tr th:each="a : ${course.assessmentDistribution}">
+                <td th:text="${a.componentName}">komp.</td>
+                <td class="pct" th:text="${a.percentage} + '%'">0%</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="empty-note"
+       th:if="${course.assessmentDistribution == null or #lists.isEmpty(course.assessmentDistribution)}">Nav norādīts.</p>
+
+    <h3>6.2. SKR × vērtēšanas komponenšu matrica</h3>
+    <th:block th:if="${course.resultAssessments != null and !#lists.isEmpty(course.resultAssessments)
+                       and course.assessmentDistribution != null and !#lists.isEmpty(course.assessmentDistribution)}">
+        <table class="skr-matrix">
+            <thead>
+                <tr>
+                    <th class="skr-label">SKR</th>
+                    <th th:each="ac : ${course.assessmentDistribution}" th:text="${ac.componentName}">komp.</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="r : ${course.resultAssessments}">
+                    <td class="skr-label" th:text="${r.displayNumber != null ? r.displayNumber : '—'}">SKR</td>
+                    <td th:each="ac : ${course.assessmentDistribution}">
+                        <span class="check"
+                              th:text="${r.components != null and #lists.contains(r.components, ac.componentName) ? '●' : ''}"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </th:block>
+    <p class="empty-note"
+       th:if="${course.resultAssessments == null or #lists.isEmpty(course.resultAssessments)
+               or course.assessmentDistribution == null or #lists.isEmpty(course.assessmentDistribution)}">
+        Matrica nav pieejama (nav norādīti SKR vai vērtēšanas komponentes).</p>
+
+    <h3>6.3. Patstāvīgā darba sadalījums</h3>
+    <table class="data-table"
+           th:if="${course.selfStudyActivities != null and !#lists.isEmpty(course.selfStudyActivities)}">
+        <thead><tr><th>Aktivitāte</th><th class="pct">%</th></tr></thead>
+        <tbody>
+            <tr th:each="s : ${course.selfStudyActivities}">
+                <td th:text="${s.activityName}">akt.</td>
+                <td class="pct" th:text="${s.percentage} + '%'">0%</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="empty-note"
+       th:if="${course.selfStudyActivities == null or #lists.isEmpty(course.selfStudyActivities)}">Nav norādīts.</p>
+</section>
+
+
+<!-- ===== 7. Literatūra =====
+     Sadalīta atsevišķās apakšsadaļās pēc tipa (Pamatliteratūra,
+     Papildliteratūra, Citi avoti). Katram ierakstam rāda formatēto citātu;
+     ja ir pieejama URL — kā atsevišķu rindiņu uz nākamās līnijas. -->
+<section>
+    <h2>7. Literatūra</h2>
+    <th:block th:if="${course.literature != null and !#lists.isEmpty(course.literature)}">
+        <th:block th:each="g : ${course.literature}">
+            <h3 th:text="${g.type}">Tips</h3>
+            <ol th:if="${g.sources != null and !#lists.isEmpty(g.sources)}">
+                <li th:each="l : ${g.sources}">
+                    <span th:text="${l.citation}">citāts</span>
+                    <span class="lit-language"
+                          th:if="${l.language != null and !#strings.isEmpty(l.language)}"
+                          th:text="'[' + ${l.language} + ']'">[lv]</span>
+                    <div th:if="${l.url != null and !#strings.isEmpty(l.url)}">
+                        <a class="lit-url" th:href="${l.url}" th:text="${l.url}">URL</a>
+                    </div>
+                </li>
+            </ol>
+            <p class="empty-note"
+               th:if="${g.sources == null or #lists.isEmpty(g.sources)}">Nav norādīta.</p>
+        </th:block>
+    </th:block>
+    <p class="empty-note"
+       th:if="${course.literature == null or #lists.isEmpty(course.literature)}">Nav norādīta.</p>
+</section>
+
+</body>
+</html>

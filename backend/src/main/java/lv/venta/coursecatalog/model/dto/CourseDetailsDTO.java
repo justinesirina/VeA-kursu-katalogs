@@ -9,7 +9,7 @@ import java.util.UUID;
 
 /**
  * DTO klase, kas apkopo visus datus detalizētajam studiju kursa skatam.
- * Šie dati tiek ielādēti uz frontend, strukturēti pēc oficiālā kursa apraksta parauga.
+ * Šie dati tiek ielādēti uz frontend, strukturēti pēc VeA oficiālā kursa apraksta parauga.
  */
 @Data
 @NoArgsConstructor
@@ -19,12 +19,15 @@ public class CourseDetailsDTO {
     // --- CourseInfo identifikators (vajadzīgs rediģēšanai) ---
     private UUID courseInfoId;
 
+    // --- CourseVersion identifikators (vajadzīgs eksportam un citām versijas-līmeņa darbībām) ---
+    private UUID versionId;
+
     // --- Versijas apstiprinājuma informācija (augšā stūrī) ---
     private String versionStatus;
     private String approvalDate;       // datums kā teksts (piemēram, "2022-08-31")
     private String decisionNumber;
     private String decisionReference;
-    private Integer versionNumber;     // tikai vēsturiska skata gadījumā (versijas numura banneram)
+    private Integer versionNumber;     // tikai vēsturiska skata gadījumā (versijas numurs bannerim)
 
     // --- Kursa pamata informācija ---
     private String titleLv;
@@ -44,7 +47,7 @@ public class CourseDetailsDTO {
     private int practClassesHours;
     private int independentWorkHours;
 
-    // --- Priekšnoteikumi un sagatavotība ---
+    // --- Priekšnosacījumi kursa apguvei ---
     private String prerequisitesDescription;
     private List<PrerequisiteDTO> prerequisites;
 
@@ -54,16 +57,16 @@ public class CourseDetailsDTO {
     private String semester;
     private String language;     // Pilnais nosaukums (skatam): "Latviešu"
     private String languageCode; // ISO kods (rediģēšanai): "lv"
-    private String facultyName; // no CourseVersion → Faculty
+    private String facultyName; // no CourseVersion -> Faculty
 
-    // --- Anotācija un mērķis ---
+    // --- Anotācija un kursa mērķis ---
     private String annotation;
     private String goal;
 
     // --- Vērtēšanas sadalījums (100%) ---
     private List<AssessmentComponentDTO> assessmentDistribution;
 
-    // --- Studiju kursa rezultāti (SKR) un studiju programma ---
+    // --- Studiju kursa rezultāti (SKR) ---
     private List<CourseResultDTO> courseResults;
 
     // --- SKR vērtēšanas kritēriji ---
@@ -75,7 +78,7 @@ public class CourseDetailsDTO {
     // --- Patstāvīgā darba organizācija ---
     private List<SelfStudyDTO> selfStudyActivities;
 
-    // --- Tematiskās tēmas ---
+    // --- Kursa tēmas ---
     private List<TopicDTO> topics;
 
     // --- Kalendārais plāns ---

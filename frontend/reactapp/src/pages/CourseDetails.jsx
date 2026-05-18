@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { History } from 'lucide-react';
 import api from '../services/axiosConfig';
 import PercentageStackBar from '../components/ui/PercentageStackBar';
+import DownloadDropdown from '../components/ui/DownloadDropdown';
 
 /**
  * Kursa detaļu skats — tikai lasīšana.
@@ -10,8 +11,8 @@ import PercentageStackBar from '../components/ui/PercentageStackBar';
  * Rediģēšana notiek /courses/:id/edit lapā.
  *
  * Maršruti:
- *   /courses/:id                          → aktīvā versija (rediģējamas darbības redzamas)
- *   /courses/:id/versions/:versionId/view → vēsturiska versija (read-only ar brīdinājuma josliņu)
+ *   /courses/:id                          -> aktīvā versija (rediģējamas darbības redzamas)
+ *   /courses/:id/versions/:versionId/view -> vēsturiska versija (read-only ar brīdinājuma josliņu)
  */
 function CourseDetails() {
     const { id, versionId } = useParams();
@@ -104,7 +105,7 @@ function CourseDetails() {
             }));
     })();
 
-    // --- Palīgkomponents: sekcijas virsraksts ---
+    // --- Palīgelements: sekcijas virsraksts ---
     const SectionTitle = ({ title, isEmpty }) => (
         <div className="flex items-center gap-2 mb-3">
             <h2 className="text-2xl font-semibold font-heading text-vea-neutral">{title}</h2>
@@ -114,7 +115,7 @@ function CourseDetails() {
         </div>
     );
 
-    // --- Palīgkomponents: info rinda (label: value) ---
+    // --- Palīgelements: info rinda (label: value) ---
     const InfoRow = ({ label, value }) => (
         <li className="flex gap-1 text-base">
             <span className="text-gray-500 shrink-0">{label}:</span>
@@ -124,7 +125,7 @@ function CourseDetails() {
         </li>
     );
 
-    // --- Palīgkomponents: stundu stat bloks ---
+    // --- Palīgelements: stundu stat bloks ---
     const HourStat = ({ label, value }) => (
         <div className="flex flex-col items-center text-center px-2 py-3 bg-vea-green-light rounded border border-gray-200">
             <span className="text-sm text-gray-500 mb-1 leading-tight">{label}</span>
@@ -133,14 +134,14 @@ function CourseDetails() {
         </div>
     );
 
-    // --- Palīgkomponents: sadaļas apakšvirsraksts ---
+    // --- Palīgelements: sadaļas apakšvirsraksts ---
     const SubLabel = ({ children }) => (
         <p className="text-sm font-semibold uppercase tracking-wide text-gray-500 border-l-2 border-vea-green pl-2 mb-2">
             {children}
         </p>
     );
 
-    // Konteksta-pamatots banneris versijas-specifiskajam skatam
+    // Banneris versijas skatam, kas norāda uz versijas statusu un aicina pāriet uz aktīvo versiju
     const renderVersionBanner = () => {
         if (!isHistoricalView) return null;
         const status = (d.versionStatus || '').toLowerCase();
@@ -201,9 +202,7 @@ function CourseDetails() {
 
             {/* ── 1. DARBĪBAS POGAS ── */}
             <div className="flex gap-2 flex-wrap">
-                <button className="bg-vea-green text-white px-4 py-2 rounded text-base hover:bg-vea-green-dark">
-                    PDF
-                </button>
+                <DownloadDropdown versionId={d.versionId} />
                 {!isHistoricalView && (
                     <button
                         onClick={() => navigate(`/courses/${id}/edit`)}

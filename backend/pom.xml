@@ -41,7 +41,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Flyway DB migrations (Spring Boot 3.2 lieto Flyway 9.x; postgres atbalsts iekļauts core'ā) -->
+        <!-- Flyway DB migrations (Spring Boot 3.2 lieto Flyway 9.x; postgres atbalsts iekļauts core) -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -83,6 +83,43 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.3.0</version>
+        </dependency>
+
+        <!-- F11 prasība: Thymeleaf HTML šabloniem (PDF eksports) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- F11 prasība: OGNL — pieprasīts no Thymeleaf StandardDialect non-Spring kontekstā
+             (testos, kur manuāli būvējam TemplateEngine bez SpringStandardDialect) -->
+        <dependency>
+            <groupId>ognl</groupId>
+            <artifactId>ognl</artifactId>
+            <version>3.3.4</version>
+        </dependency>
+
+        <!-- F11 prasība: PDF ģenerēšana no HTML/CSS (openhtmltopdf) -->
+        <dependency>
+            <groupId>com.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-pdfbox</artifactId>
+            <version>1.0.10</version>
+        </dependency>
+
+        <!-- F11 prasība: Microsoft Word .docx ģenerēšana -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+
+        <!-- F11 prasība: HTML sanitizācija rich-text laukiem eksporta veidnē
+             (RichTextEditor frontend glabā HTML kā <p>, <ul>, <strong> u.c.;
+             pirms iegulšanas PDF/DOCX atstājam tikai drošas birkas) -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.17.2</version>
         </dependency>
 
     </dependencies>

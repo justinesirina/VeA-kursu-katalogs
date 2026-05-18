@@ -25,6 +25,13 @@ public class ResultAssessmentDTO {
     // Kategorijas nosaukums (piemēram: "Zināšanas", "Prasmes", "Kompetences")
     private String categoryName;
 
+    // Kategorijas kārtas numurs eksportam un skatam (Zināšanas=1, Prasmes=2, Kompetences=3)
+    private Integer categoryOrder;
+
+    // Formatēta SKR numerācija eksportam — piemēram "SKR 1.1", "SKR 2.3"
+    // Pirmais cipars = categoryOrder, otrais = SKR sērijas numurs kategorijā
+    private String displayNumber;
+
     // SPSR — studiju programmas studiju rezultāts, kuram atbilst šis SKR (var būt null)
     private String spsr;
 

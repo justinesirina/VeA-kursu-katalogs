@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.model.course.CourseAuthor;
 import lv.venta.coursecatalog.model.course.CourseTeacher;
 import lv.venta.coursecatalog.model.course.CourseVersion;
 import lv.venta.coursecatalog.model.courseinfo.CourseInfo;
+import lv.venta.coursecatalog.model.courseinfo.CourseResult;
 import lv.venta.coursecatalog.model.dto.*;
 import lv.venta.coursecatalog.repository.course.CourseAuthorRepository;
 import lv.venta.coursecatalog.repository.course.CourseRepository;
@@ -194,6 +195,7 @@ public class CourseInfoService {
         CourseDetailsDTO dto = new CourseDetailsDTO();
 
         dto.setCourseInfoId(info.getId());
+        dto.setVersionId(version.getId());
 
         dto.setVersionStatus(version.getStatus() != null ? version.getStatus().getName() : null);
         if (version.getApprovalDate() != null)
@@ -226,7 +228,7 @@ public class CourseInfoService {
 
         dto.setFacultyName(version.getFaculty() != null ? version.getFaculty().getName() : null);
 
-        // --- Kursa autori (versionēti) ---
+        // --- Kursa autori (atbilstoši kursa versijai) ---
         List<CourseAuthor> authors = courseAuthorRepo.findByCourseVersionId(version.getId());
         List<StaffMemberDTO> authorDtos = authors.stream()
                 .filter(a -> a.getUser() != null)
@@ -244,7 +246,7 @@ public class CourseInfoService {
                 .or(() -> authorDtos.stream().findFirst())
                 .ifPresent(a -> dto.setAuthorFullTitle(a.getFullTitle()));
 
-        // --- Kursa mācībspēki (versionēti) ---
+        // --- Kursa mācībspēki (atbilstoši kursa versijai) ---
         List<CourseTeacher> teachers = courseTeacherRepo.findByCourseVersionId(version.getId());
         List<StaffMemberDTO> teacherDtos = teachers.stream()
                 .filter(t -> t.getUser() != null)
@@ -276,7 +278,7 @@ public class CourseInfoService {
         dto.setGoal(info.getGoal());
         dto.setAnnotation(info.getAnnotation());
 
-        // --- Piesaistītās studiju programmas ar programmas daļu (versionētas) ---
+        // --- Piesaistītās studiju programmas ar programmas daļu (atbilstoši kursa versijai) ---
         List<StudyProgramLinkDTO> studyProgramLinks = new ArrayList<>();
         courseToProgramRepo.findByCourseVersionId(version.getId()).forEach(link -> {
             lv.venta.coursecatalog.model.program.StudyProgramPart part = link.getProgramPart();
@@ -300,10 +302,33 @@ public class CourseInfoService {
         dto.setAssessmentDistribution(assessmentDtos);
 
         // --- Studiju kursa rezultāti (SKR) – CourseResult + SPSR + vērtēšanas komponentes ---
+        // Kategoriju kārtas numerācija: Zināšanas=1, Prasmes=2, Kompetences=3.
+        // Citas kategorijas saņem augstākus numurus pēc parādīšanās secības.
+        Map<String, Integer> categoryOrderMap = new LinkedHashMap<>();
+        categoryOrderMap.put("Zināšanas", 1);
+        categoryOrderMap.put("Prasmes", 2);
+        categoryOrderMap.put("Kompetences", 3);
+        // Atbilstoši SKR kategorijai veido numerāciju eksportam ("SKR 1.1", "1.2", ...)
+        Map<Integer, Integer> categoryCounters = new HashMap<>();
+
         List<ResultAssessmentDTO> assessmentCriteriaDtos = new ArrayList<>();
         List<ResultAssessmentFullDTO> assessmentFullDtos = new ArrayList<>();
 
-        courseResultRepo.findByCourseId(course.getId()).forEach(cr -> {
+        // Iepriekš sakārto SKR pēc kategorijas kārtas un pēc ID, lai eksportā numerācija būtu stabila
+        List<CourseResult> sortedResults =
+                new ArrayList<>(courseResultRepo.findByCourseId(course.getId()));
+        sortedResults.sort((a, b) -> {
+            String catA = a.getCategory() != null ? a.getCategory().getName() : null;
+            String catB = b.getCategory() != null ? b.getCategory().getName() : null;
+            int orderA = catA != null && categoryOrderMap.containsKey(catA)
+                    ? categoryOrderMap.get(catA) : Integer.MAX_VALUE;
+            int orderB = catB != null && categoryOrderMap.containsKey(catB)
+                    ? categoryOrderMap.get(catB) : Integer.MAX_VALUE;
+            if (orderA != orderB) return Integer.compare(orderA, orderB);
+            return a.getId().compareTo(b.getId());
+        });
+
+        sortedResults.forEach(cr -> {
             List<String> components = new ArrayList<>();
             courseResultAssessmentRepo.findByCourseResult(cr).forEach(ra -> {
                 if (ra.isUsed()) {
@@ -321,10 +346,23 @@ public class CourseInfoService {
             String spsr = spsrLinks.isEmpty() ? null
                     : spsrLinks.get(0).getProgrammeResult().getLearningOutcome();
 
+            String categoryName = cr.getCategory() != null ? cr.getCategory().getName() : null;
+            Integer catOrder = categoryName != null
+                    ? categoryOrderMap.computeIfAbsent(categoryName,
+                        k -> categoryOrderMap.size() + 1)
+                    : null;
+            String displayNumber = null;
+            if (catOrder != null) {
+                int seq = categoryCounters.merge(catOrder, 1, Integer::sum);
+                displayNumber = "SKR " + catOrder + "." + seq;
+            }
+
             assessmentCriteriaDtos.add(new ResultAssessmentDTO(
                     cr.getId(),
                     cr.getLearningOutcome(),
-                    cr.getCategory() != null ? cr.getCategory().getName() : null,
+                    categoryName,
+                    catOrder,
+                    displayNumber,
                     spsr,
                     components
             ));

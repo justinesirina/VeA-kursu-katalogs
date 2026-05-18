@@ -29,4 +29,16 @@ public class CalendarPlanDTO {
 
     // Nodarbības, kas saistītas ar šo tēmu (lekcijas, semināri u.c.)
     private List<SessionDTO> sessions;
+
+    /**
+     * Atgriež akadēmisko stundu summu visās šīs tēmas nodarbībās.
+     * Iegūts no {@code sessions} lauka — derīgs visiem skatiem un eksportiem,
+     * neatkarīgi no izteiksmjes.
+     */
+    public int getTotalAcademicHours() {
+        if (sessions == null) return 0;
+        int sum = 0;
+        for (SessionDTO s : sessions) sum += s.getAcademicHours();
+        return sum;
+    }
 }

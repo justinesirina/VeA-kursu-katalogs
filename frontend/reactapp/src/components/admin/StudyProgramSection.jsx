@@ -167,7 +167,7 @@ const StudyProgramSection = forwardRef(function StudyProgramSection(props, ref) 
                 <thead>
                     <tr>
                         <th scope="col">Nosaukums</th>
-                        <th scope="col">Slug</th>
+                        <th scope="col">Saīsinājums</th>
                         <th scope="col">Fakultāte</th>
                         <th scope="col">Direktors</th>
                         <th scope="col" className="text-center">Aktīvs</th>

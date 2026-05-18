@@ -122,7 +122,7 @@ function AllCourses() {
             <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <input
                     type="text"
-                    placeholder="Meklēt pēc nosaukuma vai koda..."
+                    placeholder="Meklēt pēc kursa nosaukuma vai koda..."
                     className="flex-1 min-w-[14rem] p-2 border border-gray-300 rounded focus:border-vea-green focus:ring-1 focus:ring-vea-green outline-none text-base"
                     value={qDraft}
                     onChange={e => setQDraft(e.target.value)}
