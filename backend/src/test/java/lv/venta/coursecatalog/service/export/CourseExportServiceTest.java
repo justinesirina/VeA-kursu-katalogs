@@ -14,9 +14,6 @@ import lv.venta.coursecatalog.model.dto.TopicDTO;
 import lv.venta.coursecatalog.service.courseinfo.CourseInfoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.templatemode.TemplateMode;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,7 +49,7 @@ class CourseExportServiceTest {
     void setUp() {
         courseInfoService = mock(CourseInfoService.class);
         RichTextSanitizer sanitizer = new RichTextSanitizer();
-        PdfRenderer pdfRenderer = new PdfRenderer(buildTemplateEngine(), sanitizer);
+        PdfRenderer pdfRenderer = new PdfRenderer(sanitizer);
         DocxRenderer docxRenderer = new DocxRenderer(sanitizer);
         exportService = new CourseExportService(courseInfoService, pdfRenderer, docxRenderer);
     }
@@ -123,20 +120,6 @@ class CourseExportServiceTest {
     /** Palīgmetode baitu masīvu salīdzināšanai ar paskaidrojošu kļūdas ziņojumu. */
     private static void assertArrayEquals(byte[] expected, byte[] actual, String msg) {
         assertEquals(Arrays.toString(expected), Arrays.toString(actual), msg);
-    }
-
-    /** Konfigurē Thymeleaf veidņu dzini testiem — atrod veidnes templates/ classpath direktorijā. */
-    private static TemplateEngine buildTemplateEngine() {
-        ClassLoaderTemplateResolver resolver = new ClassLoaderTemplateResolver();
-        resolver.setPrefix("templates/");
-        resolver.setSuffix(".html");
-        resolver.setTemplateMode(TemplateMode.HTML);
-        resolver.setCharacterEncoding("UTF-8");
-        resolver.setCacheable(false);
-
-        TemplateEngine engine = new TemplateEngine();
-        engine.setTemplateResolver(resolver);
-        return engine;
     }
 
     /** Veido pilnu CourseDetailsDTO testa kursu ar visām 7 sadaļām un latviešu rakstzīmēm. */

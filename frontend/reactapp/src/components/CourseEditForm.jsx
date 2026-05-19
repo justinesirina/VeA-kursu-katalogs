@@ -529,9 +529,9 @@ function CourseEditForm() {
             title: 'Apstiprināt versiju',
             description: <p>Apstiprinot versiju, tā kļūs aktīvā, un iepriekšējā aktīvā versija (ja tāda ir) automātiski tiks deaktivizēta.</p>,
             fields: [
-                { name: 'decisionNumber',    label: 'Lēmuma numurs',     type: 'text', required: true, placeholder: 'Piem.: Nr. ITF-2026/05' },
+                { name: 'decisionNumber',    label: 'Lēmuma numurs',     type: 'text', required: true, placeholder: 'Piem.: ITF-2026/05' },
                 { name: 'approvalDate',      label: 'Apstiprināšanas datums', type: 'date', defaultValue: new Date().toISOString().slice(0, 10) },
-                { name: 'decisionReference', label: 'Lēmējinstitūcija (neobligāti)', type: 'text', placeholder: 'Piem.: ITF Fakultātes dome, Senāts' },
+                { name: 'decisionReference', label: 'Lēmējinstitūcija (neobligāti)', type: 'text', placeholder: 'Piem.: ITF dome, Senāts' },
                 { name: 'comment',           label: 'Komentārs (neobligāts)', type: 'textarea' },
             ],
             primaryLabel: 'Apstiprināt',

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Plakana projekcija arhivētajiem kursiem ar agregētu versiju informāciju
+ * Projekcija arhivētajiem kursiem ar apkopotu versiju informāciju
  * (cik versijas; jaunākās versijas Nr. un statuss). Ļauj administratoriem
  * arhīva sarakstā ātri izsekot kursa "lielumam" un pēdējam stāvoklim
  * pirms arhivēšanas.

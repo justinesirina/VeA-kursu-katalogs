@@ -1,32 +1,32 @@
-/* F11 PDF eksporta stili — A4 paged media, akadēmisks oficiāls dokuments.
-   Fonts: Tinos (metriski identisks Times New Roman, ar pilnu latviešu diacritikas atbalstu). */
+/* F11 PDF eksporta stili — A4 page.
+   Fonts: Tinos (vizuāli līdzīgs Times New Roman, ar pilnu latviešu valodas atbalstu). */
 
 @page {
     size: A4;
-    margin: 2cm 2cm 2.2cm 2cm;
+    /* Margins: top right bottom left — kreisā 3cm (kā DOCX),
+       top 1.5cm lai header sākas augstāk (atbilstoši DOCX header position) */
+    margin: 1.5cm 2cm 2cm 3cm;
     @bottom-center {
-        content: "Lapa " counter(page) " no " counter(pages);
+        content: counter(page);
         font-family: "Tinos", "Times New Roman", serif;
-        font-size: 9pt;
-        color: #555;
+        font-size: 11pt;
     }
 }
 
 body {
     font-family: "Tinos", "Times New Roman", serif;
-    font-size: 12pt;
+    font-size: 11pt;
     color: #000;
-    line-height: 1.4;
+    line-height: 1.0;
 }
 
-/* --- 3-daļīga galvene: kreisā ass, vidū logo, labā tehniskā info --- */
+/* --- 2-šūnu galvene: pa kreisi VeA logo, pa labi kursa tehniskā info. --- */
 
 table.doc-header {
     width: 100%;
     border-collapse: collapse;
-    border-bottom: 1pt solid #000;
-    padding-bottom: 0.3em;
-    margin-bottom: 0.9em;
+    margin-bottom: 0.2em;
+    table-layout: fixed;
 }
 
 table.doc-header td {
@@ -34,67 +34,72 @@ table.doc-header td {
     padding: 0;
     font-size: 10pt;
     color: #000;
+    border: none;
 }
 
 td.header-left {
-    width: 33%;
+    width: 10cm;
     text-align: left;
-    font-weight: bold;
-    letter-spacing: 0.5pt;
 }
 
-td.header-center {
-    width: 34%;
-    text-align: center;
-}
-
-td.header-center img {
-    height: 50px;
+td.header-left img {
+    height: 1.7cm;
+    width: 6.35cm;
 }
 
 td.header-right {
-    width: 33%;
+    width: 6cm;
     text-align: right;
     font-size: 9pt;
-    line-height: 1.35;
+    line-height: 1.1;
+    /* Garu rekvizītu vērtību (piem., "Lēmējinstitūcija: ITF Domes sēde")
+       wrap nodrošināšana, ja teksts pārpilda 6cm šūnu */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
-td.header-right .label {
-    color: #555;
+/* Katra header-right rindiņa (div) iekšā wrap 6cm šūnas platumā */
+td.header-right > div {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
-td.header-right .status-approved {
+td.header-right .status-approved,
+td.header-right .status-pending,
+td.header-right .status-historical {
     font-weight: bold;
     color: #000;
 }
 
-td.header-right .status-pending {
-    font-weight: bold;
-    color: #6b4f00;
+/* --- "STUDIJU KURSA APRAKSTS" zem header --- */
+
+p.doc-label {
+    font-size: 12pt;
+    font-weight: normal;
+    text-align: center;
+    margin: 1.0em 0 0.5em 0;
 }
 
-td.header-right .status-historical {
-    font-weight: bold;
-    color: #555;
-}
-
-/* --- Kursa nosaukums --- */
+/* --- Kursa nosaukums LV un EN --- */
 
 h1.course-title {
-    font-size: 16pt;
+    font-size: 14pt;
     font-weight: bold;
     text-align: center;
+    margin-top: 0.5em;
+    margin-bottom: 0.25em;
+    letter-spacing: 0;
     text-transform: uppercase;
-    margin: 0.8em 0 0.1em 0;
-    letter-spacing: 0.4pt;
 }
 
 p.course-title-en {
     font-size: 12pt;
     font-style: italic;
     text-align: center;
-    margin: 0 0 1em 0;
-    color: #222;
+    margin: 0.1em 0 0.8em 0;
+    color: #000;
 }
 
 /* --- Sekciju virsraksti --- */
@@ -102,8 +107,8 @@ p.course-title-en {
 h2 {
     font-size: 14pt;
     font-weight: bold;
-    margin-top: 1.3em;
-    margin-bottom: 0.4em;
+    margin-top: 0.8em;
+    margin-bottom: 0.2em;
     page-break-after: avoid;
     color: #000;
 }
@@ -111,8 +116,8 @@ h2 {
 h3 {
     font-size: 12pt;
     font-weight: bold;
-    margin-top: 0.9em;
-    margin-bottom: 0.25em;
+    margin-top: 0.5em;
+    margin-bottom: 0.2em;
     page-break-after: avoid;
     color: #000;
 }
@@ -120,27 +125,49 @@ h3 {
 p {
     margin: 0.3em 0;
     text-align: justify;
+    line-height: 1.0;
 }
 
 /* --- Sanitizēta rich-text satura paragrāfu atstarpes (no Jsoup) --- */
 .richtext p {
     margin: 0.25em 0;
+    line-height: 1.0;
 }
 .richtext ul, .richtext ol {
     margin: 0.25em 0;
     padding-left: 1.4em;
+    line-height: 1.0;
 }
 .richtext li {
     margin: 0.1em 0;
+    line-height: 1.0;
 }
 
-/* --- Tabulas: plānas melnas robežas, balta fons --- */
+/* --- Tabulas: plānas melnas robežas, balta fons.
+       width: 100% = satura platums (A4 21cm − 3cm + 2cm margins = 16cm),
+       lai atbilstu Word veidnes paraugam. Iekšējie <colgroup>/<col> elementi
+       HTML pusē precizē katras kolonnas platumu procentos. --- */
 
 table {
     border-collapse: collapse;
+    /* 100% = satura platums (16cm). Procenti openhtmltopdf strādā
+       uzticamāk nekā absolūtas cm vērtības — tabulas paliek satura robežās. */
     width: 100%;
     margin: 0.4em 0;
+    page-break-inside: auto;
+    line-height: 1.15;
+    table-layout: fixed;
+}
+
+/* Rindas paliek nedalītas — viena rinda nesadalās starp lapām */
+tr {
     page-break-inside: avoid;
+    page-break-after: auto;
+}
+
+/* Header rinda (thead) atkārtojas, ja tabula iet pāri lapām */
+thead {
+    display: table-header-group;
 }
 
 table.info-table th,
@@ -150,12 +177,19 @@ table.info-table td {
     font-size: 11pt;
     vertical-align: top;
     text-align: left;
+    line-height: 1.15;
 }
 
 table.info-table th {
-    width: 35%;
     font-weight: bold;
-    background: #f5f5f5;
+    background: #f2f2f2;
+}
+
+table.info-table td,
+table.data-table td,
+table.skr-matrix td {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 table.data-table th,
@@ -165,23 +199,29 @@ table.data-table td {
     font-size: 11pt;
     vertical-align: top;
     text-align: left;
+    line-height: 1.15;
 }
 
 table.data-table th {
-    background: #f5f5f5;
+    background: #f2f2f2;
     font-weight: bold;
 }
 
 table.data-table td.num,
 table.data-table th.num {
     text-align: center;
-    width: 8%;
 }
 
 table.data-table td.pct,
 table.data-table th.pct {
     text-align: right;
-    width: 12%;
+}
+
+/* Tēmu tabulā teksts ar line-height 1.0 (kā parastais teksts) */
+table.topics-table,
+table.topics-table th,
+table.topics-table td {
+    line-height: 1.0;
 }
 
 /* --- SKR matrica (SKR × komponentes) — kompakta --- */
@@ -193,21 +233,34 @@ table.skr-matrix td {
     font-size: 10pt;
     text-align: center;
     vertical-align: middle;
+    line-height: 1.15;
 }
 
 table.skr-matrix th {
-    background: #f5f5f5;
+    background: #f2f2f2;
     font-weight: bold;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
-table.skr-matrix td.skr-label {
+/* SKR matrica: pirmā kolonna fiksēta 2cm, pārējās komponenšu kolonnas
+   dinamiski sadalītas pa atlikušajiem 14cm (table-layout: fixed garantē
+   vienādu sadalījumu). Header šūnās teksts var apļauzties, ja garas
+   vērtēšanas komponentes vai daudz kolonnu — overflow-wrap to nodrošina. */
+table.skr-matrix {
+    width: 100%;
+    table-layout: fixed;
+}
+
+table.skr-matrix td.skr-label,
+table.skr-matrix th.skr-label {
     text-align: left;
     font-weight: bold;
-    width: 18%;
+    width: 12.5%; /* = 2cm no 16cm satura */
 }
 
 table.skr-matrix .check {
-    font-size: 12pt;
+    font-size: 11pt;
     font-weight: bold;
 }
 
@@ -216,10 +269,12 @@ table.skr-matrix .check {
 ul, ol {
     margin: 0.3em 0;
     padding-left: 1.4em;
+    line-height: 1.0;
 }
 
 li {
     margin: 0.15em 0;
+    line-height: 1.0;
 }
 
 /* --- Literatūras saites --- */
@@ -228,14 +283,13 @@ a.lit-url {
     color: #000;
     text-decoration: underline;
     word-wrap: break-word;
-    font-size: 10pt;
+    font-size: 11pt;
 }
 
-.lit-language {
-    color: #555;
-    font-size: 9pt;
-    font-style: italic;
-    margin-left: 0.3em;
+/* Literatūras saraksta vienībām — neliela atstarpe (4pt) starp avotiem,
+   lai teksti vizuāli nesabrauc kopā */
+section ol li {
+    margin-bottom: 4pt;
 }
 
 /* --- Citi --- */
@@ -246,14 +300,10 @@ a.lit-url {
     font-size: 11pt;
 }
 
-section {
-    page-break-inside: avoid;
-}
-
-.kpi-line {
-    margin: 0.2em 0;
-}
-
-.kpi-line .label {
-    font-weight: bold;
+/* Mazs skaidrojošs zemteksts zem tabulām (piem., akadēmiskās stundas paskaidrojums) */
+p.caption {
+    font-size: 9pt;
+    font-style: italic;
+    margin: 0.2em 0 0.4em 0;
+    text-align: left;
 }

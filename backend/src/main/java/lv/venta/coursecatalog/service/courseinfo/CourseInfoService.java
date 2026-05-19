@@ -427,7 +427,12 @@ public class CourseInfoService {
         dto.setCalendarPlan(calendarPlanDtos);
 
         // --- Studiju kursa literatūra ---
-        Map<String, List<LiteratureDTO>> grouped = new HashMap<>();
+        // LinkedHashMap ar iepriekšdefinētu kārtību: Pamatliteratūra; Papildliteratūra; Citi avoti.
+        // Jaunas kategorijas paliek beigās pievienošanas secībā.
+        Map<String, List<LiteratureDTO>> grouped = new LinkedHashMap<>();
+        grouped.put("Pamatliteratūra", new ArrayList<>());
+        grouped.put("Papildliteratūra", new ArrayList<>());
+        grouped.put("Citi avoti", new ArrayList<>());
 
         literatureRepo.findByCourseInfo(info).forEach(source -> {
             String type = source.getType().getName(); // piemēram: “Pamatliteratūra”
@@ -443,7 +448,10 @@ public class CourseInfoService {
             ));
         });
 
+        // Izfiltrē tukšas grupas, lai eksportā neparādās "Pamatliteratūra: Nav norādīta"
+        // gadījumos, kad attiecīgā kategorija vispār nav lietota.
         List<LiteratureGroupDTO> literature = grouped.entrySet().stream()
+                .filter(entry -> !entry.getValue().isEmpty())
                 .map(entry -> new LiteratureGroupDTO(entry.getKey(), entry.getValue()))
                 .toList();
 
