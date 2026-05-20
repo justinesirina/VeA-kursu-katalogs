@@ -9,6 +9,7 @@ import lv.venta.coursecatalog.model.dto.ArchivedCourseDTO;
 import lv.venta.coursecatalog.model.dto.CourseCatalogItemDTO;
 import lv.venta.coursecatalog.service.course.CourseCatalogFilter;
 import lv.venta.coursecatalog.service.course.ICourseService;
+import lv.venta.coursecatalog.service.security.AuthContextHelper;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,9 +32,11 @@ import java.util.UUID;
 public class CourseController {
 
     private final ICourseService courseService;
+    private final AuthContextHelper authContext;
 
-    public CourseController(ICourseService courseService) {
+    public CourseController(ICourseService courseService, AuthContextHelper authContext) {
         this.courseService = courseService;
+        this.authContext = authContext;
     }
 
     @Operation(summary = "Iegūt visus kursus", description = "Atgriež visus kursus; dzēstie automātiski filtrēti")
@@ -73,9 +76,9 @@ public class CourseController {
             @RequestParam(required = false) java.util.List<Integer> teacherUserIds,
             @Parameter(description = "0-bāzēts lapas numurs") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Lapas izmērs (atļauts: 25/50/100/500)") @RequestParam(defaultValue = "25") int size,
-            @Parameter(description = "Kārtošana, piem. titleLv,asc") @RequestParam(defaultValue = "titleLv,asc") String sort,
-            @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId
+            @Parameter(description = "Kārtošana, piem. titleLv,asc") @RequestParam(defaultValue = "titleLv,asc") String sort
     ) {
+        Integer actorUserId = authContext.getCurrentUserId();
         CourseCatalogFilter filter = CourseCatalogFilter.builder()
                 .q(q)
                 .facultyIds(facultyIds)
@@ -137,10 +140,9 @@ public class CourseController {
     @ApiResponse(responseCode = "204", description = "Kurss atjaunots")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts vai nav arhivēts")
     @PutMapping("/{id}/restore")
-    public ResponseEntity<?> restoreCourse(@PathVariable UUID id,
-                                           @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+    public ResponseEntity<?> restoreCourse(@PathVariable UUID id) {
         try {
-            courseService.restoreCourseById(id, actorUserId);
+            courseService.restoreCourseById(id, authContext.getCurrentUserId());
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -167,9 +169,8 @@ public class CourseController {
     @ApiResponse(responseCode = "200", description = "Izveidotais kurss")
     @ApiResponse(responseCode = "400", description = "Validācijas kļūda")
     @PostMapping
-    public Course createCourse(@Valid @RequestBody Course course,
-                               @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
-        return courseService.createNewCourse(course, actorUserId);
+    public Course createCourse(@Valid @RequestBody Course course) {
+        return courseService.createNewCourse(course, authContext.getCurrentUserId());
     }
 
     @Operation(summary = "Atjaunināt kursu", description = "Atjaunina esošu kursu pēc UUID")
@@ -188,10 +189,9 @@ public class CourseController {
     @ApiResponse(responseCode = "200", description = "Kurss dzēsts")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCourse(@PathVariable UUID id,
-                                          @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+    public ResponseEntity<?> deleteCourse(@PathVariable UUID id) {
         try {
-            courseService.deleteCourseById(id, actorUserId);
+            courseService.deleteCourseById(id, authContext.getCurrentUserId());
             return ResponseEntity.ok("Kurss veiksmīgi dzēsts");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

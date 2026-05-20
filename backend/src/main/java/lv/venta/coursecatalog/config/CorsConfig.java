@@ -18,6 +18,7 @@ public class CorsConfig {
                         .allowedOrigins("http://localhost:3000")
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
+                        .allowCredentials(true)  // F14 prasība — atļauj sūtīt JSESSIONID cookie
                         .exposedHeaders("Content-Disposition");
             }
         };
