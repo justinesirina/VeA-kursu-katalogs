@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Filter as FilterIcon } from 'lucide-react';
 import api from '../services/axiosConfig';
@@ -8,15 +8,8 @@ import CatalogSidebar from '../components/catalog/CatalogSidebar';
 import CatalogFilterDrawer from '../components/catalog/CatalogFilterDrawer';
 import CatalogPagination from '../components/catalog/CatalogPagination';
 import useCatalogQuery from '../hooks/useCatalogQuery';
-import { useCurrentUserId } from '../components/ui/CurrentUserSwitcher';
+import { useAuth } from '../context/AuthContext';
 import { statusBadgeClass } from '../utils/statusBadge';
-
-const STAFF_ROLE_NAMES = new Set([
-    'Pasniedzējs',
-    'Programmas direktors',
-    'Administrators',
-    'Sistēmas administrators',
-]);
 
 function teacherSummary(item) {
     const names = (item.teachers || [])
@@ -30,7 +23,7 @@ function teacherSummary(item) {
 
 function AllCourses() {
     const navigate = useNavigate();
-    const currentUserId = useCurrentUserId();
+    const { hasRole } = useAuth();
 
     const [view, setView] = useState('cards');
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -85,11 +78,7 @@ function AllCourses() {
         return () => { cancelled = true; };
     }, []);
 
-    const isStaff = useMemo(() => {
-        if (!currentUserId) return false;
-        const me = lookups.users.find(u => u.id === currentUserId);
-        return !!me && STAFF_ROLE_NAMES.has(me.role?.roleName);
-    }, [currentUserId, lookups.users]);
+    const isStaff = hasRole('TEACHER');
 
     const {
         filters,

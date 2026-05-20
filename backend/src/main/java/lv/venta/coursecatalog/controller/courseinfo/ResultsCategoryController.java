@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/results-categories")
-@CrossOrigin(origins = "*")
 public class ResultsCategoryController {
 
     @Autowired

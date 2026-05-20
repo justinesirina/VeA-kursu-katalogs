@@ -11,4 +11,19 @@ const api = axios.create({
     withCredentials: true,
 });
 
+// F14 prasība - ja sesija ir beigusies vai nav, novirza uz /login (izņemot pašu login pieprasījumu).
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const status = error?.response?.status;
+        const url = error?.config?.url || '';
+        if (status === 401 && !url.includes('/auth/')) {
+            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+                window.location.assign('/login');
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default api;

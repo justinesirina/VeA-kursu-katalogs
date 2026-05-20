@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/literature-types")
-@CrossOrigin(origins = "*")
 public class LiteratureTypeController {
 
     @Autowired

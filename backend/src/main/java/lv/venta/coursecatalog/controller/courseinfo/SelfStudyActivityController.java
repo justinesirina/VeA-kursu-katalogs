@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/self-study-activities")
-@CrossOrigin(origins = "*")
 public class SelfStudyActivityController {
 
     @Autowired

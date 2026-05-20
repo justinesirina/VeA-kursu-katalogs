@@ -12,7 +12,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/course-results")
-@CrossOrigin(origins = "*")
 public class CourseResultController {
 
     @Autowired

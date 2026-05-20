@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/assessment-forms")
-@CrossOrigin(origins = "*") // vajadzības gadījumā konfigurē konkrētas izcelsmes vietnes
 public class AssessmentFormController {
 
     @Autowired

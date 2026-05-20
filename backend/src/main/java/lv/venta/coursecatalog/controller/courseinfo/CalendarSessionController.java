@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/calendar-sessions")
-@CrossOrigin(origins = "*")
 public class CalendarSessionController {
 
     @Autowired

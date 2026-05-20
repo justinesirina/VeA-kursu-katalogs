@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/session-types")
-@CrossOrigin(origins = "*")
 public class SessionTypeController {
 
     @Autowired

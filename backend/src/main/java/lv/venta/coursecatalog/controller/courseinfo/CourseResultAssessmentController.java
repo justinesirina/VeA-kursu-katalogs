@@ -13,7 +13,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/result-assessments")
-@CrossOrigin(origins = "*")
 public class CourseResultAssessmentController {
 
     @Autowired

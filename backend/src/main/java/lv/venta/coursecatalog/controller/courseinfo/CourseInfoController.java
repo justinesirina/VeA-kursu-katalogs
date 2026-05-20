@@ -16,7 +16,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/course-info")
-@CrossOrigin(origins = "*")
 @Tag(name = "Kursa saturs", description = "Kursa detaļu un versiju satura pārvaldība")
 public class CourseInfoController {
 

@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/assessment-distribution")
-@CrossOrigin(origins = "*")
 public class CourseAssessmentDistributionController {
 
     @Autowired
