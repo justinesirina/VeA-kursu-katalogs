@@ -30,6 +30,14 @@ public class UserRole {
     private String roleName;
 
     /**
+     * Fiksēts lomas identifikators autorizācijai. Atšķirībā no roleName,
+     * šī vērtība nemainās un to lieto Spring Security pārbaudēs.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role_key", nullable = false, unique = true, length = 32)
+    private RoleKey roleKey;
+
+    /**
      * Visi lietotāji, kuriem piešķirta šī loma.
      */
     @JsonIgnore
