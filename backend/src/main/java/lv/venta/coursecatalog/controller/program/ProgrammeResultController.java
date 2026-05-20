@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.service.program.ProgrammeResultService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +42,7 @@ public class ProgrammeResultController {
      * @param input Jaunā programmas rezultāta dati
      * @return izveidotais objekts
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ProgrammeResult createProgrammeResult(@Valid @RequestBody ProgrammeResult input) {
         return programmeResultService.createProgrammeResult(input);
@@ -53,6 +55,7 @@ public class ProgrammeResultController {
      * @return atjauninātais rezultāts
      * @throws Exception ja rezultāts nav atrasts
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ProgrammeResult updateProgrammeResult(@PathVariable UUID id, @Valid @RequestBody ProgrammeResult input) throws Exception {
         return programmeResultService.updateProgrammeResult(id, input);
@@ -62,6 +65,7 @@ public class ProgrammeResultController {
      * Dzēš programmas rezultātu pēc ID.
      * @param id Dzēšamā rezultāta ID
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteProgrammeResult(@PathVariable UUID id) {
         programmeResultService.deleteProgrammeResult(id);

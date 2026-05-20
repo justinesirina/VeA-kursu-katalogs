@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.service.program.CourseToProgrammeResultsService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class CourseToProgrammeResultsController {
     /**
      * Izveido jaunu kursa un programmas rezultātu sasaisti.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public CourseToProgrammeResults createRelation(@Valid @RequestBody CourseToProgrammeResults input) {
         return courseToProgrammeResultsService.createRelation(input);
@@ -42,6 +44,7 @@ public class CourseToProgrammeResultsController {
     /**
      * Atjaunina esošu sasaistes ierakstu.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public CourseToProgrammeResults updateRelation(@PathVariable int id, @Valid @RequestBody CourseToProgrammeResults input) throws Exception {
         return courseToProgrammeResultsService.updateRelation(id, input);
@@ -50,6 +53,7 @@ public class CourseToProgrammeResultsController {
     /**
      * Dzēš sasaisti pēc ID.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteRelation(@PathVariable int id) {
         courseToProgrammeResultsService.deleteRelation(id);

@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.service.user.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class UserController {
     /**
      * Izveido jaunu lietotāju.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         return service.save(user);
@@ -41,6 +43,7 @@ public class UserController {
     /**
      * Atjauno lietotāju pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<User> update(@PathVariable int id, @Valid @RequestBody User updated) {
         return service.getById(id)
@@ -59,6 +62,7 @@ public class UserController {
     /**
      * Dzēš lietotāju pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
         if (service.getById(id).isPresent()) {

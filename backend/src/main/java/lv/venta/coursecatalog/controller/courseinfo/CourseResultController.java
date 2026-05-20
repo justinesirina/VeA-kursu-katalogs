@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.UUID;
@@ -44,6 +45,7 @@ public class CourseResultController {
     /**
      * Izveido jaunu kursa rezultātu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping
     public ResponseEntity<CourseResult> createResult(@Valid @RequestBody CourseResult result) {
         return ResponseEntity.ok(resultService.createResult(result));
@@ -52,6 +54,7 @@ public class CourseResultController {
     /**
      * Atjauno kursa rezultātu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<CourseResult> updateResult(@PathVariable UUID id, @Valid @RequestBody CourseResult updated) {
         return ResponseEntity.ok(resultService.updateResult(id, updated));
@@ -60,6 +63,7 @@ public class CourseResultController {
     /**
      * Dzēš kursa rezultātu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteResult(@PathVariable UUID id) {
         resultService.deleteResultById(id);

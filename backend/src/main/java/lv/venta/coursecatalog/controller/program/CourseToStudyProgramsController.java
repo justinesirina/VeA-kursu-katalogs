@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.service.program.CourseToStudyProgramsService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,15 +30,21 @@ public class CourseToStudyProgramsController {
         return service.getByCourseVersionId(versionId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+
     @PostMapping
     public CourseToStudyPrograms create(@Valid @RequestBody CourseToStudyPrograms input) {
         return service.create(input);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+
     @PutMapping("/{id}")
     public CourseToStudyPrograms update(@PathVariable int id, @Valid @RequestBody CourseToStudyPrograms input) throws Exception {
         return service.update(id, input);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable int id) {

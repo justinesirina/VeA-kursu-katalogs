@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.service.support.VersionStatusService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class VersionStatusController {
     /**
      * Izveido jaunu statusu (piemēram, "Sagatavē").
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PostMapping
     public VersionStatus create(@Valid @RequestBody VersionStatus status) {
         return service.saveStatus(status);
@@ -40,6 +42,7 @@ public class VersionStatusController {
     /**
      * Atjauno esošu statusu pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<VersionStatus> update(@PathVariable int id, @Valid @RequestBody VersionStatus updatedStatus) {
         return service.getStatusById(id)
@@ -54,6 +57,7 @@ public class VersionStatusController {
     /**
      * Dzēš statusu pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
         if (service.getStatusById(id).isPresent()) {

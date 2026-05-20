@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class AssessmentFormController {
     /**
      * Izveido jaunu vērtēšanas formu.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PostMapping
     public ResponseEntity<AssessmentForm> createForm(@Valid @RequestBody AssessmentForm form) {
         return ResponseEntity.ok(formService.createForm(form));
@@ -43,6 +45,7 @@ public class AssessmentFormController {
     /**
      * Atjauno esošu vērtēšanas formu pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<AssessmentForm> updateForm(@PathVariable int id, @Valid @RequestBody AssessmentForm updated) {
         return ResponseEntity.ok(formService.updateForm(id, updated));
@@ -51,6 +54,7 @@ public class AssessmentFormController {
     /**
      * Dzēš vērtēšanas formu pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteForm(@PathVariable int id) {
         formService.deleteFormById(id);

@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -26,16 +27,22 @@ public class ResultsCategoryController {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+
     @PostMapping
     public ResponseEntity<ResultsCategory> create(@Valid @RequestBody ResultsCategory category) {
         return ResponseEntity.ok(categoryService.createCategory(category));
     }
+
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
 
     @PutMapping("/{id}")
     public ResponseEntity<ResultsCategory> update(@PathVariable int id,
                                                   @Valid @RequestBody ResultsCategory updated) {
         return ResponseEntity.ok(categoryService.updateCategory(id, updated));
     }
+
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {

@@ -11,6 +11,7 @@ import lv.venta.coursecatalog.service.course.CourseVersionDuplicationService;
 import lv.venta.coursecatalog.service.course.CourseVersionService;
 import lv.venta.coursecatalog.service.security.AuthContextHelper;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -70,6 +71,7 @@ public class CourseVersionController {
     /**
      * Izveido vai atjaunina kursa versiju.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping
     public CourseVersion createOrUpdateVersion(@Valid @RequestBody CourseVersion version) {
         return courseVersionService.saveCourseVersion(version, authContext.getCurrentUserId());
@@ -78,6 +80,7 @@ public class CourseVersionController {
     /**
      * Atjaunina esošu kursa versiju pēc tās ID.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<CourseVersion> updateVersion(@PathVariable UUID id, @Valid @RequestBody CourseVersion version) {
         version.setId(id);
@@ -87,6 +90,7 @@ public class CourseVersionController {
     /**
      * Mīkstā dzēšana — versija saglabājas DB ar deletedAt zīmogu un isActive=false.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteVersion(@PathVariable UUID id) {
         try {
@@ -108,6 +112,7 @@ public class CourseVersionController {
     /**
      * Atjauno arhivētu versiju.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/restore")
     public ResponseEntity<?> restoreVersion(@PathVariable UUID id) {
         try {
@@ -121,6 +126,7 @@ public class CourseVersionController {
     /**
      * Dzili duplicē esošu versiju — izveido jaunu Melnraksts versiju ar nokopētu CourseInfo saturu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping("/{id}/duplicate")
     public ResponseEntity<?> duplicateVersion(@PathVariable UUID id) {
         try {
@@ -136,6 +142,7 @@ public class CourseVersionController {
     /**
      * Neatgriezeniski dzēš arhivētu versiju (tikai arhivētām).
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/permanent")
     public ResponseEntity<?> hardDeleteVersion(@PathVariable UUID id) {
         try {
@@ -148,11 +155,13 @@ public class CourseVersionController {
 
     // ----- F8: apstiprināšanas plūsmas pārejas -----
 
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping("/{id}/submit")
     public ResponseEntity<?> submit(@PathVariable UUID id, @RequestBody SubmitVersionRequest req) {
         return runTransition(() -> approvalService.submit(id, authContext.getCurrentUserId(), req.getComment()));
     }
 
+    @PreAuthorize("hasRole('PROGRAM_DIRECTOR')")
     @PostMapping("/{id}/approve")
     public ResponseEntity<?> approve(@PathVariable UUID id, @RequestBody ApproveVersionRequest req) {
         return runTransition(() -> approvalService.approve(
@@ -164,11 +173,13 @@ public class CourseVersionController {
                 req.getComment()));
     }
 
+    @PreAuthorize("hasRole('PROGRAM_DIRECTOR')")
     @PostMapping("/{id}/reject")
     public ResponseEntity<?> reject(@PathVariable UUID id, @RequestBody RejectVersionRequest req) {
         return runTransition(() -> approvalService.reject(id, authContext.getCurrentUserId(), req.getComment()));
     }
 
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping("/{id}/reopen")
     public ResponseEntity<?> reopen(@PathVariable UUID id, @RequestBody ReopenVersionRequest req) {
         return runTransition(() -> approvalService.reopenToDraft(id, authContext.getCurrentUserId(), req.getComment()));

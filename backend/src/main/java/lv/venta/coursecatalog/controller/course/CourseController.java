@@ -11,6 +11,7 @@ import lv.venta.coursecatalog.service.course.CourseCatalogFilter;
 import lv.venta.coursecatalog.service.course.ICourseService;
 import lv.venta.coursecatalog.service.security.AuthContextHelper;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -139,6 +140,7 @@ public class CourseController {
     @Operation(summary = "Atjaunot arhivētu kursu", description = "Noņem deletedAt un uzstāda active=true")
     @ApiResponse(responseCode = "204", description = "Kurss atjaunots")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts vai nav arhivēts")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/restore")
     public ResponseEntity<?> restoreCourse(@PathVariable UUID id) {
         try {
@@ -155,6 +157,7 @@ public class CourseController {
     )
     @ApiResponse(responseCode = "204", description = "Kurss neatgriezeniski dzēsts")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts vai nav arhivēts")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/permanent")
     public ResponseEntity<?> hardDeleteCourse(@PathVariable UUID id) {
         try {
@@ -168,6 +171,7 @@ public class CourseController {
     @Operation(summary = "Izveidot kursu", description = "Izveido jaunu studiju kursu")
     @ApiResponse(responseCode = "200", description = "Izveidotais kurss")
     @ApiResponse(responseCode = "400", description = "Validācijas kļūda")
+    @PreAuthorize("hasRole('PROGRAM_DIRECTOR')")
     @PostMapping
     public Course createCourse(@Valid @RequestBody Course course) {
         return courseService.createNewCourse(course, authContext.getCurrentUserId());
@@ -176,6 +180,7 @@ public class CourseController {
     @Operation(summary = "Atjaunināt kursu", description = "Atjaunina esošu kursu pēc UUID")
     @ApiResponse(responseCode = "200", description = "Atjauninātais kurss")
     @ApiResponse(responseCode = "400", description = "Kurss nav atrasts vai validācijas kļūda")
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCourse(@PathVariable String id, @Valid @RequestBody Course course) {
         try {
@@ -188,6 +193,7 @@ public class CourseController {
     @Operation(summary = "Dzēst kursu", description = "Veic mīksto dzēšanu — iestata deletedAt un active=false")
     @ApiResponse(responseCode = "200", description = "Kurss dzēsts")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCourse(@PathVariable UUID id) {
         try {

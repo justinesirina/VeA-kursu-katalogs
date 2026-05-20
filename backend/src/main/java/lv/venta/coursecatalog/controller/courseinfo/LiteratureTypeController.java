@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -26,16 +27,22 @@ public class LiteratureTypeController {
         return ResponseEntity.ok(typeService.getTypeById(id));
     }
 
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+
     @PostMapping
     public ResponseEntity<LiteratureType> create(@Valid @RequestBody LiteratureType type) {
         return ResponseEntity.ok(typeService.createType(type));
     }
+
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
 
     @PutMapping("/{id}")
     public ResponseEntity<LiteratureType> update(@PathVariable int id,
                                                  @Valid @RequestBody LiteratureType updated) {
         return ResponseEntity.ok(typeService.updateType(id, updated));
     }
+
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {

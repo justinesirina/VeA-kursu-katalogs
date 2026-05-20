@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class SelfStudyActivityController {
     /**
      * Izveido jaunu aktivitāti.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PostMapping
     public ResponseEntity<SelfStudyActivity> create(@Valid @RequestBody SelfStudyActivity obj) {
         return ResponseEntity.ok(activityService.create(obj));
@@ -43,6 +45,7 @@ public class SelfStudyActivityController {
     /**
      * Atjauno aktivitāti.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<SelfStudyActivity> update(@PathVariable int id, @Valid @RequestBody SelfStudyActivity obj) {
         return ResponseEntity.ok(activityService.update(id, obj));
@@ -51,6 +54,7 @@ public class SelfStudyActivityController {
     /**
      * Dzēš aktivitāti pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
         activityService.delete(id);
