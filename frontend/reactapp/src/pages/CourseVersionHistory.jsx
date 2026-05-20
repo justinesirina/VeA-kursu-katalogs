@@ -5,6 +5,7 @@ import api from '../services/axiosConfig';
 import { useToast } from '../components/ui/ToastProvider';
 import { statusBadgeClass } from '../utils/statusBadge';
 import WarningDialog from '../components/ui/WarningDialog';
+import { useAuth } from '../context/AuthContext';
 
 function formatDate(iso) {
     if (!iso) return '—';
@@ -23,6 +24,9 @@ function CourseVersionHistory() {
     const { id } = useParams();
     const navigate = useNavigate();
     const showToast = useToast();
+    const { hasRole } = useAuth();
+    const canCreateVersion = hasRole('TEACHER');
+    const canArchive = hasRole('ADMIN');
 
     const [course, setCourse] = useState(null);
     const [versions, setVersions] = useState([]);
@@ -114,7 +118,7 @@ function CourseVersionHistory() {
                         </p>
                     )}
                 </div>
-                {versions.length > 0 && (
+                {versions.length > 0 && canCreateVersion && (
                     <button
                         type="button"
                         onClick={handleCreateNewVersion}
@@ -179,16 +183,18 @@ function CourseVersionHistory() {
                                                     <Eye className="w-4 h-4" aria-hidden="true" />
                                                     Skatīt
                                                 </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setArchiveTarget(v)}
-                                                    disabled={v.active}
-                                                    title={v.active ? 'Aktīvo versiju nevar arhivēt' : 'Arhivēt šo versiju'}
-                                                    className="inline-flex items-center gap-1.5 bg-white text-vea-orange border border-vea-orange px-2.5 py-1.5 rounded text-sm hover:bg-vea-orange-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
-                                                    aria-label={`Arhivēt versiju ${v.versionNumber}`}
-                                                >
-                                                    <Archive className="w-4 h-4" aria-hidden="true" />
-                                                </button>
+                                                {canArchive && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setArchiveTarget(v)}
+                                                        disabled={v.active}
+                                                        title={v.active ? 'Aktīvo versiju nevar arhivēt' : 'Arhivēt šo versiju'}
+                                                        className="inline-flex items-center gap-1.5 bg-white text-vea-orange border border-vea-orange px-2.5 py-1.5 rounded text-sm hover:bg-vea-orange-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                                                        aria-label={`Arhivēt versiju ${v.versionNumber}`}
+                                                    >
+                                                        <Archive className="w-4 h-4" aria-hidden="true" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -235,15 +241,17 @@ function CourseVersionHistory() {
                                         <Eye className="w-4 h-4" aria-hidden="true" />
                                         Skatīt versiju
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setArchiveTarget(v)}
-                                        disabled={v.active}
-                                        className="inline-flex items-center justify-center gap-1.5 bg-white text-vea-orange border border-vea-orange px-3 py-2 rounded text-sm hover:bg-vea-orange-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
-                                        aria-label="Arhivēt versiju"
-                                    >
-                                        <Archive className="w-4 h-4" aria-hidden="true" />
-                                    </button>
+                                    {canArchive && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setArchiveTarget(v)}
+                                            disabled={v.active}
+                                            className="inline-flex items-center justify-center gap-1.5 bg-white text-vea-orange border border-vea-orange px-3 py-2 rounded text-sm hover:bg-vea-orange-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                                            aria-label="Arhivēt versiju"
+                                        >
+                                            <Archive className="w-4 h-4" aria-hidden="true" />
+                                        </button>
+                                    )}
                                 </div>
                             </li>
                         ))}

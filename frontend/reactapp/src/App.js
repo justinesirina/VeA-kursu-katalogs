@@ -44,7 +44,7 @@ function getSection(pathname) {
 function NavBar() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useAuth();
+    const { user, hasRole } = useAuth();
     const path = location.pathname;
     const isAdminLanding = path === '/admin';
     const isAdminSub = path.startsWith('/admin/');
@@ -101,7 +101,7 @@ function NavBar() {
             )}
 
             <nav className="ml-auto pl-3 flex items-center gap-2 shrink-0" aria-label="Galvenā navigācija">
-                {user && path === '/' && (
+                {user && path === '/' && hasRole('ADMIN') && (
                     <button
                         onClick={() => navigate('/admin')}
                         className="text-white/80 hover:text-white text-sm px-3 py-1.5 rounded hover:bg-white/10 transition-colors"
@@ -147,17 +147,17 @@ function AppLayout() {
             <main className="pt-14 flex-1" id="main-content">
                 <Routes>
                     <Route path="/" element={<ProtectedRoute><AllCourses /></ProtectedRoute>} />
-                    <Route path="/courses/new" element={<ProtectedRoute><CourseDetailsForm /></ProtectedRoute>} />
-                    <Route path="/courses/:id/edit" element={<ProtectedRoute><CourseEditForm /></ProtectedRoute>} />
+                    <Route path="/courses/new" element={<ProtectedRoute requireRole="PROGRAM_DIRECTOR"><CourseDetailsForm /></ProtectedRoute>} />
+                    <Route path="/courses/:id/edit" element={<ProtectedRoute requireRole="TEACHER"><CourseEditForm /></ProtectedRoute>} />
                     <Route path="/courses/:id/versions" element={<ProtectedRoute><CourseVersionHistory /></ProtectedRoute>} />
                     <Route path="/courses/:id/versions/:versionId/view" element={<ProtectedRoute><CourseDetails /></ProtectedRoute>} />
                     <Route path="/courses/:id" element={<ProtectedRoute><CourseDetails /></ProtectedRoute>} />
-                    <Route path="/admin" element={<ProtectedRoute><AdminLanding /></ProtectedRoute>} />
-                    <Route path="/admin/system-fields" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-                    <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
-                    <Route path="/admin/programs" element={<ProtectedRoute><AdminPrograms /></ProtectedRoute>} />
-                    <Route path="/admin/activity-log" element={<ProtectedRoute><AdminCourseActivityLog /></ProtectedRoute>} />
-                    <Route path="/admin/archive" element={<ProtectedRoute><ArchivedCourses /></ProtectedRoute>} />
+                    <Route path="/admin" element={<ProtectedRoute requireRole="ADMIN"><AdminLanding /></ProtectedRoute>} />
+                    <Route path="/admin/system-fields" element={<ProtectedRoute requireRole="SYSTEM_ADMIN"><AdminPage /></ProtectedRoute>} />
+                    <Route path="/admin/users" element={<ProtectedRoute requireRole="SYSTEM_ADMIN"><AdminUsers /></ProtectedRoute>} />
+                    <Route path="/admin/programs" element={<ProtectedRoute requireRole="ADMIN"><AdminPrograms /></ProtectedRoute>} />
+                    <Route path="/admin/activity-log" element={<ProtectedRoute requireRole="PROGRAM_DIRECTOR"><AdminCourseActivityLog /></ProtectedRoute>} />
+                    <Route path="/admin/archive" element={<ProtectedRoute requireRole="ADMIN"><ArchivedCourses /></ProtectedRoute>} />
                     <Route path="/design-preview" element={<DesignPreview />} />
                 </Routes>
             </main>

@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { Database, Users, GraduationCap, Archive, ChevronRight, History } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
+// Katra cilne pieprasa noteiktu minimālo lomu — kas nav, tas tiek paslēpts.
 const TILES = [
     {
         key: 'system-fields',
@@ -8,6 +10,7 @@ const TILES = [
         title: 'Sistēmas lauki',
         description: 'Uzziņu tabulas un sistēmas datu sadaļas',
         Icon: Database,
+        requireRole: 'SYSTEM_ADMIN',
     },
     {
         key: 'users',
@@ -15,6 +18,7 @@ const TILES = [
         title: 'Lietotāji',
         description: 'Lietotāju kontu un lomu pārvaldība',
         Icon: Users,
+        requireRole: 'SYSTEM_ADMIN',
     },
     {
         key: 'programs',
@@ -22,6 +26,7 @@ const TILES = [
         title: 'Studiju programmas',
         description: 'Programmas un to daļas',
         Icon: GraduationCap,
+        requireRole: 'ADMIN',
     },
     {
         key: 'activity-log',
@@ -29,6 +34,7 @@ const TILES = [
         title: 'Kursu darbību žurnāls',
         description: 'Kursu un versiju darbību vēsture (izveide, statusi, arhivēšana)',
         Icon: History,
+        requireRole: 'PROGRAM_DIRECTOR',
     },
     {
         key: 'archive',
@@ -36,6 +42,7 @@ const TILES = [
         title: 'Arhīvs',
         description: 'Arhivētie kursi un versijas',
         Icon: Archive,
+        requireRole: 'ADMIN',
     },
 ];
 
@@ -68,6 +75,8 @@ function AdminTile({ tile, onClick }) {
 
 function AdminLanding() {
     const navigate = useNavigate();
+    const { hasRole } = useAuth();
+    const visibleTiles = TILES.filter(t => !t.requireRole || hasRole(t.requireRole));
 
     return (
         <div className="max-w-5xl mx-auto p-6">
@@ -76,7 +85,7 @@ function AdminLanding() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {TILES.map(tile => (
+                {visibleTiles.map(tile => (
                     <AdminTile
                         key={tile.key}
                         tile={tile}

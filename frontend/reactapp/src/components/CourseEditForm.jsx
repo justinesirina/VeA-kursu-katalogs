@@ -69,8 +69,10 @@ function CourseEditForm() {
     const [versionApprovalMeta, setVersionApprovalMeta] = useState({
         approvalDate: '', decisionNumber: '', decisionReference: ''
     });
-    const { user } = useAuth();
+    const { user, hasRole } = useAuth();
     const currentUserId = user?.userId ?? null;
+    const canApprove = hasRole('PROGRAM_DIRECTOR');
+    const canSubmit = hasRole('TEACHER');
 
     // Pamatdati cilnes (Tab 0) izmaiņu izsekošana — brīdina pirms iziešanas, ja ir nesaglabātas izmaiņas
     const initialSnapshotRef = useRef(null);
@@ -595,13 +597,13 @@ function CourseEditForm() {
                         )}
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
-                        {isDraft && (
+                        {isDraft && canSubmit && (
                             <button type="button" onClick={() => setApprovalDialog('submit')}
                                 className="bg-vea-green text-white px-4 py-2 rounded text-sm font-medium hover:bg-vea-green-dark transition-colors">
                                 Iesniegt apstiprināšanai
                             </button>
                         )}
-                        {isSubmitted && (
+                        {isSubmitted && canApprove && (
                             <>
                                 <button type="button" onClick={() => setApprovalDialog('approve')}
                                     className="bg-vea-green text-white px-4 py-2 rounded text-sm font-medium hover:bg-vea-green-dark transition-colors">
@@ -613,7 +615,7 @@ function CourseEditForm() {
                                 </button>
                             </>
                         )}
-                        {isRejected && (
+                        {isRejected && canSubmit && (
                             <button type="button" onClick={() => setApprovalDialog('reopen')}
                                 className="bg-vea-orange text-white px-4 py-2 rounded text-sm font-medium hover:bg-vea-orange/90 transition-colors">
                                 Atvērt labošanai

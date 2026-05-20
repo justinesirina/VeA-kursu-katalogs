@@ -129,12 +129,14 @@ function AllCourses() {
                 <div className="hidden md:flex">
                     <ViewToggle view={view} setView={setView} />
                 </div>
-                <button
-                    onClick={() => navigate('/courses/new')}
-                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark text-base whitespace-nowrap"
-                >
-                    + Pievienot kursu
-                </button>
+                {hasRole('PROGRAM_DIRECTOR') && (
+                    <button
+                        onClick={() => navigate('/courses/new')}
+                        className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark text-base whitespace-nowrap"
+                    >
+                        + Pievienot kursu
+                    </button>
+                )}
                 <div aria-live="polite" className="sr-only">
                     {loading
                         ? 'Ielādē...'

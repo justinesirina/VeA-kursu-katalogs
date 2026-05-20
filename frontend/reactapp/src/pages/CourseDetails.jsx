@@ -4,6 +4,7 @@ import { History } from 'lucide-react';
 import api from '../services/axiosConfig';
 import PercentageStackBar from '../components/ui/PercentageStackBar';
 import DownloadDropdown from '../components/ui/DownloadDropdown';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Kursa detaļu skats — tikai lasīšana.
@@ -17,7 +18,10 @@ import DownloadDropdown from '../components/ui/DownloadDropdown';
 function CourseDetails() {
     const { id, versionId } = useParams();
     const navigate = useNavigate();
+    const { hasRole } = useAuth();
     const isHistoricalView = !!versionId;
+    const canEdit = hasRole('TEACHER');
+    const canArchive = hasRole('ADMIN');
 
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -203,7 +207,7 @@ function CourseDetails() {
             {/* ── 1. DARBĪBAS POGAS ── */}
             <div className="flex gap-2 flex-wrap">
                 <DownloadDropdown versionId={d.versionId} />
-                {!isHistoricalView && (
+                {!isHistoricalView && canEdit && (
                     <button
                         onClick={() => navigate(`/courses/${id}/edit`)}
                         className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90"
@@ -212,7 +216,7 @@ function CourseDetails() {
                     </button>
                 )}
                 {/* Vēsturiskā skatā: Rediģēt pieejams Melnrakstam, Iesniegtam un Noraidītam (ne Apstiprinātam) */}
-                {isHistoricalView && d.versionStatus && !d.versionStatus.toLowerCase().includes('apstip') && (
+                {isHistoricalView && canEdit && d.versionStatus && !d.versionStatus.toLowerCase().includes('apstip') && (
                     <button
                         onClick={() => navigate(`/courses/${id}/edit?version=${versionId}`)}
                         className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90"
@@ -227,7 +231,7 @@ function CourseDetails() {
                     <History className="w-4 h-4" aria-hidden="true" />
                     Versiju vēsture{versionsCount != null && <> ({versionsCount})</>}
                 </button>
-                {!isHistoricalView && (
+                {!isHistoricalView && canArchive && (
                     <button
                         onClick={() => setShowArchiveConfirm(true)}
                         className="bg-red-600 text-white px-4 py-2 rounded text-base hover:bg-red-700 ml-auto"
