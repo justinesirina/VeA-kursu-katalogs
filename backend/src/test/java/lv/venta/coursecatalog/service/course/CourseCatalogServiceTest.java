@@ -192,6 +192,9 @@ class CourseCatalogServiceTest {
 
     @Test
     void staffMode_withoutStatusId_picksLatestVersion() {
+        // Staff bez statusa filtra redz pēdējo versiju (jebkura statusa), lai katalogā
+        // būtu redzami arī kursi bez apstiprinātās versijas. Frontend kartīte saglabā
+        // versionId, lai klikšķis aizvestu tieši uz šo versiju.
         Pageable pageable = PageRequest.of(0, 25);
         when(roleChecker.isStaff(7)).thenReturn(true);
         when(courseRepo.findAll(any(Specification.class), eq(pageable)))

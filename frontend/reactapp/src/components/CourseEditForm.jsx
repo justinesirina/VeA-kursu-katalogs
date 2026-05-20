@@ -592,7 +592,7 @@ function CourseEditForm() {
                     <div className="flex items-center gap-2 text-sm text-vea-text">
                         <span className="text-gray-500">Versija Nr. {versionData?.versionNumber}. Statuss: </span>
                         <span className={statusBadgeClass(versionStatusName)}>{versionStatusName}</span>
-                        {versionData?.isActive && (
+                        {versionData?.isActive && isApproved && (
                             <span className="vea-badge bg-vea-green-light text-vea-green">Aktīvā</span>
                         )}
                     </div>

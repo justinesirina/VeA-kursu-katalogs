@@ -161,7 +161,7 @@ function CourseVersionHistory() {
                                                 {v.status?.name && (
                                                     <span className={statusBadgeClass(v.status.name)}>{v.status.name}</span>
                                                 )}
-                                                {v.active && (
+                                                {v.active && v.status?.name?.toLowerCase().includes('apstip') && (
                                                     <span className="vea-badge bg-vea-green-light text-vea-green">Aktīvā</span>
                                                 )}
                                             </div>
@@ -213,7 +213,7 @@ function CourseVersionHistory() {
                                         {v.status?.name && (
                                             <span className={statusBadgeClass(v.status.name)}>{v.status.name}</span>
                                         )}
-                                        {v.active && (
+                                        {v.active && v.status?.name?.toLowerCase().includes('apstip') && (
                                             <span className="vea-badge bg-vea-green-light text-vea-green">Aktīvā</span>
                                         )}
                                     </div>

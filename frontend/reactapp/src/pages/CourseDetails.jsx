@@ -5,6 +5,7 @@ import api from '../services/axiosConfig';
 import PercentageStackBar from '../components/ui/PercentageStackBar';
 import DownloadDropdown from '../components/ui/DownloadDropdown';
 import { useAuth } from '../context/AuthContext';
+import { statusBadgeClass } from '../utils/statusBadge';
 
 /**
  * Kursa detaļu skats — tikai lasīšana.
@@ -247,10 +248,7 @@ function CourseDetails() {
                 {(d.versionStatus || d.approvalDate || d.decisionNumber || d.decisionReference) && (
                     <div className="text-left md:text-right text-base md:shrink-0 md:order-2">
                         {d.versionStatus && (
-                            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold mb-1
-                                ${d.versionStatus.toLowerCase().includes('apstip')
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-vea-orange-light text-vea-orange'}`}>
+                            <span className={`${statusBadgeClass(d.versionStatus)} mb-1`}>
                                 {d.versionStatus}
                             </span>
                         )}

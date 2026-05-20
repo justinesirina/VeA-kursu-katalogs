@@ -71,6 +71,8 @@ public final class CourseCatalogSpecifications {
                         PUBLIC_VISIBLE_STATUS
                 ));
             } else {
+                // Staff redz visus kursus ar jebkādu versiju (arī tikai melnrakstus
+                // bez apstiprinātās). Statusa filtrs ir opcionāls.
                 addInPredicate(versionPreds, cv.get("status").get("id"), f.getStatusIds());
             }
 

@@ -10,6 +10,7 @@ import CatalogPagination from '../components/catalog/CatalogPagination';
 import useCatalogQuery from '../hooks/useCatalogQuery';
 import { useAuth } from '../context/AuthContext';
 import { statusBadgeClass } from '../utils/statusBadge';
+import { catalogItemTarget } from '../utils/catalogNavigation';
 
 function teacherSummary(item) {
     const names = (item.teachers || [])
@@ -186,7 +187,7 @@ function AllCourses() {
                                     <tr key={item.courseId}>
                                         <td className="vea-td">
                                             <button
-                                                onClick={() => navigate(`/courses/${item.courseId}`)}
+                                                onClick={() => navigate(catalogItemTarget(item))}
                                                 className="text-vea-green hover:underline text-left block"
                                             >
                                                 {item.titleLv}
@@ -216,7 +217,7 @@ function AllCourses() {
                                         <td className="vea-td">
                                             <button
                                                 className="text-vea-green hover:underline"
-                                                onClick={() => navigate(`/courses/${item.courseId}`)}
+                                                onClick={() => navigate(catalogItemTarget(item))}
                                             >
                                                 Skatīt
                                             </button>
