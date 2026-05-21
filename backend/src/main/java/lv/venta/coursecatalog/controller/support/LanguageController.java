@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.service.support.LanguageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -23,15 +24,21 @@ public class LanguageController {
         return service.getAll();
     }
 
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+
     @PostMapping
     public Language create(@Valid @RequestBody Language input) {
         return service.create(input);
     }
 
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+
     @PutMapping("/{id}")
     public Language update(@PathVariable int id, @Valid @RequestBody Language input) throws Exception {
         return service.update(id, input);
     }
+
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable int id) {

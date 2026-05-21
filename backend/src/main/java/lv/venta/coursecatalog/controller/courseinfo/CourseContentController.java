@@ -6,12 +6,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/course-content")
-@CrossOrigin(origins = "*")
 public class CourseContentController {
 
     @Autowired
@@ -27,10 +27,14 @@ public class CourseContentController {
         return ResponseEntity.ok(contentService.getById(id));
     }
 
+    @PreAuthorize("hasRole('TEACHER')")
+
     @PostMapping
     public ResponseEntity<CourseContent> create(@Valid @RequestBody CourseContent content) {
         return ResponseEntity.ok(contentService.create(content));
     }
+
+    @PreAuthorize("hasRole('TEACHER')")
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable int id,
@@ -38,6 +42,8 @@ public class CourseContentController {
         contentService.update(id, updated);
         return ResponseEntity.noContent().build();
     }
+
+    @PreAuthorize("hasRole('TEACHER')")
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {

@@ -12,8 +12,11 @@ import AdminPrograms from "./pages/AdminPrograms";
 import AdminCourseActivityLog from "./pages/AdminCourseActivityLog";
 import ArchivedCourses from "./pages/ArchivedCourses";
 import DesignPreview from "./pages/DesignPreview";
+import LoginPage from "./pages/LoginPage";
 import { ToastProvider } from './components/ui/ToastProvider';
-import CurrentUserSwitcher from './components/ui/CurrentUserSwitcher';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import UserMenu from './components/ui/UserMenu';
 import veaLogo from './assets/vea-logo.svg';
 
 const SECTION_CONFIGS = [
@@ -41,6 +44,7 @@ function getSection(pathname) {
 function NavBar() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { user, hasRole } = useAuth();
     const path = location.pathname;
     const isAdminLanding = path === '/admin';
     const isAdminSub = path.startsWith('/admin/');
@@ -97,7 +101,7 @@ function NavBar() {
             )}
 
             <nav className="ml-auto pl-3 flex items-center gap-2 shrink-0" aria-label="Galvenā navigācija">
-                {path === '/' && (
+                {user && path === '/' && hasRole('ADMIN') && (
                     <button
                         onClick={() => navigate('/admin')}
                         className="text-white/80 hover:text-white text-sm px-3 py-1.5 rounded hover:bg-white/10 transition-colors"
@@ -113,43 +117,62 @@ function NavBar() {
                         {backLabel}
                     </button>
                 )}
-                <CurrentUserSwitcher />
+                <UserMenu />
             </nav>
         </header>
+    );
+}
+
+function AppLayout() {
+    const location = useLocation();
+    const isLoginPage = location.pathname === '/login';
+
+    if (isLoginPage) {
+        return (
+            <Routes>
+                <Route path="/login" element={<LoginPage />} />
+            </Routes>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-vea-bg flex flex-col">
+            <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-vea-green focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-sm focus:font-medium"
+            >
+                Pāriet uz saturu
+            </a>
+            <NavBar />
+            <main className="pt-14 flex-1" id="main-content">
+                <Routes>
+                    <Route path="/" element={<ProtectedRoute><AllCourses /></ProtectedRoute>} />
+                    <Route path="/courses/new" element={<ProtectedRoute requireRole="PROGRAM_DIRECTOR"><CourseDetailsForm /></ProtectedRoute>} />
+                    <Route path="/courses/:id/edit" element={<ProtectedRoute requireRole="TEACHER"><CourseEditForm /></ProtectedRoute>} />
+                    <Route path="/courses/:id/versions" element={<ProtectedRoute><CourseVersionHistory /></ProtectedRoute>} />
+                    <Route path="/courses/:id/versions/:versionId/view" element={<ProtectedRoute><CourseDetails /></ProtectedRoute>} />
+                    <Route path="/courses/:id" element={<ProtectedRoute><CourseDetails /></ProtectedRoute>} />
+                    <Route path="/admin" element={<ProtectedRoute requireRole="ADMIN"><AdminLanding /></ProtectedRoute>} />
+                    <Route path="/admin/system-fields" element={<ProtectedRoute requireRole="SYSTEM_ADMIN"><AdminPage /></ProtectedRoute>} />
+                    <Route path="/admin/users" element={<ProtectedRoute requireRole="SYSTEM_ADMIN"><AdminUsers /></ProtectedRoute>} />
+                    <Route path="/admin/programs" element={<ProtectedRoute requireRole="ADMIN"><AdminPrograms /></ProtectedRoute>} />
+                    <Route path="/admin/activity-log" element={<ProtectedRoute requireRole="PROGRAM_DIRECTOR"><AdminCourseActivityLog /></ProtectedRoute>} />
+                    <Route path="/admin/archive" element={<ProtectedRoute requireRole="ADMIN"><ArchivedCourses /></ProtectedRoute>} />
+                    <Route path="/design-preview" element={<DesignPreview />} />
+                </Routes>
+            </main>
+        </div>
     );
 }
 
 function App() {
     return (
         <Router>
-            <ToastProvider>
-            <div className="min-h-screen bg-vea-bg flex flex-col">
-                <a
-                    href="#main-content"
-                    className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-vea-green focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-sm focus:font-medium"
-                >
-                    Pāriet uz saturu
-                </a>
-                <NavBar />
-                <main className="pt-14 flex-1" id="main-content">
-                    <Routes>
-                        <Route path="/" element={<AllCourses />} />
-                        <Route path="/courses/new" element={<CourseDetailsForm />} />
-                        <Route path="/courses/:id/edit" element={<CourseEditForm />} />
-                        <Route path="/courses/:id/versions" element={<CourseVersionHistory />} />
-                        <Route path="/courses/:id/versions/:versionId/view" element={<CourseDetails />} />
-                        <Route path="/courses/:id" element={<CourseDetails />} />
-                        <Route path="/admin" element={<AdminLanding />} />
-                        <Route path="/admin/system-fields" element={<AdminPage />} />
-                        <Route path="/admin/users" element={<AdminUsers />} />
-                        <Route path="/admin/programs" element={<AdminPrograms />} />
-                        <Route path="/admin/activity-log" element={<AdminCourseActivityLog />} />
-                        <Route path="/admin/archive" element={<ArchivedCourses />} />
-                        <Route path="/design-preview" element={<DesignPreview />} />
-                    </Routes>
-                </main>
-            </div>
-            </ToastProvider>
+            <AuthProvider>
+                <ToastProvider>
+                    <AppLayout />
+                </ToastProvider>
+            </AuthProvider>
         </Router>
     );
 }

@@ -46,6 +46,13 @@ public class User {
     private String email;
 
     /**
+     * BCrypt parolei hash. Nullable, jo esošajiem lietotājiem parole vēl nav iestatīta.
+     */
+    @JsonIgnore
+    @Column(name = "password_hash")
+    private String passwordHash;
+
+    /**
      * Lietotāja zinātniskais grāds, piemēram: “Mg.sc.comp.”.
      */
     @Column(name = "academic_degree")

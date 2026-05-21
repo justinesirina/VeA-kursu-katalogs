@@ -7,20 +7,23 @@ const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
     baseURL: backendUrl,
+    // F14 prasība — sūta JSESSIONID cookie ar katru pieprasījumu (sesijas autentifikācijai).
+    withCredentials: true,
 });
 
-// F9 — automātiski pievieno X-Actor-User-Id header katram pieprasījumam, ja
-// CurrentUserSwitcher ir izvēlējies lietotāju. Backend žurnālā fiksē šo lietotāju
-// kā darbības veicēju. Phase 5 (Spring Security) aizstās ar autentificētu user.
-api.interceptors.request.use((config) => {
-    if (typeof window !== 'undefined') {
-        const stored = window.localStorage.getItem('currentUserId');
-        if (stored) {
-            config.headers = config.headers || {};
-            config.headers['X-Actor-User-Id'] = stored;
+// F14 prasība - ja sesija ir beigusies vai nav, novirza uz /login (izņemot pašu login pieprasījumu).
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const status = error?.response?.status;
+        const url = error?.config?.url || '';
+        if (status === 401 && !url.includes('/auth/')) {
+            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+                window.location.assign('/login');
+            }
         }
+        return Promise.reject(error);
     }
-    return config;
-});
+);
 
 export default api;

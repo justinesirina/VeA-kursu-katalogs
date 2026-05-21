@@ -6,12 +6,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/assessment-distribution")
-@CrossOrigin(origins = "*")
 public class CourseAssessmentDistributionController {
 
     @Autowired
@@ -36,6 +36,7 @@ public class CourseAssessmentDistributionController {
     /**
      * Izveido jaunu vērtēšanas sadalījumu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping
     public ResponseEntity<CourseAssessmentDistribution> createDistribution(
             @Valid @RequestBody CourseAssessmentDistribution distribution) {
@@ -45,6 +46,7 @@ public class CourseAssessmentDistributionController {
     /**
      * Atjauno sadalījumu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateDistribution(@PathVariable int id,
                                                    @Valid @RequestBody CourseAssessmentDistribution updated) {
@@ -55,6 +57,7 @@ public class CourseAssessmentDistributionController {
     /**
      * Dzēš sadalījumu pēc ID.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDistribution(@PathVariable int id) {
         distributionService.deleteDistributionById(id);

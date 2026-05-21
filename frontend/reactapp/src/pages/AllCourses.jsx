@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Filter as FilterIcon } from 'lucide-react';
 import api from '../services/axiosConfig';
@@ -8,15 +8,9 @@ import CatalogSidebar from '../components/catalog/CatalogSidebar';
 import CatalogFilterDrawer from '../components/catalog/CatalogFilterDrawer';
 import CatalogPagination from '../components/catalog/CatalogPagination';
 import useCatalogQuery from '../hooks/useCatalogQuery';
-import { useCurrentUserId } from '../components/ui/CurrentUserSwitcher';
+import { useAuth } from '../context/AuthContext';
 import { statusBadgeClass } from '../utils/statusBadge';
-
-const STAFF_ROLE_NAMES = new Set([
-    'Pasniedzējs',
-    'Programmas direktors',
-    'Administrators',
-    'Sistēmas administrators',
-]);
+import { catalogItemTarget } from '../utils/catalogNavigation';
 
 function teacherSummary(item) {
     const names = (item.teachers || [])
@@ -30,7 +24,7 @@ function teacherSummary(item) {
 
 function AllCourses() {
     const navigate = useNavigate();
-    const currentUserId = useCurrentUserId();
+    const { hasRole } = useAuth();
 
     const [view, setView] = useState('cards');
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -85,11 +79,7 @@ function AllCourses() {
         return () => { cancelled = true; };
     }, []);
 
-    const isStaff = useMemo(() => {
-        if (!currentUserId) return false;
-        const me = lookups.users.find(u => u.id === currentUserId);
-        return !!me && STAFF_ROLE_NAMES.has(me.role?.roleName);
-    }, [currentUserId, lookups.users]);
+    const isStaff = hasRole('TEACHER');
 
     const {
         filters,
@@ -140,12 +130,14 @@ function AllCourses() {
                 <div className="hidden md:flex">
                     <ViewToggle view={view} setView={setView} />
                 </div>
-                <button
-                    onClick={() => navigate('/courses/new')}
-                    className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark text-base whitespace-nowrap"
-                >
-                    + Pievienot kursu
-                </button>
+                {hasRole('PROGRAM_DIRECTOR') && (
+                    <button
+                        onClick={() => navigate('/courses/new')}
+                        className="bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark text-base whitespace-nowrap"
+                    >
+                        + Pievienot kursu
+                    </button>
+                )}
                 <div aria-live="polite" className="sr-only">
                     {loading
                         ? 'Ielādē...'
@@ -195,7 +187,7 @@ function AllCourses() {
                                     <tr key={item.courseId}>
                                         <td className="vea-td">
                                             <button
-                                                onClick={() => navigate(`/courses/${item.courseId}`)}
+                                                onClick={() => navigate(catalogItemTarget(item))}
                                                 className="text-vea-green hover:underline text-left block"
                                             >
                                                 {item.titleLv}
@@ -225,7 +217,7 @@ function AllCourses() {
                                         <td className="vea-td">
                                             <button
                                                 className="text-vea-green hover:underline"
-                                                onClick={() => navigate(`/courses/${item.courseId}`)}
+                                                onClick={() => navigate(catalogItemTarget(item))}
                                             >
                                                 Skatīt
                                             </button>

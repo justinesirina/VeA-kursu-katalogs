@@ -6,12 +6,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/literature-sources")
-@CrossOrigin(origins = "*")
 public class LiteratureSourceController {
 
     @Autowired
@@ -27,10 +27,14 @@ public class LiteratureSourceController {
         return ResponseEntity.ok(sourceService.getSourceById(id));
     }
 
+    @PreAuthorize("hasRole('TEACHER')")
+
     @PostMapping
     public ResponseEntity<LiteratureSource> create(@Valid @RequestBody LiteratureSource source) {
         return ResponseEntity.ok(sourceService.createSource(source));
     }
+
+    @PreAuthorize("hasRole('TEACHER')")
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable int id,
@@ -38,6 +42,8 @@ public class LiteratureSourceController {
         sourceService.updateSource(id, updated);
         return ResponseEntity.noContent().build();
     }
+
+    @PreAuthorize("hasRole('TEACHER')")
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {

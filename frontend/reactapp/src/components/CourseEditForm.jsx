@@ -13,7 +13,7 @@ import CourseSKRSection from './courseinfo/CourseSKRSection';
 import CourseCalendarSection from './courseinfo/CourseCalendarSection';
 import { statusBadgeClass, STATUS_NAMES } from '../utils/statusBadge';
 import { submitVersion, approveVersion, rejectVersion, reopenVersion } from '../services/approvalService';
-import { useCurrentUserId } from './ui/CurrentUserSwitcher';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Izvēlas rediģējamo versiju no kursa versiju saraksta.
@@ -69,7 +69,10 @@ function CourseEditForm() {
     const [versionApprovalMeta, setVersionApprovalMeta] = useState({
         approvalDate: '', decisionNumber: '', decisionReference: ''
     });
-    const currentUserId = useCurrentUserId();
+    const { user, hasRole } = useAuth();
+    const currentUserId = user?.userId ?? null;
+    const canApprove = hasRole('PROGRAM_DIRECTOR');
+    const canSubmit = hasRole('TEACHER');
 
     // Pamatdati cilnes (Tab 0) izmaiņu izsekošana — brīdina pirms iziešanas, ja ir nesaglabātas izmaiņas
     const initialSnapshotRef = useRef(null);
@@ -296,7 +299,7 @@ function CourseEditForm() {
             return;
         }
         if (currentUserId == null) {
-            showToast('Vispirms izvēlies aktīvo lietotāju (augšējā joslā).', 'error');
+            showToast('Sesija ir beigusies. Lūdzu, pieslēdzies vēlreiz.', 'error');
             return;
         }
         setApprovalSubmitting(true);
@@ -561,7 +564,7 @@ function CourseEditForm() {
                 description={
                     <p>
                         Versijas Nr. {versionData?.versionNumber} statuss ir <span className="font-semibold">Apstiprināts</span>.
-                        Apstiprinātu versiju nevar mainīt — lai veiktu labojumus, jāizveido jauna versija.
+                        Apstiprinātu versiju nevar mainīt! Lai veiktu labojumus, jāizveido jauna versija.
                     </p>
                 }
                 primaryLabel={duplicating ? 'Veido…' : 'Veidot jaunu versiju'}
@@ -589,18 +592,18 @@ function CourseEditForm() {
                     <div className="flex items-center gap-2 text-sm text-vea-text">
                         <span className="text-gray-500">Versija Nr. {versionData?.versionNumber}. Statuss: </span>
                         <span className={statusBadgeClass(versionStatusName)}>{versionStatusName}</span>
-                        {versionData?.isActive && (
+                        {versionData?.isActive && isApproved && (
                             <span className="vea-badge bg-vea-green-light text-vea-green">Aktīvā</span>
                         )}
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
-                        {isDraft && (
+                        {isDraft && canSubmit && (
                             <button type="button" onClick={() => setApprovalDialog('submit')}
                                 className="bg-vea-green text-white px-4 py-2 rounded text-sm font-medium hover:bg-vea-green-dark transition-colors">
                                 Iesniegt apstiprināšanai
                             </button>
                         )}
-                        {isSubmitted && (
+                        {isSubmitted && canApprove && (
                             <>
                                 <button type="button" onClick={() => setApprovalDialog('approve')}
                                     className="bg-vea-green text-white px-4 py-2 rounded text-sm font-medium hover:bg-vea-green-dark transition-colors">
@@ -612,7 +615,7 @@ function CourseEditForm() {
                                 </button>
                             </>
                         )}
-                        {isRejected && (
+                        {isRejected && canSubmit && (
                             <button type="button" onClick={() => setApprovalDialog('reopen')}
                                 className="bg-vea-orange text-white px-4 py-2 rounded text-sm font-medium hover:bg-vea-orange/90 transition-colors">
                                 Atvērt labošanai

@@ -6,12 +6,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/session-types")
-@CrossOrigin(origins = "*")
 public class SessionTypeController {
 
     @Autowired
@@ -27,15 +27,21 @@ public class SessionTypeController {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+
     @PostMapping
     public ResponseEntity<SessionType> create(@Valid @RequestBody SessionType obj) {
         return ResponseEntity.ok(service.create(obj));
     }
 
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+
     @PutMapping("/{id}")
     public ResponseEntity<SessionType> update(@PathVariable int id, @Valid @RequestBody SessionType obj) {
         return ResponseEntity.ok(service.update(id, obj));
     }
+
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {

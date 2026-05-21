@@ -9,7 +9,9 @@ import lv.venta.coursecatalog.model.dto.ArchivedCourseDTO;
 import lv.venta.coursecatalog.model.dto.CourseCatalogItemDTO;
 import lv.venta.coursecatalog.service.course.CourseCatalogFilter;
 import lv.venta.coursecatalog.service.course.ICourseService;
+import lv.venta.coursecatalog.service.security.AuthContextHelper;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,9 +33,11 @@ import java.util.UUID;
 public class CourseController {
 
     private final ICourseService courseService;
+    private final AuthContextHelper authContext;
 
-    public CourseController(ICourseService courseService) {
+    public CourseController(ICourseService courseService, AuthContextHelper authContext) {
         this.courseService = courseService;
+        this.authContext = authContext;
     }
 
     @Operation(summary = "Iegūt visus kursus", description = "Atgriež visus kursus; dzēstie automātiski filtrēti")
@@ -73,9 +77,9 @@ public class CourseController {
             @RequestParam(required = false) java.util.List<Integer> teacherUserIds,
             @Parameter(description = "0-bāzēts lapas numurs") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Lapas izmērs (atļauts: 25/50/100/500)") @RequestParam(defaultValue = "25") int size,
-            @Parameter(description = "Kārtošana, piem. titleLv,asc") @RequestParam(defaultValue = "titleLv,asc") String sort,
-            @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId
+            @Parameter(description = "Kārtošana, piem. titleLv,asc") @RequestParam(defaultValue = "titleLv,asc") String sort
     ) {
+        Integer actorUserId = authContext.getCurrentUserId();
         CourseCatalogFilter filter = CourseCatalogFilter.builder()
                 .q(q)
                 .facultyIds(facultyIds)
@@ -136,11 +140,11 @@ public class CourseController {
     @Operation(summary = "Atjaunot arhivētu kursu", description = "Noņem deletedAt un uzstāda active=true")
     @ApiResponse(responseCode = "204", description = "Kurss atjaunots")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts vai nav arhivēts")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/restore")
-    public ResponseEntity<?> restoreCourse(@PathVariable UUID id,
-                                           @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+    public ResponseEntity<?> restoreCourse(@PathVariable UUID id) {
         try {
-            courseService.restoreCourseById(id, actorUserId);
+            courseService.restoreCourseById(id, authContext.getCurrentUserId());
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -153,6 +157,7 @@ public class CourseController {
     )
     @ApiResponse(responseCode = "204", description = "Kurss neatgriezeniski dzēsts")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts vai nav arhivēts")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/permanent")
     public ResponseEntity<?> hardDeleteCourse(@PathVariable UUID id) {
         try {
@@ -166,15 +171,16 @@ public class CourseController {
     @Operation(summary = "Izveidot kursu", description = "Izveido jaunu studiju kursu")
     @ApiResponse(responseCode = "200", description = "Izveidotais kurss")
     @ApiResponse(responseCode = "400", description = "Validācijas kļūda")
+    @PreAuthorize("hasRole('PROGRAM_DIRECTOR')")
     @PostMapping
-    public Course createCourse(@Valid @RequestBody Course course,
-                               @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
-        return courseService.createNewCourse(course, actorUserId);
+    public Course createCourse(@Valid @RequestBody Course course) {
+        return courseService.createNewCourse(course, authContext.getCurrentUserId());
     }
 
     @Operation(summary = "Atjaunināt kursu", description = "Atjaunina esošu kursu pēc UUID")
     @ApiResponse(responseCode = "200", description = "Atjauninātais kurss")
     @ApiResponse(responseCode = "400", description = "Kurss nav atrasts vai validācijas kļūda")
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCourse(@PathVariable String id, @Valid @RequestBody Course course) {
         try {
@@ -187,11 +193,11 @@ public class CourseController {
     @Operation(summary = "Dzēst kursu", description = "Veic mīksto dzēšanu — iestata deletedAt un active=false")
     @ApiResponse(responseCode = "200", description = "Kurss dzēsts")
     @ApiResponse(responseCode = "404", description = "Kurss nav atrasts")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCourse(@PathVariable UUID id,
-                                          @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+    public ResponseEntity<?> deleteCourse(@PathVariable UUID id) {
         try {
-            courseService.deleteCourseById(id, actorUserId);
+            courseService.deleteCourseById(id, authContext.getCurrentUserId());
             return ResponseEntity.ok("Kurss veiksmīgi dzēsts");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

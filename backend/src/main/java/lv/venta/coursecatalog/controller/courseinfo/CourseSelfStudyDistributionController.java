@@ -6,12 +6,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/self-study-distribution")
-@CrossOrigin(origins = "*")
 public class CourseSelfStudyDistributionController {
 
     @Autowired
@@ -36,6 +36,7 @@ public class CourseSelfStudyDistributionController {
     /**
      * Izveido jaunu sadalījumu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping
     public ResponseEntity<CourseSelfStudyDistribution> create(@Valid @RequestBody CourseSelfStudyDistribution obj) {
         return ResponseEntity.ok(distService.create(obj));
@@ -44,6 +45,7 @@ public class CourseSelfStudyDistributionController {
     /**
      * Atjauno esošu sadalījumu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable int id,
                                        @Valid @RequestBody CourseSelfStudyDistribution obj) {
@@ -54,6 +56,7 @@ public class CourseSelfStudyDistributionController {
     /**
      * Dzēš ierakstu pēc ID.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
         distService.delete(id);

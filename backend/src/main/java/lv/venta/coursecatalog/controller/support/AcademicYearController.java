@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.service.support.AcademicYearService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class AcademicYearController {
     /**
      * Izveido jaunu akadēmisko gadu.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PostMapping
     public AcademicYear create(@Valid @RequestBody AcademicYear year) {
         return service.save(year);
@@ -40,6 +42,7 @@ public class AcademicYearController {
     /**
      * Atjauno esošu akadēmisko gadu pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<AcademicYear> update(@PathVariable int id, @Valid @RequestBody AcademicYear updated) {
         return service.getById(id)
@@ -56,6 +59,7 @@ public class AcademicYearController {
     /**
      * Dzēš akadēmisko gadu pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
         if (service.getById(id).isPresent()) {

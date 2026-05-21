@@ -7,13 +7,13 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/result-assessments")
-@CrossOrigin(origins = "*")
 public class CourseResultAssessmentController {
 
     @Autowired
@@ -38,6 +38,7 @@ public class CourseResultAssessmentController {
     /**
      * Izveido jaunu sasaistes ierakstu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping
     public ResponseEntity<CourseResultAssessment> createLink(@Valid @RequestBody CourseResultAssessment link) {
         return ResponseEntity.ok(resultAssessmentService.createLink(link));
@@ -46,6 +47,7 @@ public class CourseResultAssessmentController {
     /**
      * Atjauno esošu sasaisti.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<CourseResultAssessment> updateLink(@PathVariable int id,
                                                              @Valid @RequestBody CourseResultAssessment updated) {
@@ -55,6 +57,7 @@ public class CourseResultAssessmentController {
     /**
      * Dzēš sasaisti pēc ID.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLink(@PathVariable int id) {
         resultAssessmentService.deleteLinkById(id);
@@ -64,6 +67,7 @@ public class CourseResultAssessmentController {
     /**
      * Masveida upsert visām SKR × komponenšu matricas šūnām.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/bulk/{courseId}")
     public ResponseEntity<Void> bulkUpsert(@PathVariable UUID courseId,
                                            @RequestBody BulkResultAssessmentRequest request) {

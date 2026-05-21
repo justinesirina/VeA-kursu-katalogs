@@ -1,5 +1,6 @@
 package lv.venta.coursecatalog.service.user;
 
+import lv.venta.coursecatalog.model.user.RoleKey;
 import lv.venta.coursecatalog.model.user.UserRole;
 import lv.venta.coursecatalog.repository.user.UserRoleRepository;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,13 @@ public class UserRoleService {
      */
     public Optional<UserRole> getById(int id) {
         return repository.findById(id);
+    }
+
+    /**
+     * Iegūst lomu pēc tās fiksētā identifikatora (role_key).
+     */
+    public Optional<UserRole> getByRoleKey(RoleKey roleKey) {
+        return repository.findByRoleKey(roleKey);
     }
 
     /**

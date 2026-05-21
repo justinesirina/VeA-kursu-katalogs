@@ -6,12 +6,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/assessment-components")
-@CrossOrigin(origins = "*")
 public class AssessmentComponentController {
 
     @Autowired
@@ -36,6 +36,7 @@ public class AssessmentComponentController {
     /**
      * Izveido jaunu komponenti.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PostMapping
     public ResponseEntity<AssessmentComponent> createComponent(@Valid @RequestBody AssessmentComponent component) {
         return ResponseEntity.ok(componentService.createComponent(component));
@@ -44,6 +45,7 @@ public class AssessmentComponentController {
     /**
      * Atjauno komponenti pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<AssessmentComponent> updateComponent(@PathVariable int id,
                                                                @Valid @RequestBody AssessmentComponent updated) {
@@ -53,6 +55,7 @@ public class AssessmentComponentController {
     /**
      * Dzēš komponenti pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteComponent(@PathVariable int id) {
         componentService.deleteComponentById(id);

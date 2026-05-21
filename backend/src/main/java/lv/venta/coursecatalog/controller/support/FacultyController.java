@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.service.support.FacultyService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class FacultyController {
     /**
      * Izveido jaunu fakultāti.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PostMapping
     public Faculty createFaculty(@Valid @RequestBody Faculty input) {
         return facultyService.createFaculty(input);
@@ -42,6 +44,7 @@ public class FacultyController {
     /**
      * Atjaunina esošu fakultāti.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping("/{id}")
     public Faculty updateFaculty(@PathVariable int id, @Valid @RequestBody Faculty input) throws Exception {
         return facultyService.updateFaculty(id, input);
@@ -50,6 +53,7 @@ public class FacultyController {
     /**
      * Dzēš fakultāti pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteFaculty(@PathVariable int id) {
         facultyService.deleteFaculty(id);

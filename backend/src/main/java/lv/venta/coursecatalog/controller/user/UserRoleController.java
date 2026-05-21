@@ -2,14 +2,14 @@ package lv.venta.coursecatalog.controller.user;
 
 import lv.venta.coursecatalog.model.user.UserRole;
 import lv.venta.coursecatalog.service.user.UserRoleService;
-import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
- * REST API kontrolieris lietotāju lomu pārvaldībai (pilns CRUD).
+ * Lomu saraksta REST API. Lomas ir fiksētas (RoleKey enum) un tās caur
+ * šo API nedrīkst pievienot, mainīt vai dzēst. Pieejams tikai GET, lai
+ * frontend forma varētu parādīt lomu dropdown lietotāju izveidē.
  */
 @RestController
 @RequestMapping("/api/user-roles")
@@ -24,29 +24,5 @@ public class UserRoleController {
     @GetMapping
     public List<UserRole> getAll() {
         return service.getAll();
-    }
-
-    @PostMapping
-    public UserRole create(@Valid @RequestBody UserRole role) {
-        return service.save(role);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<UserRole> update(@PathVariable int id, @Valid @RequestBody UserRole updated) {
-        return service.getById(id)
-                .map(existing -> {
-                    existing.setRoleName(updated.getRoleName());
-                    return ResponseEntity.ok(service.save(existing));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable int id) {
-        if (service.getById(id).isPresent()) {
-            service.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
     }
 }

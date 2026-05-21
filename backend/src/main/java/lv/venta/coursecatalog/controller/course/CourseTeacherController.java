@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.service.course.CourseTeacherService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,15 +30,21 @@ public class CourseTeacherController {
         return service.getByCourseVersionId(versionId);
     }
 
+    @PreAuthorize("hasRole('TEACHER')")
+
     @PostMapping
     public CourseTeacher create(@Valid @RequestBody CourseTeacher input) {
         return service.create(input);
     }
 
+    @PreAuthorize("hasRole('TEACHER')")
+
     @PutMapping("/{id}")
     public CourseTeacher update(@PathVariable int id, @Valid @RequestBody CourseTeacher input) throws Exception {
         return service.update(id, input);
     }
+
+    @PreAuthorize("hasRole('TEACHER')")
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable int id) {

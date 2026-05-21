@@ -308,6 +308,7 @@ public class CourseServiceImpl implements ICourseService {
                                                             CourseCatalogFilter filter,
                                                             boolean staffMode) {
         if (!staffMode) {
+            // Publiskais skats — tikai pēdējā apstiprinātā aktīvā versija.
             List<CourseVersion> approved = courseVersionRepo.findByCourseIdsAndStatusName(
                     courseIds, CourseCatalogSpecifications.PUBLIC_VISIBLE_STATUS);
             return approved.stream().collect(Collectors.toMap(
@@ -317,6 +318,9 @@ public class CourseServiceImpl implements ICourseService {
             ));
         }
 
+        // Staff režīmā — pēdējā jebkura statusa versija (vai pēc statusa filtra).
+        // Frontend kataloga karte saglabā versionId un klikšķis aizved tieši uz šo versiju,
+        // tāpēc kartīte un detaļu skats vienmēr ir konsistenti.
         List<CourseVersion> all = courseVersionRepo.findByCourseIdsNotDeleted(courseIds);
         if (filter.getStatusIds() != null && !filter.getStatusIds().isEmpty()) {
             Set<Integer> wanted = Set.copyOf(filter.getStatusIds());

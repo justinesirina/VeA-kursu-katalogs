@@ -9,7 +9,9 @@ import lv.venta.coursecatalog.model.dto.SubmitVersionRequest;
 import lv.venta.coursecatalog.service.course.CourseVersionApprovalService;
 import lv.venta.coursecatalog.service.course.CourseVersionDuplicationService;
 import lv.venta.coursecatalog.service.course.CourseVersionService;
+import lv.venta.coursecatalog.service.security.AuthContextHelper;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,13 +31,16 @@ public class CourseVersionController {
     private final CourseVersionService courseVersionService;
     private final CourseVersionDuplicationService duplicationService;
     private final CourseVersionApprovalService approvalService;
+    private final AuthContextHelper authContext;
 
     public CourseVersionController(CourseVersionService courseVersionService,
                                    CourseVersionDuplicationService duplicationService,
-                                   CourseVersionApprovalService approvalService) {
+                                   CourseVersionApprovalService approvalService,
+                                   AuthContextHelper authContext) {
         this.courseVersionService = courseVersionService;
         this.duplicationService = duplicationService;
         this.approvalService = approvalService;
+        this.authContext = authContext;
     }
 
     /**
@@ -66,30 +71,30 @@ public class CourseVersionController {
     /**
      * Izveido vai atjaunina kursa versiju.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping
-    public CourseVersion createOrUpdateVersion(@Valid @RequestBody CourseVersion version,
-                                               @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
-        return courseVersionService.saveCourseVersion(version, actorUserId);
+    public CourseVersion createOrUpdateVersion(@Valid @RequestBody CourseVersion version) {
+        return courseVersionService.saveCourseVersion(version, authContext.getCurrentUserId());
     }
 
     /**
      * Atjaunina esošu kursa versiju pēc tās ID.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/{id}")
-    public ResponseEntity<CourseVersion> updateVersion(@PathVariable UUID id, @Valid @RequestBody CourseVersion version,
-                                                       @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+    public ResponseEntity<CourseVersion> updateVersion(@PathVariable UUID id, @Valid @RequestBody CourseVersion version) {
         version.setId(id);
-        return ResponseEntity.ok(courseVersionService.saveCourseVersion(version, actorUserId));
+        return ResponseEntity.ok(courseVersionService.saveCourseVersion(version, authContext.getCurrentUserId()));
     }
 
     /**
      * Mīkstā dzēšana — versija saglabājas DB ar deletedAt zīmogu un isActive=false.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteVersion(@PathVariable UUID id,
-                                           @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+    public ResponseEntity<?> deleteVersion(@PathVariable UUID id) {
         try {
-            courseVersionService.deleteCourseVersionById(id, actorUserId);
+            courseVersionService.deleteCourseVersionById(id, authContext.getCurrentUserId());
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
@@ -107,11 +112,11 @@ public class CourseVersionController {
     /**
      * Atjauno arhivētu versiju.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/restore")
-    public ResponseEntity<?> restoreVersion(@PathVariable UUID id,
-                                            @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+    public ResponseEntity<?> restoreVersion(@PathVariable UUID id) {
         try {
-            courseVersionService.restoreCourseVersionById(id, actorUserId);
+            courseVersionService.restoreCourseVersionById(id, authContext.getCurrentUserId());
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
@@ -121,11 +126,11 @@ public class CourseVersionController {
     /**
      * Dzili duplicē esošu versiju — izveido jaunu Melnraksts versiju ar nokopētu CourseInfo saturu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping("/{id}/duplicate")
-    public ResponseEntity<?> duplicateVersion(@PathVariable UUID id,
-                                              @RequestHeader(value = "X-Actor-User-Id", required = false) Integer actorUserId) {
+    public ResponseEntity<?> duplicateVersion(@PathVariable UUID id) {
         try {
-            CourseVersion created = duplicationService.duplicateVersion(id, actorUserId);
+            CourseVersion created = duplicationService.duplicateVersion(id, authContext.getCurrentUserId());
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -137,6 +142,7 @@ public class CourseVersionController {
     /**
      * Neatgriezeniski dzēš arhivētu versiju (tikai arhivētām).
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/permanent")
     public ResponseEntity<?> hardDeleteVersion(@PathVariable UUID id) {
         try {
@@ -149,30 +155,34 @@ public class CourseVersionController {
 
     // ----- F8: apstiprināšanas plūsmas pārejas -----
 
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping("/{id}/submit")
     public ResponseEntity<?> submit(@PathVariable UUID id, @RequestBody SubmitVersionRequest req) {
-        return runTransition(() -> approvalService.submit(id, req.getActorUserId(), req.getComment()));
+        return runTransition(() -> approvalService.submit(id, authContext.getCurrentUserId(), req.getComment()));
     }
 
+    @PreAuthorize("hasRole('PROGRAM_DIRECTOR')")
     @PostMapping("/{id}/approve")
     public ResponseEntity<?> approve(@PathVariable UUID id, @RequestBody ApproveVersionRequest req) {
         return runTransition(() -> approvalService.approve(
                 id,
-                req.getActorUserId(),
+                authContext.getCurrentUserId(),
                 req.getDecisionNumber(),
                 req.getApprovalDate(),
                 req.getDecisionReference(),
                 req.getComment()));
     }
 
+    @PreAuthorize("hasRole('PROGRAM_DIRECTOR')")
     @PostMapping("/{id}/reject")
     public ResponseEntity<?> reject(@PathVariable UUID id, @RequestBody RejectVersionRequest req) {
-        return runTransition(() -> approvalService.reject(id, req.getActorUserId(), req.getComment()));
+        return runTransition(() -> approvalService.reject(id, authContext.getCurrentUserId(), req.getComment()));
     }
 
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping("/{id}/reopen")
     public ResponseEntity<?> reopen(@PathVariable UUID id, @RequestBody ReopenVersionRequest req) {
-        return runTransition(() -> approvalService.reopenToDraft(id, req.getActorUserId(), req.getComment()));
+        return runTransition(() -> approvalService.reopenToDraft(id, authContext.getCurrentUserId(), req.getComment()));
     }
 
     private ResponseEntity<?> runTransition(java.util.function.Supplier<CourseVersion> action) {

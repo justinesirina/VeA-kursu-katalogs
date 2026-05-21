@@ -5,6 +5,7 @@ import lv.venta.coursecatalog.service.support.SemesterService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class SemesterController {
     /**
      * Izveido jaunu semestri.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PostMapping
     public Semester create(@Valid @RequestBody Semester semester) {
         return service.save(semester);
@@ -40,6 +42,7 @@ public class SemesterController {
     /**
      * Atjauno esošu semestri pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Semester> update(@PathVariable int id, @Valid @RequestBody Semester updated) {
         return service.getById(id)
@@ -53,6 +56,7 @@ public class SemesterController {
     /**
      * Dzēš semestri pēc ID.
      */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
         if (service.getById(id).isPresent()) {

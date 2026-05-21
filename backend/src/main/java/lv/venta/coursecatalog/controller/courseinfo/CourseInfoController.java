@@ -10,13 +10,13 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/course-info")
-@CrossOrigin(origins = "*")
 @Tag(name = "Kursa saturs", description = "Kursa detaļu un versiju satura pārvaldība")
 public class CourseInfoController {
 
@@ -42,6 +42,7 @@ public class CourseInfoController {
     /**
      * Izveido jaunu CourseInfo ierakstu.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping
     public ResponseEntity<CourseInfo> create(@Valid @RequestBody CourseInfo courseInfo) {
         return ResponseEntity.ok(infoService.create(courseInfo));
@@ -50,6 +51,7 @@ public class CourseInfoController {
     /**
      * Atjauno CourseInfo pēc ID.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable UUID id,
                                        @Valid @RequestBody CourseInfo updated) {
@@ -60,6 +62,7 @@ public class CourseInfoController {
     /**
      * Dzēš CourseInfo pēc ID.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         infoService.delete(id);

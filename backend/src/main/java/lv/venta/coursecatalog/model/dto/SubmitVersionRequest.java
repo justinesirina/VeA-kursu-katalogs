@@ -6,11 +6,11 @@ import lombok.NoArgsConstructor;
 
 /**
  * F8 — Pasniedzēja iesniegums versijas apstiprināšanai (Melnraksts → Iesniegts).
+ * Lietotājs tiek ņemts no Spring Security konteksta.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubmitVersionRequest {
-    private Integer actorUserId;
     private String comment;
 }

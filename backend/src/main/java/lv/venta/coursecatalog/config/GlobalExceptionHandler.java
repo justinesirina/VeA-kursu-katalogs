@@ -1,7 +1,9 @@
 package lv.venta.coursecatalog.config;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,6 +37,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Void> handleNotFound(EntityNotFoundException ex) {
         return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Apstrādā @PreAuthorize tiesību noraidījumus. Atgriež HTTP 403.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException ex) {
+        Map<String, String> body = new HashMap<>();
+        body.put("kļūda", "Nav pietiekamu tiesību šai darbībai.");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
     /**

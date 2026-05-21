@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { statusBadgeClass } from '../utils/statusBadge';
+import { catalogItemTarget } from '../utils/catalogNavigation';
 
 /**
  * Kursa karte — kompakts kursa attēlojums režģa skatā.
@@ -32,7 +33,7 @@ function CourseCard({ item }) {
                 <div className="min-w-0">
                     <h3
                         className="text-xl font-semibold font-heading text-vea-neutral hover:text-vea-green hover:underline cursor-pointer leading-snug"
-                        onClick={() => navigate(`/courses/${item.courseId}`)}
+                        onClick={() => navigate(catalogItemTarget(item))}
                     >
                         {item.titleLv}
                     </h3>
@@ -62,7 +63,7 @@ function CourseCard({ item }) {
             )}
             <button
                 className="mt-auto bg-vea-green text-white px-4 py-2 rounded hover:bg-vea-green-dark text-base"
-                onClick={() => navigate(`/courses/${item.courseId}`)}
+                onClick={() => navigate(catalogItemTarget(item))}
             >
                 Skatīt
             </button>
