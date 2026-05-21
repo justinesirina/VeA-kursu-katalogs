@@ -51,10 +51,21 @@ public class UserService {
      * paroles politiku un hashē paroli ar BCrypt.
      */
     public User createWithPassword(CreateUserRequest req) {
-        String policyError = PasswordPolicy.validate(req.password());
-        if (policyError != null) {
-            throw new IllegalArgumentException(policyError);
+        boolean active = req.active() == null || req.active();
+        boolean hasPassword = req.password() != null && !req.password().isBlank();
+
+        // Aktīviem kontiem parole obligāta (citādi nevar pieslēgties).
+        // Neaktīviem kontiem parole pēc izvēles, tie paredzēti autoru/pasniedzēju saraksta vajadzībām.
+        if (active && !hasPassword) {
+            throw new IllegalArgumentException("Aktīvam lietotājam parole ir obligāta. Atstāj kontu neaktīvu, ja parole netiek piešķirta.");
         }
+        if (hasPassword) {
+            String policyError = PasswordPolicy.validate(req.password());
+            if (policyError != null) {
+                throw new IllegalArgumentException(policyError);
+            }
+        }
+
         UserRole role = roleRepository.findById(req.roleId())
                 .orElseThrow(() -> new IllegalArgumentException("Loma nav atrasta."));
 
@@ -65,8 +76,8 @@ public class UserService {
         user.setAcademicDegree(req.academicDegree());
         user.setPosition(req.position());
         user.setRole(role);
-        user.setActive(req.active() == null || req.active());
-        user.setPasswordHash(passwordEncoder.encode(req.password()));
+        user.setActive(active);
+        user.setPasswordHash(hasPassword ? passwordEncoder.encode(req.password()) : null);
         return repository.save(user);
     }
 

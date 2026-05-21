@@ -8,7 +8,7 @@ const EMPTY = {
     position: '', roleId: '', password: '', active: true,
 };
 
-// Lietotāja izveides dialogs ar paroles politikas instrukciju.
+// Lietotāja izveides skats ar paroles politikas instrukciju.
 function UserFormDialog({ open, roles, onClose, onSubmit }) {
     const [form, setForm] = useState(EMPTY);
     const [submitting, setSubmitting] = useState(false);
@@ -35,8 +35,12 @@ function UserFormDialog({ open, roles, onClose, onSubmit }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
-        if (!form.name.trim() || !form.surname.trim() || !form.email.trim() || !form.roleId || !form.password) {
-            setError('Vārds, uzvārds, e-pasts, loma un parole ir obligāti.');
+        if (!form.name.trim() || !form.surname.trim() || !form.email.trim() || !form.roleId) {
+            setError('Vārds, uzvārds, e-pasts un loma ir obligāti.');
+            return;
+        }
+        if (form.active && !form.password) {
+            setError('Aktīvam lietotājam parole ir obligāta. Atstāj kontu neaktīvu, ja parole netiek piešķirta.');
             return;
         }
         setSubmitting(true);
@@ -48,7 +52,7 @@ function UserFormDialog({ open, roles, onClose, onSubmit }) {
                 academicDegree: form.academicDegree.trim() || null,
                 position: form.position.trim() || null,
                 roleId: parseInt(form.roleId, 10),
-                password: form.password,
+                password: form.password || null,
                 active: form.active,
             });
         } catch (err) {
@@ -136,21 +140,28 @@ function UserFormDialog({ open, roles, onClose, onSubmit }) {
                         </select>
                     </div>
 
+                    <label className="flex items-center gap-2 text-sm text-vea-text">
+                        <input type="checkbox" checked={form.active}
+                            onChange={e => set('active', e.target.checked)} className="w-4 h-4" />
+                        Aktīvs (var pieslēgties sistēmai)
+                    </label>
+
                     <div>
-                        <label className="block text-sm font-medium text-vea-neutral mb-1">Sākotnējā parole *</label>
+                        <label className="block text-sm font-medium text-vea-neutral mb-1">
+                            Sākotnējā parole {form.active && '*'}
+                        </label>
                         <PasswordInput
                             value={form.password}
                             onChange={e => set('password', e.target.value)}
                             autoComplete="new-password"
                         />
-                        <PasswordHints password={form.password} />
+                        {!form.active && !form.password && (
+                            <p className="mt-1 text-xs text-gray-500">
+                                Neaktīvam lietotājam parole nav obligāta. Kontu var izmantot autoru/pasniedzēju sarakstā bez pieslēgšanās iespējas.
+                            </p>
+                        )}
+                        {(form.active || form.password) && <PasswordHints password={form.password} />}
                     </div>
-
-                    <label className="flex items-center gap-2 text-sm text-vea-text">
-                        <input type="checkbox" checked={form.active}
-                            onChange={e => set('active', e.target.checked)} className="w-4 h-4" />
-                        Aktīvs
-                    </label>
                 </form>
 
                 <div className="flex justify-end gap-2 px-5 py-3 bg-gray-50 border-t border-gray-100">
