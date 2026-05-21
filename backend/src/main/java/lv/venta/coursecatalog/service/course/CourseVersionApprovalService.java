@@ -135,7 +135,9 @@ public class CourseVersionApprovalService {
     @Transactional
     public CourseVersion reopenToDraft(UUID versionId, Integer actorUserId, String comment) {
         CourseVersion v = loadVersion(versionId);
-        requireStatus(v, STATUS_REJECTED);
+        // F8: atļauts no Noraidīts (autora labošanas plūsma) un no Iesniegts
+        // Pasniedzēja atsaukums vai Programmas direktora "Atvērt labošanai" pirms lēmuma.
+        requireStatusOneOf(v, STATUS_SUBMITTED, STATUS_REJECTED);
 
         User actor = loadUser(actorUserId);
         v.setStatus(loadStatus(STATUS_DRAFT));
@@ -171,6 +173,21 @@ public class CourseVersionApprovalService {
             throw new IllegalStateException(
                     "Šo darbību nevar veikt versijai statusā '" + actual + "'. Nepieciešams statuss '" + expected + "'.");
         }
+    }
+
+    /**
+     * Pārbauda, ka versija atrodas vienā no atļautajiem statusiem.
+     * Izmanto F8 pārejām, kas pieņem vairākus avota statusus (piem., reopenToDraft
+     * pieņem gan Iesniegts, gan Noraidīts).
+     */
+    private void requireStatusOneOf(CourseVersion v, String... allowed) {
+        String actual = v.getStatus() != null ? v.getStatus().getName() : null;
+        for (String s : allowed) {
+            if (s.equals(actual)) return;
+        }
+        throw new IllegalStateException(
+                "Šo darbību nevar veikt versijai statusā '" + actual + "'. Nepieciešams viens no statusiem: "
+                        + String.join(", ", allowed) + ".");
     }
 
     private void appendLog(CourseVersion version, User user, String actionCode, String comment) {

@@ -102,7 +102,9 @@ function NavBar() {
             )}
 
             <nav className="ml-auto pl-3 flex items-center gap-2 shrink-0" aria-label="Galvenā navigācija">
-                {user && path === '/' && hasRole('ADMIN') && (
+                {/* F9: Programmas direktoram pieejams Kursu darbību žurnāls caur Administrācijas
+                    paneli (AdminLanding filtrē pēc lomas — PD redz tikai žurnālu). */}
+                {user && path === '/' && hasRole('PROGRAM_DIRECTOR') && (
                     <button
                         onClick={() => navigate('/admin')}
                         className="text-white/80 hover:text-white text-sm px-3 py-1.5 rounded hover:bg-white/10 transition-colors"
@@ -153,7 +155,8 @@ function AppLayout() {
                     <Route path="/courses/:id/versions" element={<ProtectedRoute requireRole="TEACHER"><CourseVersionHistory /></ProtectedRoute>} />
                     <Route path="/courses/:id/versions/:versionId/view" element={<ProtectedRoute requireRole="TEACHER"><CourseDetails /></ProtectedRoute>} />
                     <Route path="/courses/:id" element={<ProtectedRoute><CourseDetails /></ProtectedRoute>} />
-                    <Route path="/admin" element={<ProtectedRoute requireRole="ADMIN"><AdminLanding /></ProtectedRoute>} />
+                    {/* AdminLanding pats filtrē tiles pēc lomas — PD redz tikai Kursu darbību žurnāla tile (F9). */}
+                    <Route path="/admin" element={<ProtectedRoute requireRole="PROGRAM_DIRECTOR"><AdminLanding /></ProtectedRoute>} />
                     <Route path="/admin/system-fields" element={<ProtectedRoute requireRole="SYSTEM_ADMIN"><AdminPage /></ProtectedRoute>} />
                     <Route path="/admin/users" element={<ProtectedRoute requireRole="SYSTEM_ADMIN"><AdminUsers /></ProtectedRoute>} />
                     <Route path="/admin/programs" element={<ProtectedRoute requireRole="ADMIN"><AdminPrograms /></ProtectedRoute>} />

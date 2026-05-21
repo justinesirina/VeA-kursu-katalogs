@@ -65,6 +65,17 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Apstrādā biznesa loģikas pārkāpumus (piem., F8 statusu pāreja no neatļauta statusa).
+     * Atgriež HTTP 400 ar ziņu, nevis 500 — tā ir lietotāja kļūda, ne servera.
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException ex) {
+        Map<String, String> body = new HashMap<>();
+        body.put("kļūda", ex.getMessage());
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    /**
      * Apstrādā @PreAuthorize tiesību noraidījumus. Atgriež HTTP 403.
      */
     @ExceptionHandler(AccessDeniedException.class)

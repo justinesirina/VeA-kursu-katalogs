@@ -4,8 +4,11 @@ import { History } from 'lucide-react';
 import api from '../services/axiosConfig';
 import PercentageStackBar from '../components/ui/PercentageStackBar';
 import DownloadDropdown from '../components/ui/DownloadDropdown';
+import ApprovalActionDialog from '../components/ui/ApprovalActionDialog';
 import { useAuth } from '../context/AuthContext';
-import { statusBadgeClass } from '../utils/statusBadge';
+import { useToast } from '../components/ui/ToastProvider';
+import { statusBadgeClass, STATUS_NAMES } from '../utils/statusBadge';
+import { approveVersion, rejectVersion, reopenVersion } from '../services/approvalService';
 import NotFound from './NotFound';
 
 /**
@@ -21,8 +24,10 @@ function CourseDetails() {
     const { id, versionId } = useParams();
     const navigate = useNavigate();
     const { hasRole } = useAuth();
+    const showToast = useToast();
     const isHistoricalView = !!versionId;
     const canEdit = hasRole('TEACHER');
+    const canApprove = hasRole('PROGRAM_DIRECTOR');
     const canArchive = hasRole('ADMIN');
 
     const [course, setCourse] = useState(null);
@@ -33,6 +38,11 @@ function CourseDetails() {
     const [archiving, setArchiving] = useState(false);
     const [archiveError, setArchiveError] = useState(null);
     const [versionsCount, setVersionsCount] = useState(null);
+    // F8: apstiprināšanas plūsmas dialogs (approve/reject/reopen)
+    const [approvalDialog, setApprovalDialog] = useState(null);
+    const [approvalSubmitting, setApprovalSubmitting] = useState(false);
+    // Apstiprinātās versijas kopēšana (Veidot jaunu versiju)
+    const [duplicating, setDuplicating] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -82,6 +92,59 @@ function CourseDetails() {
         }
     };
 
+    // F8: apstiprināšanas plūsmas darbība no šī skata.
+    // Pēc statusa maiņas pārvirza uz aktuālo skatu (apstiprinātām versijām - 
+    // publiskais skats; melnrakstam - uz rediģēšanas skatu tālākiem labojumiem).
+    const handleApprovalAction = async (kind, payload) => {
+        if (!course?.versionId) {
+            showToast('Versija nav atrasta.', 'error');
+            return;
+        }
+        setApprovalSubmitting(true);
+        try {
+            if (kind === 'approve') {
+                await approveVersion(course.versionId, payload);
+                showToast('Versija apstiprināta.');
+                setApprovalDialog(null);
+                navigate(`/courses/${id}`);
+            } else if (kind === 'reject') {
+                await rejectVersion(course.versionId, payload?.comment);
+                showToast('Versija noraidīta.');
+                setApprovalDialog(null);
+                navigate(`/courses/${id}/versions`);
+            } else if (kind === 'reopen') {
+                await reopenVersion(course.versionId, payload?.comment);
+                showToast('Versija atvērta labošanai (Melnraksts).');
+                setApprovalDialog(null);
+                navigate(`/courses/${id}/edit?version=${course.versionId}`);
+            }
+        } catch (err) {
+            console.error('F8 darbības kļūda:', err);
+            const data = err?.response?.data;
+            const msg = (data && data['kļūda']) || (typeof data === 'string' ? data : null) || 'Neizdevās izpildīt darbību.';
+            showToast(msg, 'error');
+        } finally {
+            setApprovalSubmitting(false);
+        }
+    };
+
+    // F8 apstiprinātām versijām: izveido jaunu versiju (kopē esošo) un atver
+    // jauno Melnrakstu rediģēšanai.
+    const handleCreateNewVersion = async () => {
+        if (!course?.versionId || duplicating) return;
+        setDuplicating(true);
+        try {
+            const res = await api.post(`/course-versions/${course.versionId}/duplicate`);
+            const newVersion = res.data;
+            showToast(`Izveidota jauna versija (Nr. ${newVersion.versionNumber}). Status: Melnraksts.`);
+            navigate(`/courses/${id}/edit?version=${newVersion.id}`);
+        } catch (err) {
+            console.error('Kļūda veidojot jaunu versiju:', err);
+            showToast('Neizdevās izveidot jaunu versiju.', 'error');
+            setDuplicating(false);
+        }
+    };
+
     if (loading) return <div className="p-8 text-center text-gray-500">Ielādē kursa datus...</div>;
     if (error) return <div className="p-8 text-red-600">{error}</div>;
     // 400/404 — nederīgs URL parametrs, kurss neeksistē DB, vai nav apstiprinātās versijas.
@@ -90,6 +153,53 @@ function CourseDetails() {
     if (!course) return <NotFound />;
 
     const d = course;
+
+    // F8 plūsmas statusa pārbaudes pogu redzamībai un dialogiem.
+    // Statusu salīdzina ar STATUS_NAMES, lai atbalstītu precīzu sakritību.
+    const statusName  = d.versionStatus || null;
+    const isDraft     = statusName === STATUS_NAMES.DRAFT;
+    const isSubmitted = statusName === STATUS_NAMES.SUBMITTED;
+    const isApproved  = statusName === STATUS_NAMES.APPROVED;
+    const isRejected  = statusName === STATUS_NAMES.REJECTED;
+
+    // F8 dialogu konfigurācija, paturēta tāda pati kā CourseEditForm.
+    const dialogConfig = {
+        approve: {
+            title: 'Apstiprināt versiju',
+            description: <p>Apstiprinot versiju, tā kļūs aktīvā, un iepriekšējā aktīvā versija (ja tāda ir) automātiski tiks deaktivizēta.</p>,
+            fields: [
+                { name: 'decisionNumber',    label: 'Lēmuma numurs',     type: 'text', required: true, placeholder: 'Piem.: ITF-2026/05' },
+                { name: 'approvalDate',      label: 'Apstiprināšanas datums', type: 'date', defaultValue: new Date().toISOString().slice(0, 10) },
+                { name: 'decisionReference', label: 'Lēmējinstitūcija (neobligāti)', type: 'text', placeholder: 'Piem.: ITF dome, Senāts' },
+                { name: 'comment',           label: 'Komentārs (neobligāts)', type: 'textarea' },
+            ],
+            primaryLabel: 'Apstiprināt',
+            primaryTone: 'success',
+        },
+        reject: {
+            title: 'Noraidīt versiju',
+            description: <p>Lūdzu, norādi noraidījuma iemeslu! Pamatojums tiks ierakstīts versijas žurnālā un būs redzams autoram.</p>,
+            fields: [{ name: 'comment', label: 'Noraidījuma iemesls', type: 'textarea', required: true }],
+            primaryLabel: 'Noraidīt',
+            primaryTone: 'danger',
+        },
+        reopen: {
+            // Tas pats backend action gan Pasniedzēja atsaukšanai, gan Direktora atvēršanai/labošanai.
+            // Virsraksts un apraksts pielāgojas atkarībā no statusa un lomas.
+            title: isSubmitted && !canApprove ? 'Atsaukt iesniegumu' : 'Atvērt labošanai',
+            description: (
+                <p>
+                    Versija atgriezīsies <span className="font-semibold">Melnraksts</span> statusā.
+                    {isSubmitted && !canApprove
+                        ? ' Pēc labojumiem to varēsi iesniegt no jauna.'
+                        : ' Pēc labojumiem to varēs iesniegt no jauna.'}
+                </p>
+            ),
+            fields: [{ name: 'comment', label: 'Komentārs (neobligāts)', type: 'textarea' }],
+            primaryLabel: isSubmitted && !canApprove ? 'Atsaukt' : 'Atvērt labošanai',
+            primaryTone: 'warning',
+        },
+    };
 
     // --- SKR grupēšana pēc kategorijas ---
     const SKR_CATEGORY_ORDER = ['Zināšanas', 'Prasmes', 'Kompetences'];
@@ -229,44 +339,120 @@ function CourseDetails() {
             {renderVersionBanner()}
 
             {/* ── 1. DARBĪBAS POGAS ── */}
-            <div className="flex gap-2 flex-wrap">
-                <DownloadDropdown versionId={d.versionId} />
-                {!isHistoricalView && canEdit && (
-                    <button
-                        onClick={() => navigate(`/courses/${id}/edit`)}
-                        className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90"
-                    >
-                        Rediģēt
-                    </button>
-                )}
-                {/* Vēsturiskā skatā: Rediģēt pieejams Melnrakstam, Iesniegtam un Noraidītam (ne Apstiprinātam) */}
-                {isHistoricalView && canEdit && d.versionStatus && !d.versionStatus.toLowerCase().includes('apstip') && (
-                    <button
-                        onClick={() => navigate(`/courses/${id}/edit?version=${versionId}`)}
-                        className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90"
-                    >
-                        Rediģēt šo versiju
-                    </button>
-                )}
-                {/* F7: versiju vēstures skats pieejams no Pasniedzēja lomas. */}
-                {canEdit && (
-                    <button
-                        onClick={() => navigate(`/courses/${id}/versions`)}
-                        className="bg-white text-vea-green border border-vea-green px-4 py-2 rounded text-base hover:bg-vea-green-light inline-flex items-center gap-1.5"
-                    >
-                        <History className="w-4 h-4" aria-hidden="true" />
-                        Versiju vēsture{versionsCount != null && <> ({versionsCount})</>}
-                    </button>
-                )}
-                {!isHistoricalView && canArchive && (
-                    <button
-                        onClick={() => setShowArchiveConfirm(true)}
-                        className="bg-red-600 text-white px-4 py-2 rounded text-base hover:bg-red-700 ml-auto"
-                    >
-                        Arhivēt
-                    </button>
-                )}
+            {/* Izvietojums: pa kreisi — neitrālas darbības (eksports, versiju vēsture),
+                pa labi — F8 statusa darbības un arhivēšana. */}
+            <div className="flex flex-wrap items-start justify-between gap-2">
+                {/* Pa kreisi: eksports + versiju vēsture */}
+                <div className="flex gap-2 flex-wrap">
+                    <DownloadDropdown versionId={d.versionId} />
+                    {/* F7: versiju vēstures skats pieejams no Pasniedzēja lomas. */}
+                    {canEdit && (
+                        <button
+                            onClick={() => navigate(`/courses/${id}/versions`)}
+                            className="bg-white text-vea-green border border-vea-green px-4 py-2 rounded text-base hover:bg-vea-green-light inline-flex items-center gap-1.5"
+                        >
+                            <History className="w-4 h-4" aria-hidden="true" />
+                            Versiju vēsture{versionsCount != null && <> ({versionsCount})</>}
+                        </button>
+                    )}
+                </div>
+
+                {/* Pa labi: F8 statusa darbības + arhivēšana */}
+                <div className="flex gap-2 flex-wrap">
+                    {/* Melnraksts: Rediģēt šo versiju */}
+                    {isDraft && canEdit && (
+                        <button
+                            onClick={() => navigate(
+                                isHistoricalView
+                                    ? `/courses/${id}/edit?version=${versionId}`
+                                    : `/courses/${id}/edit`
+                            )}
+                            className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90"
+                        >
+                            {isHistoricalView ? 'Rediģēt šo versiju' : 'Rediģēt'}
+                        </button>
+                    )}
+
+                    {/* Iesniegts + Programmas direktors: Apstiprināt / Atvērt labošanai / Noraidīt */}
+                    {isSubmitted && canApprove && (
+                        <>
+                            <button
+                                onClick={() => setApprovalDialog('approve')}
+                                className="bg-vea-green text-white px-4 py-2 rounded text-base font-medium hover:bg-vea-green-dark transition-colors"
+                            >
+                                Apstiprināt
+                            </button>
+                            <button
+                                onClick={() => setApprovalDialog('reopen')}
+                                className="bg-vea-orange text-white px-4 py-2 rounded text-base font-medium hover:opacity-90 transition-colors"
+                            >
+                                Atvērt labošanai
+                            </button>
+                            <button
+                                onClick={() => setApprovalDialog('reject')}
+                                className="bg-red-600 text-white px-4 py-2 rounded text-base font-medium hover:bg-red-700 transition-colors"
+                            >
+                                Noraidīt
+                            </button>
+                        </>
+                    )}
+
+                    {/* Iesniegts + Pasniedzējs (ne PD): Atsaukt iesniegumu */}
+                    {isSubmitted && canEdit && !canApprove && (
+                        <button
+                            onClick={() => setApprovalDialog('reopen')}
+                            className="bg-vea-orange text-white px-4 py-2 rounded text-base font-medium hover:opacity-90 transition-colors"
+                        >
+                            Atsaukt iesniegumu
+                        </button>
+                    )}
+
+                    {/* Noraidīts: Atvērt labošanai */}
+                    {isRejected && canEdit && (
+                        <button
+                            onClick={() => setApprovalDialog('reopen')}
+                            className="bg-vea-orange text-white px-4 py-2 rounded text-base font-medium hover:opacity-90 transition-colors"
+                        >
+                            Atvērt labošanai
+                        </button>
+                    )}
+
+                    {/* Apstiprināts (aktīvā versija): Veidot jaunu versiju */}
+                    {isApproved && !isHistoricalView && canEdit && (
+                        <button
+                            onClick={handleCreateNewVersion}
+                            disabled={duplicating}
+                            className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {duplicating ? 'Veido…' : 'Veidot jaunu versiju'}
+                        </button>
+                    )}
+
+                    {!isHistoricalView && canArchive && (
+                        <button
+                            onClick={() => setShowArchiveConfirm(true)}
+                            className="bg-red-600 text-white px-4 py-2 rounded text-base hover:bg-red-700"
+                        >
+                            Arhivēt
+                        </button>
+                    )}
+                </div>
             </div>
+
+            {/* F8 dialogi — apstiprināt / noraidīt / atvērt labošanai */}
+            {approvalDialog && dialogConfig[approvalDialog] && (
+                <ApprovalActionDialog
+                    open={true}
+                    title={dialogConfig[approvalDialog].title}
+                    description={dialogConfig[approvalDialog].description}
+                    fields={dialogConfig[approvalDialog].fields}
+                    primaryLabel={dialogConfig[approvalDialog].primaryLabel}
+                    primaryTone={dialogConfig[approvalDialog].primaryTone}
+                    submitting={approvalSubmitting}
+                    onConfirm={(payload) => handleApprovalAction(approvalDialog, payload)}
+                    onClose={() => approvalSubmitting ? null : setApprovalDialog(null)}
+                />
+            )}
 
             {/* ── 2. VIRSRAKSTS + VERSIJAS STATUSS ── */}
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">

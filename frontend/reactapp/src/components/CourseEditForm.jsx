@@ -62,12 +62,11 @@ function CourseEditForm() {
     const [versionData, setVersionData] = useState(null);
     const [versionId, setVersionId] = useState(null);
 
-    // Brīdinājuma dialogs apstiprinātas versijas rediģēšanai
+    // F8 plūsma: visas ne-Melnraksta versijas tiek novirzītas uz CourseDetails ielādes laikā.
+    // Šie stāvokļi paliek kā aizsardzība, ja kādu iemeslu dēļ navigācija neizpildās, lietotājs
+    // joprojām saņem brīdinājumu ar opciju veidot jaunu versiju.
     const [showApprovedWarning, setShowApprovedWarning] = useState(false);
     const [duplicating, setDuplicating] = useState(false);
-    // F8: Brīdinājuma dialogs iesniegtas versijas rediģēšanai — versija "iesaldēta"
-    // līdz Programmas direktora lēmumam, Pasniedzējs to nevar mainīt.
-    const [showSubmittedWarning, setShowSubmittedWarning] = useState(false);
 
     // F8 — apstiprināšanas plūsmas dialogs (submit/approve/reject/reopen)
     const [approvalDialog, setApprovalDialog] = useState(null); // { kind, ... }
@@ -175,6 +174,22 @@ function CourseEditForm() {
                 });
 
                 if (version) {
+                    // F8: rediģēšanas forma pieejama tikai Melnraksta versijai.
+                    // Visiem citiem statusiem novirza uz CourseDetails attiecīgo skatu, kur
+                    // pieejamas atbilstošās F8 darbību pogas (Apstiprināt / Atvērt labošanai /
+                    // Noraidīt / Atsaukt iesniegumu / Veidot jaunu versiju).
+                    const statusName = version.status?.name;
+                    if (statusName && statusName !== STATUS_NAMES.DRAFT) {
+                        if (statusName === STATUS_NAMES.APPROVED) {
+                            // Apstiprinātām versijām — publiskais aktīvais skats.
+                            navigate(`/courses/${id}`, { replace: true });
+                        } else {
+                            // Iesniegts, Noraidīts — versiju skatā ar F8 pogām.
+                            navigate(`/courses/${id}/versions/${version.id}/view`, { replace: true });
+                        }
+                        return;
+                    }
+
                     setVersionId(version.id);
                     setVersionData({
                         academicYearId: version.academicYear ? String(version.academicYear.id) : '',
@@ -190,10 +205,6 @@ function CourseEditForm() {
                         decisionNumber: version.decisionNumber || '',
                         decisionReference: version.decisionReference || '',
                     });
-
-                    if (version.status?.name === STATUS_NAMES.APPROVED) {
-                        setShowApprovedWarning(true);
-                    }
                 } else {
                     setVersionData({
                         academicYearId: '', semesterId: '', facultyId: '',
@@ -240,7 +251,7 @@ function CourseEditForm() {
         };
 
         load();
-    }, [id, requestedVersionId, showToast]);
+    }, [id, requestedVersionId, showToast, navigate]);
 
     // Pēc tam, kad sākotnējie dati ielādēti, fiksējam snapshot izmaiņu izsekošanai
     useEffect(() => {
@@ -334,6 +345,15 @@ function CourseEditForm() {
             };
             showToast(messageByKind[kind] || 'Darbība veiksmīga.');
             setApprovalDialog(null);
+
+            // F8: pēc statusa maiņas uz ne-Melnraksts pārvirza uz CourseDetails attiecīgo
+            // skatu, jo rediģēšanas forma pieejama tikai Melnrakstam. Reopen paliek uz
+            // /edit, jo statuss kļūst Melnraksts un labošana var turpināties.
+            if (kind === 'submit' || kind === 'reject') {
+                navigate(`/courses/${id}/versions/${versionId}/view`);
+            } else if (kind === 'approve') {
+                navigate(`/courses/${id}`);
+            }
         } catch (err) {
             console.error('F8 darbības kļūda:', err);
             const msg = err?.response?.data || err?.message || 'Neizdevās izpildīt darbību.';
