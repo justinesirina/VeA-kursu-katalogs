@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { Edit2, Trash2, Check, X, KeyRound } from 'lucide-react';
+import { useEffect, useState, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
+import { Edit2, Trash2, Check, X, KeyRound, Search } from 'lucide-react';
 import api from '../../services/axiosConfig';
 import UserFormDialog from './UserFormDialog';
 import ResetPasswordDialog from './ResetPasswordDialog';
@@ -18,6 +18,25 @@ const UserSection = forwardRef(function UserSection(props, ref) {
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
     const [createOpen, setCreateOpen] = useState(false);
     const [resetTarget, setResetTarget] = useState(null);
+
+    // Lietotāju meklēšana, filtrēšana pēc lomas, statusa (aktīvs).
+    const [search, setSearch] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all');
+    const [activeFilter, setActiveFilter] = useState('all');
+
+    const filteredItems = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        return items.filter(u => {
+            if (q) {
+                const haystack = [u.name, u.surname, u.email].filter(Boolean).join(' ').toLowerCase();
+                if (!haystack.includes(q)) return false;
+            }
+            if (roleFilter !== 'all' && String(u.role?.id ?? '') !== roleFilter) return false;
+            if (activeFilter === 'active' && !u.active) return false;
+            if (activeFilter === 'inactive' && u.active) return false;
+            return true;
+        });
+    }, [items, search, roleFilter, activeFilter]);
 
     const loadAll = () => {
         setLoading(true);
@@ -170,6 +189,42 @@ const UserSection = forwardRef(function UserSection(props, ref) {
             {error && <p className="text-red-600 bg-red-50 border border-red-200 rounded p-3 mb-3 text-sm">{error}</p>}
             {successMsg && <p className="text-green-600 bg-green-50 border border-green-200 rounded px-3 py-2 mb-3 text-sm">{successMsg}</p>}
 
+            {/* Filtri */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+                <div className="relative flex-1 min-w-[200px]">
+                    <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Meklēt pēc vārda, uzvārda vai e-pasta…"
+                        className="w-full border border-gray-300 rounded pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-vea-green"
+                    />
+                </div>
+                <select
+                    value={roleFilter}
+                    onChange={e => setRoleFilter(e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1.5 text-sm bg-white"
+                    aria-label="Filtrs pēc lomas"
+                >
+                    <option value="all">Visas lomas</option>
+                    {roles.map(r => <option key={r.id} value={r.id}>{r.roleName}</option>)}
+                </select>
+                <select
+                    value={activeFilter}
+                    onChange={e => setActiveFilter(e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1.5 text-sm bg-white"
+                    aria-label="Filtrs pēc aktivitātes"
+                >
+                    <option value="all">Visi statusi</option>
+                    <option value="active">Tikai aktīvie</option>
+                    <option value="inactive">Tikai neaktīvie</option>
+                </select>
+                <span className="text-xs text-gray-500 ml-auto">
+                    Rāda {filteredItems.length} no {items.length}
+                </span>
+            </div>
+
             <div className="vea-table-wrap overflow-x-auto">
                 <table className="vea-table">
                     <thead>
@@ -185,10 +240,12 @@ const UserSection = forwardRef(function UserSection(props, ref) {
                         </tr>
                     </thead>
                     <tbody>
-                        {items.length === 0 && (
-                            <tr><td colSpan={8} className="vea-td text-center text-gray-400">Nav ierakstu</td></tr>
+                        {filteredItems.length === 0 && (
+                            <tr><td colSpan={8} className="vea-td text-center text-gray-400">
+                                {items.length === 0 ? 'Nav ierakstu' : 'Nav atbilstošu rezultātu'}
+                            </td></tr>
                         )}
-                        {items.map(item => (
+                        {filteredItems.map(item => (
                             <tr key={item.id} className={editingId === item.id ? 'bg-vea-orange-light' : ''}>
                                 {editingId === item.id ? (
                                     <>
