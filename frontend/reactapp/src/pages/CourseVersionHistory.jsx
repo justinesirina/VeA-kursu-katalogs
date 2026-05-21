@@ -37,6 +37,8 @@ function CourseVersionHistory() {
     const [creating, setCreating] = useState(false);
     const [archiveTarget, setArchiveTarget] = useState(null);
     const [archiving, setArchiving] = useState(false);
+    // F6: brīdinājums pirms jaunas versijas izveides
+    const [showCreateNewVersionConfirm, setShowCreateNewVersionConfirm] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -96,11 +98,19 @@ function CourseVersionHistory() {
         }
     };
 
-    const handleCreateNewVersion = async () => {
+    // F6: Bāzes versija jaunajai — pirmoreiz pēdējā apstiprinātā (loģiskākā labošanas avota
+    // versija), kā fallback jaunākā ne-arhivētā. Ja versiju nav, tad neizpilda darbību, bet arī neparāda kļūdu.
+    const pickBaseVersion = () => {
+        const approved = versions.find(v => v.status?.name === 'Apstiprināts');
+        return approved || versions[0];
+    };
+
+    const handleConfirmCreateNewVersion = async () => {
         if (creating || versions.length === 0) return;
-        // Bāzes versija jaunajai = jaunākā ne-arhivētā (pirmā sarakstā, jo sortēts desc)
-        const baseVersion = versions[0];
+        const baseVersion = pickBaseVersion();
+        if (!baseVersion) return;
         setCreating(true);
+        setShowCreateNewVersionConfirm(false);
         try {
             const res = await api.post(`/course-versions/${baseVersion.id}/duplicate`);
             const newVersion = res.data;
@@ -132,7 +142,7 @@ function CourseVersionHistory() {
                 {versions.length > 0 && canCreateVersion && (
                     <button
                         type="button"
-                        onClick={handleCreateNewVersion}
+                        onClick={() => setShowCreateNewVersionConfirm(true)}
                         disabled={creating}
                         className="inline-flex items-center gap-1.5 bg-vea-green text-white px-4 py-2 rounded text-sm font-medium hover:bg-vea-green-dark disabled:opacity-60 transition-colors shrink-0"
                     >
@@ -285,6 +295,35 @@ function CourseVersionHistory() {
                 onPrimary={handleArchive}
                 onClose={() => !archiving && setArchiveTarget(null)}
             />
+
+            {/* F6: brīdinājums pirms jaunas versijas izveides no apstiprinātās. */}
+            {(() => {
+                const base = showCreateNewVersionConfirm ? pickBaseVersion() : null;
+                const baseNumber = base?.versionNumber ?? '?';
+                const baseStatus = base?.status?.name ?? null;
+                return (
+                    <WarningDialog
+                        open={showCreateNewVersionConfirm}
+                        title="Veidot jaunu kursa versiju?"
+                        description={
+                            <p>
+                                Tiks izveidots jauns <span className="font-semibold">Melnraksts</span> ar
+                                versijas Nr. {baseNumber}{baseStatus && <> ({baseStatus})</>} saturu, kuru
+                                pēc labojumiem varēsi iesniegt apstiprināšanai. Kamēr jaunā versija
+                                nav apstiprināta, pašreizējā apstiprinātā versija paliek aktīva un
+                                redzama publiskajā katalogā. Pēc jaunās versijas apstiprināšanas
+                                iepriekšējā tiks automātiski deaktivizēta un paliks redzama tikai
+                                versiju vēsturē.
+                            </p>
+                        }
+                        primaryLabel={creating ? 'Veido…' : 'Veidot jaunu versiju'}
+                        onPrimary={handleConfirmCreateNewVersion}
+                        secondaryLabel="Atcelt"
+                        onSecondary={() => setShowCreateNewVersionConfirm(false)}
+                        onClose={() => !creating && setShowCreateNewVersionConfirm(false)}
+                    />
+                );
+            })()}
         </div>
     );
 }

@@ -61,7 +61,8 @@ function AllCourses() {
             api.get('/study-program-parts').catch(() => ({ data: [] })),
             api.get('/academic-years').catch(() => ({ data: [] })),
             api.get('/semesters').catch(() => ({ data: [] })),
-            api.get('/users').catch(() => ({ data: [] })),
+            // F5: kataloga filtru autoru/pasniedzēju saraksts.
+            api.get('/users/staff').catch(() => ({ data: [] })),
             api.get('/version-statuses').catch(() => ({ data: [] })),
         ]).then(([fac, prog, parts, years, sems, users, statuses]) => {
             if (cancelled) return;

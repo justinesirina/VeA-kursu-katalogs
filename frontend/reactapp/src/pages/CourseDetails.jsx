@@ -5,6 +5,7 @@ import api from '../services/axiosConfig';
 import PercentageStackBar from '../components/ui/PercentageStackBar';
 import DownloadDropdown from '../components/ui/DownloadDropdown';
 import ApprovalActionDialog from '../components/ui/ApprovalActionDialog';
+import WarningDialog from '../components/ui/WarningDialog';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ui/ToastProvider';
 import { statusBadgeClass, STATUS_NAMES } from '../utils/statusBadge';
@@ -43,6 +44,9 @@ function CourseDetails() {
     const [approvalSubmitting, setApprovalSubmitting] = useState(false);
     // Apstiprinātās versijas kopēšana (Veidot jaunu versiju)
     const [duplicating, setDuplicating] = useState(false);
+    // F6: brīdinājums pirms jaunas versijas izveides — apstiprinātu versiju nevar mainīt,
+    // tāpēc tiek izveidots jauns Melnraksts ar pašreizējās apstiprinātās versijas saturu.
+    const [showCreateNewVersionConfirm, setShowCreateNewVersionConfirm] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -128,11 +132,13 @@ function CourseDetails() {
         }
     };
 
-    // F8 apstiprinātām versijām: izveido jaunu versiju (kopē esošo) un atver
-    // jauno Melnrakstu rediģēšanai.
-    const handleCreateNewVersion = async () => {
+    // F6, F8 apstiprinātām versijām: izveido jaunu versiju (kopē esošo) un atver
+    // jauno Melnrakstu rediģēšanai. Pirms izpildes lietotājs apstiprina darbību
+    // caur WarningDialog (sk. handleConfirmCreateNewVersion).
+    const handleConfirmCreateNewVersion = async () => {
         if (!course?.versionId || duplicating) return;
         setDuplicating(true);
+        setShowCreateNewVersionConfirm(false);
         try {
             const res = await api.post(`/course-versions/${course.versionId}/duplicate`);
             const newVersion = res.data;
@@ -420,7 +426,7 @@ function CourseDetails() {
                     {/* Apstiprināts (aktīvā versija): Veidot jaunu versiju */}
                     {isApproved && !isHistoricalView && canEdit && (
                         <button
-                            onClick={handleCreateNewVersion}
+                            onClick={() => setShowCreateNewVersionConfirm(true)}
                             disabled={duplicating}
                             className="bg-vea-orange text-white px-4 py-2 rounded text-base hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -453,6 +459,29 @@ function CourseDetails() {
                     onClose={() => approvalSubmitting ? null : setApprovalDialog(null)}
                 />
             )}
+
+            {/* F6: brīdinājums pirms jaunas kursa versijas izveides no apstiprinātās */}
+            <WarningDialog
+                open={showCreateNewVersionConfirm}
+                title="Veidot jaunu kursa versiju?"
+                description={
+                    <p>
+                        Apstiprinātu versiju nevar mainīt. Tiks izveidots jauns
+                        <span className="font-semibold"> Melnraksts</span> ar pašreizējās
+                        apstiprinātās versijas (Nr. {d.versionNumber ?? '?'}) saturu, kuru pēc
+                        labojumiem varēsi iesniegt apstiprināšanai. Kamēr jaunā versija nav
+                        apstiprināta, pašreizējā apstiprinātā versija paliek aktīva un
+                        redzama publiskajā katalogā. Pēc jaunās versijas apstiprināšanas
+                        iepriekšējā tiks automātiski deaktivizēta un paliks redzama tikai
+                        versiju vēsturē.
+                    </p>
+                }
+                primaryLabel={duplicating ? 'Veido…' : 'Veidot jaunu versiju'}
+                onPrimary={handleConfirmCreateNewVersion}
+                secondaryLabel="Atcelt"
+                onSecondary={() => setShowCreateNewVersionConfirm(false)}
+                onClose={() => duplicating ? null : setShowCreateNewVersionConfirm(false)}
+            />
 
             {/* ── 2. VIRSRAKSTS + VERSIJAS STATUSS ── */}
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">

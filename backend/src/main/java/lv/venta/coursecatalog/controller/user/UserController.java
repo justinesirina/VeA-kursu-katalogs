@@ -2,6 +2,7 @@ package lv.venta.coursecatalog.controller.user;
 
 import lv.venta.coursecatalog.model.dto.CreateUserRequest;
 import lv.venta.coursecatalog.model.dto.ResetPasswordRequest;
+import lv.venta.coursecatalog.model.dto.StaffSummaryDTO;
 import lv.venta.coursecatalog.model.user.User;
 import lv.venta.coursecatalog.service.user.UserService;
 import jakarta.validation.Valid;
@@ -23,6 +24,18 @@ public class UserController {
 
     public UserController(UserService service) {
         this.service = service;
+    }
+
+    /**
+     * Atgriež publicējamu mācībspēku sarakstu F5 kataloga autora/pasniedzēja filtriem.
+     * Iekļauj tikai lietotājus ar vismaz Pasniedzēja lomu un publicējamus laukus (id,
+     * vārds, uzvārds, amats, akadēmiskais grāds, loma) — bez e-pasta vai citiem sensitīviem
+     * datiem. Pieejams visiem autentificētiem lietotājiem, ieskaitot Studentu, lai
+     * publiskais katalogs varētu attēlot filtra sarakstus.
+     */
+    @GetMapping("/staff")
+    public List<StaffSummaryDTO> getStaffSummary() {
+        return service.getStaffSummary();
     }
 
     /**

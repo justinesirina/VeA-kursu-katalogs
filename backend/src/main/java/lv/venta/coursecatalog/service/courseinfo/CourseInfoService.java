@@ -201,6 +201,9 @@ public class CourseInfoService {
 
         dto.setCourseInfoId(info.getId());
         dto.setVersionId(version.getId());
+        // Versijas numurs nepieciešams gan vēsturiskajā skatā (banneris), gan aktīvajā
+        // F6 brīdinājuma dialogs pirms jaunas versijas izveides.
+        dto.setVersionNumber(version.getVersionNumber());
 
         dto.setVersionStatus(version.getStatus() != null ? version.getStatus().getName() : null);
         if (version.getApprovalDate() != null)

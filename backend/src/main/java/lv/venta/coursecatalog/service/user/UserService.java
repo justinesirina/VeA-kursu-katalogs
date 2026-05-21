@@ -1,16 +1,20 @@
 package lv.venta.coursecatalog.service.user;
 
 import lv.venta.coursecatalog.model.dto.CreateUserRequest;
+import lv.venta.coursecatalog.model.dto.StaffSummaryDTO;
+import lv.venta.coursecatalog.model.user.RoleKey;
 import lv.venta.coursecatalog.model.user.User;
 import lv.venta.coursecatalog.model.user.UserRole;
 import lv.venta.coursecatalog.repository.user.UserRepository;
 import lv.venta.coursecatalog.repository.user.UserRoleRepository;
 import lv.venta.coursecatalog.service.security.PasswordPolicy;
+import lv.venta.coursecatalog.service.security.RoleHierarchy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Servisa klase, kas pārvalda lietotāju datus - vārdu, e-pastu, lomu, paroli.
@@ -32,6 +36,27 @@ public class UserService {
 
     public List<User> getAll() {
         return repository.findAll();
+    }
+
+    /**
+     * Atgriež publicējamu mācībspēku kopsavilkumu F5 kataloga autora/pasniedzēja filtru
+     * sarakstam. Iekļauj visus lietotājus ar vismaz Pasniedzēja lomu, tostarp deaktivizētus, 
+     * jo viņi var būt vēsturiski piesaistīti kursiem un viņu vārdi joprojām redzami kursa aprakstā. 
+     * Neatklāj sensitīvus laukus, pieejams visiem autentificētiem lietotājiem.
+     */
+    public List<StaffSummaryDTO> getStaffSummary() {
+        return repository.findAll().stream()
+                .filter(u -> u.getRole() != null
+                        && RoleHierarchy.hasRoleAtLeast(u.getRole().getRoleKey(), RoleKey.TEACHER))
+                .map(u -> new StaffSummaryDTO(
+                        u.getId(),
+                        u.getName(),
+                        u.getSurname(),
+                        u.getPosition(),
+                        u.getAcademicDegree(),
+                        u.getRole().getRoleKey() != null ? u.getRole().getRoleKey().name() : null,
+                        u.getRole().getRoleName()))
+                .collect(Collectors.toList());
     }
 
     public Optional<User> getById(int id) {
