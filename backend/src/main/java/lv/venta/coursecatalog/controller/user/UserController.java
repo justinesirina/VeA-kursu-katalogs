@@ -1,5 +1,7 @@
 package lv.venta.coursecatalog.controller.user;
 
+import lv.venta.coursecatalog.model.dto.CreateUserRequest;
+import lv.venta.coursecatalog.model.dto.ResetPasswordRequest;
 import lv.venta.coursecatalog.model.user.User;
 import lv.venta.coursecatalog.service.user.UserService;
 import jakarta.validation.Valid;
@@ -11,7 +13,7 @@ import java.util.List;
 
 /**
  * REST API kontrolieris, kas ļauj veikt pilnu CRUD operāciju kopumu ar sistēmas lietotājiem.
- * Lietotājiem var piešķirt lomas, piemēram: docētājs, administrators, studējošais.
+ * Lietotāju izveide un paroles atiestatīšana — F13 prasība, tikai SYSTEM_ADMIN.
  */
 @RestController
 @RequestMapping("/api/users")
@@ -32,16 +34,21 @@ public class UserController {
     }
 
     /**
-     * Izveido jaunu lietotāju.
+     * Izveido jaunu lietotāju ar paroli. Pārbauda paroles politiku.
      */
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PostMapping
-    public User create(@Valid @RequestBody User user) {
-        return service.save(user);
+    public ResponseEntity<?> create(@Valid @RequestBody CreateUserRequest req) {
+        try {
+            User created = service.createWithPassword(req);
+            return ResponseEntity.ok(created);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     /**
-     * Atjauno lietotāju pēc ID.
+     * Atjauno lietotāju pēc ID (paroli šeit nemaina — atsevišķs endpoint).
      */
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping("/{id}")
@@ -57,6 +64,20 @@ public class UserController {
                     return ResponseEntity.ok(service.save(existing));
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Atiestata lietotāja paroli ar jaunu (admin darbība).
+     */
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    @PostMapping("/{id}/reset-password")
+    public ResponseEntity<?> resetPassword(@PathVariable int id, @Valid @RequestBody ResetPasswordRequest req) {
+        try {
+            service.resetPassword(id, req.newPassword());
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     /**

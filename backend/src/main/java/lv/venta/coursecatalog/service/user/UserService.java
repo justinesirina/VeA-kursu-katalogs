@@ -1,22 +1,33 @@
 package lv.venta.coursecatalog.service.user;
 
+import lv.venta.coursecatalog.model.dto.CreateUserRequest;
 import lv.venta.coursecatalog.model.user.User;
+import lv.venta.coursecatalog.model.user.UserRole;
 import lv.venta.coursecatalog.repository.user.UserRepository;
+import lv.venta.coursecatalog.repository.user.UserRoleRepository;
+import lv.venta.coursecatalog.service.security.PasswordPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Servisa klase, kas pārvalda lietotāju datus – vārdu, epastu, lomu u.c.
+ * Servisa klase, kas pārvalda lietotāju datus - vārdu, e-pastu, lomu, paroli.
  */
 @Service
 public class UserService {
 
     private final UserRepository repository;
+    private final UserRoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository,
+                       UserRoleRepository roleRepository,
+                       PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAll() {
@@ -34,5 +45,43 @@ public class UserService {
     public void deleteById(int id) {
         repository.deleteById(id);
     }
-}
 
+    /**
+     * Izveido jaunu lietotāju ar paroli. Pirms saglabāšanas pārbauda
+     * paroles politiku un hashē paroli ar BCrypt.
+     */
+    public User createWithPassword(CreateUserRequest req) {
+        String policyError = PasswordPolicy.validate(req.password());
+        if (policyError != null) {
+            throw new IllegalArgumentException(policyError);
+        }
+        UserRole role = roleRepository.findById(req.roleId())
+                .orElseThrow(() -> new IllegalArgumentException("Loma nav atrasta."));
+
+        User user = new User();
+        user.setName(req.name());
+        user.setSurname(req.surname());
+        user.setEmail(req.email());
+        user.setAcademicDegree(req.academicDegree());
+        user.setPosition(req.position());
+        user.setRole(role);
+        user.setActive(req.active() == null || req.active());
+        user.setPasswordHash(passwordEncoder.encode(req.password()));
+        return repository.save(user);
+    }
+
+    /**
+     * Atiestata lietotāja paroli ar jaunu (admin darbība).
+     * Pārbauda paroles politiku un hashē jauno paroli.
+     */
+    public void resetPassword(int userId, String newPassword) {
+        String policyError = PasswordPolicy.validate(newPassword);
+        if (policyError != null) {
+            throw new IllegalArgumentException(policyError);
+        }
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Lietotājs nav atrasts."));
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        repository.save(user);
+    }
+}
