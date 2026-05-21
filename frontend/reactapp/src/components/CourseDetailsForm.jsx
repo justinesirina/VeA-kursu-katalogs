@@ -9,7 +9,10 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/axiosConfig';
 import { useToast } from './ui/ToastProvider';
 
-const STAFF_ROLE_FILTER = ['Pasniedzējs', 'Programmas direktors'];
+// F1, lomu hierarhija: autoru/mācībspēku var izvēlēties no jebkura lietotāja ar vismaz Pasniedzēja
+// lomu — fiksētais roleKey, nevis maināmais display roleName. ADMIN un SYSTEM_ADMIN kumulatīvi
+// satur Pasniedzēja tiesības, tāpēc arī tie ir derīgi autori.
+const STAFF_ROLE_KEYS = ['TEACHER', 'PROGRAM_DIRECTOR', 'ADMIN', 'SYSTEM_ADMIN'];
 
 function CourseDetailsForm() {
     const navigate = useNavigate();
@@ -66,10 +69,13 @@ function CourseDetailsForm() {
         if (!query.trim()) return [];
         const q = query.toLowerCase();
         return users
-            .filter(u => STAFF_ROLE_FILTER.includes(u.role?.roleName))
+            .filter(u => STAFF_ROLE_KEYS.includes(u.role?.roleKey))
             .filter(u => u.name.toLowerCase().includes(q) || u.surname.toLowerCase().includes(q))
             .slice(0, 8);
     };
+
+    // F1: kā skaidrojums lietotājam, ja sistēmā nav neviena pasniedzēja, kuru izvēlēties.
+    const hasAnyStaff = users.some(u => STAFF_ROLE_KEYS.includes(u.role?.roleKey));
 
     const validate = () => {
         const errs = {};
@@ -80,7 +86,9 @@ function CourseDetailsForm() {
         if (courseCode && !/^[A-Za-z0-9]{1,10}$/.test(courseCode.trim()))
             errs.courseCode = 'Kods var saturēt tikai burtus un ciparus (maks. 10 zīmes)';
         if (!credits || Number(credits) < 1) errs.credits = 'Kredītpunkti ir obligāti (min. 1)';
-        if (!selectedAuthor) errs.author = 'Izvēlies kursa autoru';
+        // F1: kursa autors ir neobligāts lauks, lai nekavētu jaunu kursu veidošanu situācijā,
+        // kad attiecīgais lietotājs vēl nav reģistrēts sistēmā. Autoru var pievienot vēlāk
+        // rediģēšanas skatā.
         if (!draftStatusId) errs.status = 'Trūkst "Melnraksts" statusa DB';
         return errs;
     };
@@ -124,12 +132,16 @@ function CourseDetailsForm() {
             });
             const versionId = versionRes.data.id;
 
-            // 3. Piesaista autoru jaunajai versijai (autori tagad ir versionēti)
-            await api.post('/course-authors', {
-                courseVersion: { id: versionId },
-                user: { id: selectedAuthor.id },
-                role: 'Autors',
-            });
+            // 3. Piesaista autoru jaunajai versijai, ja izvēlēts. Autors ir neobligāts (F1) —
+            // ja nav izvēlēts, kurss tiek izveidots bez autora; to var pievienot vēlāk
+            // rediģēšanas skatā.
+            if (selectedAuthor) {
+                await api.post('/course-authors', {
+                    courseVersion: { id: versionId },
+                    user: { id: selectedAuthor.id },
+                    role: 'Autors',
+                });
+            }
 
             // 4. Tukšs CourseInfo, lai redaktora cilnes darbotos uzreiz
             await api.post('/course-info', {
@@ -216,7 +228,7 @@ function CourseDetailsForm() {
                     <label className={labelClass} htmlFor="courseCode">
                         Kursa kods
                         <span className="text-xs text-gray-500 font-normal ml-1">
-                            (neobligāts — piešķir pēc apstiprinājuma)
+                            (neobligāts – piešķir pēc apstiprinājuma)
                         </span>
                     </label>
                     <input id="courseCode" type="text" maxLength={10}
@@ -250,7 +262,10 @@ function CourseDetailsForm() {
 
             <section className="bg-white rounded-lg p-5 border border-gray-200 space-y-3">
                 <h2 className="text-2xl font-semibold font-heading text-vea-neutral">
-                    Kursa autors <span className="text-red-500 text-base">*</span>
+                    Kursa autors
+                    <span className="text-xs text-gray-500 font-normal ml-2">
+                        (neobligāts – var pievienot vēlāk)
+                    </span>
                 </h2>
 
                 {selectedAuthor ? (
@@ -290,6 +305,14 @@ function CourseDetailsForm() {
                     </div>
                 )}
                 <FieldError field="author" />
+                {users.length > 0 && !hasAnyStaff && (
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+                        Sistēmā šobrīd nav reģistrētu lietotāju ar Pasniedzēja, Programmas direktora,
+                        Administratora vai Sistēmas administratora lomu. Sazinies ar Sistēmas
+                        administratoru, lai pievienotu mācībspēkus, vai izveido kursu bez autora
+                        un pievieno vēlāk.
+                    </p>
+                )}
                 <p className="text-xs text-gray-500">
                     Papildu autorus un mācībspēkus varēs pievienot pēc izveides rediģēšanas skatā.
                 </p>

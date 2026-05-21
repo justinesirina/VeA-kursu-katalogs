@@ -27,7 +27,11 @@ public class UserController {
 
     /**
      * Atgriež visus sistēmas lietotājus.
+     * Pieejams autentificētiem lietotājiem no Pasniedzēja lomas — nepieciešams F1, F2
+     * autora un mācībspēka izvēles plūsmā. Studentiem un Viesim pilns lietotāju saraksts
+     * nav redzams.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @GetMapping
     public List<User> getAll() {
         return service.getAll();

@@ -45,6 +45,14 @@ public interface CourseVersionRepository extends JpaRepository<CourseVersion, UU
     Optional<CourseVersion> findTopByCourseAndIsActiveTrueOrderByVersionNumberDesc(Course course);
 
     /**
+     * Atrod pēdējo aktīvo versiju konkrētā statusā (piem., "Apstiprināts").
+     * Izmanto publiskajā kursa detaļu skatā (F3), lai studentiem un viesiem rādītu
+     * tikai apstiprinātās versijas, nevis nejauši aktīvu Melnrakstu.
+     */
+    Optional<CourseVersion> findTopByCourseAndIsActiveTrueAndStatus_NameOrderByVersionNumberDesc(
+            Course course, String statusName);
+
+    /**
      * Atgriež augstāko versionNumber konkrētam kursam (jaunas versijas izveidei).
      * Atgriež null, ja kursam vēl nav versiju.
      */

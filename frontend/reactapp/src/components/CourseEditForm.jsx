@@ -14,6 +14,7 @@ import CourseCalendarSection from './courseinfo/CourseCalendarSection';
 import { statusBadgeClass, STATUS_NAMES } from '../utils/statusBadge';
 import { submitVersion, approveVersion, rejectVersion, reopenVersion } from '../services/approvalService';
 import { useAuth } from '../context/AuthContext';
+import NotFound from '../pages/NotFound';
 
 /**
  * Izvēlas rediģējamo versiju no kursa versiju saraksta.
@@ -34,7 +35,10 @@ function pickVersion(versions, requestedId) {
 
 const AUTHOR_ROLES = ['Autors', 'Līdzautors'];
 const TEACHER_ROLES = ['Atbildīgais mācībspēks', 'Mācībspēks'];
-const STAFF_ROLE_FILTER = ['Pasniedzējs', 'Programmas direktors'];
+// F1, lomu hierarhija: autoru/mācībspēku var izvēlēties no jebkura lietotāja ar vismaz Pasniedzēja
+// lomu — fiksētais roleKey, nevis maināmais display roleName. ADMIN un SYSTEM_ADMIN kumulatīvi
+// satur Pasniedzēja tiesības, tāpēc arī tie ir derīgi autori/mācībspēki.
+const STAFF_ROLE_KEYS = ['TEACHER', 'PROGRAM_DIRECTOR', 'ADMIN', 'SYSTEM_ADMIN'];
 
 const TABS = [
     { key: 'pamatdati',  label: 'Pamatdati' },
@@ -61,6 +65,9 @@ function CourseEditForm() {
     // Brīdinājuma dialogs apstiprinātas versijas rediģēšanai
     const [showApprovedWarning, setShowApprovedWarning] = useState(false);
     const [duplicating, setDuplicating] = useState(false);
+    // F8: Brīdinājuma dialogs iesniegtas versijas rediģēšanai — versija "iesaldēta"
+    // līdz Programmas direktora lēmumam, Pasniedzējs to nevar mainīt.
+    const [showSubmittedWarning, setShowSubmittedWarning] = useState(false);
 
     // F8 — apstiprināšanas plūsmas dialogs (submit/approve/reject/reopen)
     const [approvalDialog, setApprovalDialog] = useState(null); // { kind, ... }
@@ -110,6 +117,7 @@ function CourseEditForm() {
     });
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
     const [saving, setSaving] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
 
@@ -218,7 +226,14 @@ function CourseEditForm() {
                 setStudyPrograms(spRes.data || []);
             } catch (err) {
                 console.error('Kļūda ielādējot rediģēšanas datus:', err);
-                showToast(`Neizdevās ielādēt kursa datus.`, 'error');
+                // 400 — nederīgs UUID URL parametrā; 404 — kurss DB neeksistē.
+                // Abos gadījumos rādām vienotu 404 lapu.
+                const status = err?.response?.status;
+                if (status === 400 || status === 404) {
+                    setNotFound(true);
+                } else {
+                    showToast(`Neizdevās ielādēt kursa datus.`, 'error');
+                }
             } finally {
                 setLoading(false);
             }
@@ -415,7 +430,7 @@ function CourseEditForm() {
         const q = query.toLowerCase();
         const excludedIds = new Set(excluded.map(a => a.user?.id));
         return users
-            .filter(u => STAFF_ROLE_FILTER.includes(u.role?.roleName))
+            .filter(u => STAFF_ROLE_KEYS.includes(u.role?.roleKey))
             .filter(u => !excludedIds.has(u.id))
             .filter(u => u.name.toLowerCase().includes(q) || u.surname.toLowerCase().includes(q))
             .slice(0, 8);
@@ -504,6 +519,7 @@ function CourseEditForm() {
     };
 
     if (loading) return <div className="p-8 text-center text-gray-500">Ielādē datus...</div>;
+    if (notFound) return <NotFound />;
 
     const inputBase = "w-full p-2 border rounded focus:ring-1 outline-none";
     const inputOk  = `${inputBase} border-gray-300 focus:border-vea-green focus:ring-vea-green`;

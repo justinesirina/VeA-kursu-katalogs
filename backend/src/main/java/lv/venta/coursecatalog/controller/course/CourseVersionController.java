@@ -45,15 +45,19 @@ public class CourseVersionController {
 
     /**
      * Iegūst visas kursu versijas no datubāzes.
+     * F7: versiju vēstures skats pieejams no Pasniedzēja lomas; studenti un viesi
+     * versiju sarakstu neredz (viņiem F3 caur publisko apstiprinātās versijas skatu).
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @GetMapping
     public List<CourseVersion> getAllVersions() {
         return courseVersionService.getAllCourseVersions();
     }
 
     /**
-     * Iegūst vienu kursa versiju pēc tās ID.
+     * Iegūst vienu kursa versiju pēc tās ID. F7 — Pasniedzēja vai augstāka loma.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @GetMapping("/{id}")
     public ResponseEntity<CourseVersion> getVersionById(@PathVariable UUID id) {
         Optional<CourseVersion> version = courseVersionService.getCourseVersionById(id);
@@ -61,8 +65,9 @@ public class CourseVersionController {
     }
 
     /**
-     * Iegūst visas versijas, kas pieder konkrētam kursam.
+     * Iegūst visas versijas, kas pieder konkrētam kursam. F7 — Pasniedzēja vai augstāka loma.
      */
+    @PreAuthorize("hasRole('TEACHER')")
     @GetMapping("/by-course/{courseId}")
     public List<CourseVersion> getVersionsByCourse(@PathVariable UUID courseId) {
         return courseVersionService.getVersionsByCourseId(courseId);
@@ -103,7 +108,9 @@ public class CourseVersionController {
 
     /**
      * Arhivēto (soft-delete'to) versiju saraksts ar saistītā kursa pamatinformāciju.
+     * F4 — arhīvs pieejams Administratoram.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/archived")
     public List<ArchivedVersionDTO> getAllArchivedVersions() {
         return courseVersionService.getAllArchivedVersionsAsDTO();

@@ -168,10 +168,12 @@ public class CourseController {
         }
     }
 
-    @Operation(summary = "Izveidot kursu", description = "Izveido jaunu studiju kursu")
+    @Operation(summary = "Izveidot kursu", description = "Izveido jaunu studiju kursu kā Melnraksta versiju")
     @ApiResponse(responseCode = "200", description = "Izveidotais kurss")
     @ApiResponse(responseCode = "400", description = "Validācijas kļūda")
-    @PreAuthorize("hasRole('PROGRAM_DIRECTOR')")
+    // F1: Kursa izveidi var veikt jebkurš lietotājs ar vismaz Pasniedzēja lomu.
+    // Kurss tiek saglabāts kā Melnraksts un parādās publiskajā katalogā tikai pēc F8 apstiprinājuma.
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping
     public Course createCourse(@Valid @RequestBody Course course) {
         return courseService.createNewCourse(course, authContext.getCurrentUserId());

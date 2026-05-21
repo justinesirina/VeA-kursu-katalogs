@@ -30,22 +30,22 @@ public class CourseToStudyProgramsController {
         return service.getByCourseVersionId(versionId);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-
+    // F2, F19: Pasniedzējs+ piedāvā kursa sasaisti ar
+    // studiju programmu rediģēšanas/melnraksta laikā. Sasaiste stājas spēkā tikai pēc F8
+    // versijas apstiprinājuma (Programmas direktors apstiprina).
+    @PreAuthorize("hasRole('TEACHER')")
     @PostMapping
     public CourseToStudyPrograms create(@Valid @RequestBody CourseToStudyPrograms input) {
         return service.create(input);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-
+    @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/{id}")
     public CourseToStudyPrograms update(@PathVariable int id, @Valid @RequestBody CourseToStudyPrograms input) throws Exception {
         return service.update(id, input);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-
+    @PreAuthorize("hasRole('TEACHER')")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable int id) {
         service.delete(id);

@@ -7,6 +7,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +38,30 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Void> handleNotFound(EntityNotFoundException ex) {
         return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Apstrādā situācijas, kad URL ceļa parametrs nesakrīt ar gaidāmo tipu
+     * (piem., maršruts /courses/{id:UUID}, bet lietotājs ievada nederīgu UUID).
+     * Atgriež HTTP 400 ar skaidru ziņu, nevis 500 — tas ļauj frontend parādīt
+     * "kurss nav atrasts" lapu, nevis vispārēju kļūdu.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, String>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        Map<String, String> body = new HashMap<>();
+        body.put("kļūda", "Nederīgs URL parametrs '" + ex.getName() + "'.");
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    /**
+     * Apstrādā servisa līmenī mestas validācijas kļūdas (piem., neatbilstoša lietotāja loma
+     * autora pievienošanai). Atgriež HTTP 400 ar ziņu.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+        Map<String, String> body = new HashMap<>();
+        body.put("kļūda", ex.getMessage());
+        return ResponseEntity.badRequest().body(body);
     }
 
     /**

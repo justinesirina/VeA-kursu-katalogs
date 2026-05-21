@@ -6,6 +6,7 @@ import PercentageStackBar from '../components/ui/PercentageStackBar';
 import DownloadDropdown from '../components/ui/DownloadDropdown';
 import { useAuth } from '../context/AuthContext';
 import { statusBadgeClass } from '../utils/statusBadge';
+import NotFound from './NotFound';
 
 /**
  * Kursa detaļu skats — tikai lasīšana.
@@ -27,6 +28,7 @@ function CourseDetails() {
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [notFound, setNotFound] = useState(false);
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
     const [archiving, setArchiving] = useState(false);
     const [archiveError, setArchiveError] = useState(null);
@@ -35,20 +37,38 @@ function CourseDetails() {
     useEffect(() => {
         setLoading(true);
         setError(null);
+        setNotFound(false);
         const url = isHistoricalView
             ? `/course-info/details-by-version/${versionId}`
             : `/course-info/details/${id}`;
         api.get(url)
             .then(res => setCourse(res.data))
-            .catch(() => setError('Neizdevās ielādēt kursa datus. Lūdzu, mēģini vēlreiz.'))
+            .catch(err => {
+                // F3: publiskais skats atgriež 404, ja kursam nav apstiprinātās versijas.
+                // Tas būs studentiem/viesiem un mācībspēkiem, kuri atver
+                // tieši URL kursam bez apstiprinātām versijām.
+                // 400 — nederīgs UUID ceļa parametrā (piem., manuāli ievadīts /courses/abc).
+                const status = err?.response?.status;
+                if (status === 404 || status === 400) {
+                    setNotFound(true);
+                } else {
+                    setError('Neizdevās ielādēt kursa datus. Lūdzu, mēģini vēlreiz.');
+                }
+            })
             .finally(() => setLoading(false));
     }, [id, versionId, isHistoricalView]);
 
     useEffect(() => {
+        // F7: versiju vēstures saraksts pieejams no Pasniedzēja lomas. Studenti un Viesi
+        // nevar izsaukt /course-versions/by-course (403).
+        if (!canEdit) {
+            setVersionsCount(null);
+            return;
+        }
         api.get(`/course-versions/by-course/${id}`)
             .then(res => setVersionsCount((res.data || []).length))
             .catch(() => setVersionsCount(null));
-    }, [id]);
+    }, [id, canEdit]);
 
     const handleArchive = async () => {
         setArchiving(true);
@@ -64,7 +84,10 @@ function CourseDetails() {
 
     if (loading) return <div className="p-8 text-center text-gray-500">Ielādē kursa datus...</div>;
     if (error) return <div className="p-8 text-red-600">{error}</div>;
-    if (!course) return <div className="p-8 text-gray-500">Kursa dati nav pieejami.</div>;
+    // 400/404 — nederīgs URL parametrs, kurss neeksistē DB, vai nav apstiprinātās versijas.
+    // Visos gadījumos rādām vienotu 404 stilu.
+    if (notFound) return <NotFound />;
+    if (!course) return <NotFound />;
 
     const d = course;
 
@@ -225,13 +248,16 @@ function CourseDetails() {
                         Rediģēt šo versiju
                     </button>
                 )}
-                <button
-                    onClick={() => navigate(`/courses/${id}/versions`)}
-                    className="bg-white text-vea-green border border-vea-green px-4 py-2 rounded text-base hover:bg-vea-green-light inline-flex items-center gap-1.5"
-                >
-                    <History className="w-4 h-4" aria-hidden="true" />
-                    Versiju vēsture{versionsCount != null && <> ({versionsCount})</>}
-                </button>
+                {/* F7: versiju vēstures skats pieejams no Pasniedzēja lomas. */}
+                {canEdit && (
+                    <button
+                        onClick={() => navigate(`/courses/${id}/versions`)}
+                        className="bg-white text-vea-green border border-vea-green px-4 py-2 rounded text-base hover:bg-vea-green-light inline-flex items-center gap-1.5"
+                    >
+                        <History className="w-4 h-4" aria-hidden="true" />
+                        Versiju vēsture{versionsCount != null && <> ({versionsCount})</>}
+                    </button>
+                )}
                 {!isHistoricalView && canArchive && (
                     <button
                         onClick={() => setShowArchiveConfirm(true)}

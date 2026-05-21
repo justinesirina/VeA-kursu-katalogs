@@ -13,6 +13,7 @@ import AdminCourseActivityLog from "./pages/AdminCourseActivityLog";
 import ArchivedCourses from "./pages/ArchivedCourses";
 import DesignPreview from "./pages/DesignPreview";
 import LoginPage from "./pages/LoginPage";
+import NotFound from "./pages/NotFound";
 import { ToastProvider } from './components/ui/ToastProvider';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -147,10 +148,10 @@ function AppLayout() {
             <main className="pt-14 flex-1" id="main-content">
                 <Routes>
                     <Route path="/" element={<ProtectedRoute><AllCourses /></ProtectedRoute>} />
-                    <Route path="/courses/new" element={<ProtectedRoute requireRole="PROGRAM_DIRECTOR"><CourseDetailsForm /></ProtectedRoute>} />
+                    <Route path="/courses/new" element={<ProtectedRoute requireRole="TEACHER"><CourseDetailsForm /></ProtectedRoute>} />
                     <Route path="/courses/:id/edit" element={<ProtectedRoute requireRole="TEACHER"><CourseEditForm /></ProtectedRoute>} />
-                    <Route path="/courses/:id/versions" element={<ProtectedRoute><CourseVersionHistory /></ProtectedRoute>} />
-                    <Route path="/courses/:id/versions/:versionId/view" element={<ProtectedRoute><CourseDetails /></ProtectedRoute>} />
+                    <Route path="/courses/:id/versions" element={<ProtectedRoute requireRole="TEACHER"><CourseVersionHistory /></ProtectedRoute>} />
+                    <Route path="/courses/:id/versions/:versionId/view" element={<ProtectedRoute requireRole="TEACHER"><CourseDetails /></ProtectedRoute>} />
                     <Route path="/courses/:id" element={<ProtectedRoute><CourseDetails /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute requireRole="ADMIN"><AdminLanding /></ProtectedRoute>} />
                     <Route path="/admin/system-fields" element={<ProtectedRoute requireRole="SYSTEM_ADMIN"><AdminPage /></ProtectedRoute>} />
@@ -159,6 +160,9 @@ function AppLayout() {
                     <Route path="/admin/activity-log" element={<ProtectedRoute requireRole="PROGRAM_DIRECTOR"><AdminCourseActivityLog /></ProtectedRoute>} />
                     <Route path="/admin/archive" element={<ProtectedRoute requireRole="ADMIN"><ArchivedCourses /></ProtectedRoute>} />
                     <Route path="/design-preview" element={<DesignPreview />} />
+                    {/* Catch-all 404: neatpazīts URL. Aizsargāts ar autentifikāciju,
+                        lai neautorizēts lietotājs vispirms tiek novirzīts uz /login. */}
+                    <Route path="*" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
                 </Routes>
             </main>
         </div>

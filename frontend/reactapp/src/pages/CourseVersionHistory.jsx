@@ -7,6 +7,7 @@ import { statusBadgeClass } from '../utils/statusBadge';
 import { extractErrorMessage } from '../utils/errorMessage';
 import WarningDialog from '../components/ui/WarningDialog';
 import { useAuth } from '../context/AuthContext';
+import NotFound from './NotFound';
 
 function formatDate(iso) {
     if (!iso) return '—';
@@ -32,6 +33,7 @@ function CourseVersionHistory() {
     const [course, setCourse] = useState(null);
     const [versions, setVersions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
     const [creating, setCreating] = useState(false);
     const [archiveTarget, setArchiveTarget] = useState(null);
     const [archiving, setArchiving] = useState(false);
@@ -51,8 +53,15 @@ function CourseVersionHistory() {
                 );
                 setVersions(sorted);
             })
-            .catch(() => {
-                if (!cancelled) showToast('Neizdevās ielādēt versiju vēsturi.', 'error');
+            .catch(err => {
+                if (cancelled) return;
+                // 400 — nederīgs UUID URL parametrā; 404 — kurss DB neeksistē.
+                const status = err?.response?.status;
+                if (status === 400 || status === 404) {
+                    setNotFound(true);
+                } else {
+                    showToast('Neizdevās ielādēt versiju vēsturi.', 'error');
+                }
             })
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
@@ -106,6 +115,7 @@ function CourseVersionHistory() {
     };
 
     if (loading) return <div className="p-8 text-center text-gray-500">Ielādē versiju vēsturi…</div>;
+    if (notFound) return <NotFound />;
 
     return (
         <div className="max-w-6xl mx-auto p-6 space-y-4">

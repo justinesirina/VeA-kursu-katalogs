@@ -97,6 +97,9 @@ public class CourseInfoController {
     )
     @ApiResponse(responseCode = "200", description = "Versijas detaļu DTO")
     @ApiResponse(responseCode = "404", description = "Versija vai tās CourseInfo nav atrasta")
+    // F7: versiju vēstures skats pieejams no Pasniedzēja lomas. Studenti un Viesi
+    // var redzēt tikai pēdējo apstiprināto versiju caur F3 /details/{courseId} endpoint.
+    @PreAuthorize("hasRole('TEACHER')")
     @GetMapping("/details-by-version/{versionId}")
     public ResponseEntity<CourseDetailsDTO> getCourseDetailsByVersion(@PathVariable UUID versionId) {
         CourseDetailsDTO dto = infoService.getCourseDetailsByVersionId(versionId);

@@ -154,14 +154,19 @@ public class CourseInfoService {
     }
 
     /**
-     * Izveido CourseDetailsDTO aktīvajai kursa versijai (galvenais publiskais skats).
+     * Izveido CourseDetailsDTO publiskajai kursa detaļu lapai (F3).
+     * Atgriež tikai pēdējo aktīvo Apstiprināto versiju — atbilstoši F3 prasībai
+     * "Publiskais kursa skatījums rāda apstiprināto kursa versiju". Studenti un Viesi
+     * neredz Melnrakstus vai Iesniegtus kursus šajā skatā. Mācībspēki nesapstiprinātās
+     * versijas piekļūst caur versiju vēstures URL (/versions/:versionId/view).
      */
     public CourseDetailsDTO getCourseDetailsById(UUID courseId) {
         Optional<Course> courseOpt = courseRepo.findById(courseId);
         if (courseOpt.isEmpty()) return null;
         Course course = courseOpt.get();
 
-        CourseVersion version = versionRepo.findTopByCourseAndIsActiveTrueOrderByVersionNumberDesc(course)
+        CourseVersion version = versionRepo
+                .findTopByCourseAndIsActiveTrueAndStatus_NameOrderByVersionNumberDesc(course, "Apstiprināts")
                 .orElse(null);
         if (version == null) return null;
 
