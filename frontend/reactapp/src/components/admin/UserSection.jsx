@@ -3,6 +3,7 @@ import { Edit2, Trash2, Check, X, KeyRound, Search } from 'lucide-react';
 import api from '../../services/axiosConfig';
 import UserFormDialog from './UserFormDialog';
 import ResetPasswordDialog from './ResetPasswordDialog';
+import { extractErrorMessage } from '../../utils/errorMessage';
 
 const EMPTY = { name: '', surname: '', email: '', academicDegree: '', position: '', roleId: '', active: true };
 
@@ -118,8 +119,8 @@ const UserSection = forwardRef(function UserSection(props, ref) {
             setEditingId(null);
             setDraft(EMPTY);
             loadAll();
-        } catch {
-            setError('Saglabāšana neizdevās.');
+        } catch (err) {
+            setError(extractErrorMessage(err, 'Saglabāšana neizdevās.'));
         } finally {
             setSaving(false);
         }

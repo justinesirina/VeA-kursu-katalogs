@@ -4,6 +4,7 @@ import { Eye, Plus, Archive } from 'lucide-react';
 import api from '../services/axiosConfig';
 import { useToast } from '../components/ui/ToastProvider';
 import { statusBadgeClass } from '../utils/statusBadge';
+import { extractErrorMessage } from '../utils/errorMessage';
 import WarningDialog from '../components/ui/WarningDialog';
 import { useAuth } from '../context/AuthContext';
 
@@ -80,7 +81,7 @@ function CourseVersionHistory() {
             reload();
         } catch (err) {
             console.error('Kļūda arhivējot versiju:', err);
-            showToast(err?.response?.data || 'Neizdevās arhivēt versiju.', 'error');
+            showToast(extractErrorMessage(err, 'Neizdevās arhivēt versiju.'), 'error');
         } finally {
             setArchiving(false);
         }

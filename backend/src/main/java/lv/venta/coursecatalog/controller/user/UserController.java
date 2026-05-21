@@ -52,7 +52,7 @@ public class UserController {
      */
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable int id, @Valid @RequestBody User updated) {
+    public ResponseEntity<?> update(@PathVariable int id, @Valid @RequestBody User updated) {
         return service.getById(id)
                 .map(existing -> {
                     existing.setName(updated.getName());
@@ -61,7 +61,11 @@ public class UserController {
                     existing.setRole(updated.getRole());
                     existing.setActive(updated.isActive());
                     existing.setDeletedAt(updated.getDeletedAt());
-                    return ResponseEntity.ok(service.save(existing));
+                    try {
+                        return ResponseEntity.ok((Object) service.save(existing));
+                    } catch (IllegalArgumentException e) {
+                        return ResponseEntity.badRequest().body((Object) e.getMessage());
+                    }
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

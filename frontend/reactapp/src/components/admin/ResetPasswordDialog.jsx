@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, KeyRound } from 'lucide-react';
 import PasswordInput from '../ui/PasswordInput';
 import PasswordHints from '../ui/PasswordHints';
+import { extractErrorMessage } from '../../utils/errorMessage';
 
 // Paroles atiestatīšanas fukcionalitāte — admin uzstāda jaunu paroli lietotājam,
 // kurš to ir aizmirsis.
@@ -37,7 +38,7 @@ function ResetPasswordDialog({ open, user, onClose, onSubmit }) {
         try {
             await onSubmit(user.id, password);
         } catch (err) {
-            setError(err?.response?.data || 'Paroles atiestatīšana neizdevās.');
+            setError(extractErrorMessage(err, 'Paroles atiestatīšana neizdevās.'));
         } finally {
             setSubmitting(false);
         }

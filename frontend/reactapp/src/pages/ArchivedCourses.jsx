@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { RotateCcw, Trash2, AlertTriangle } from 'lucide-react';
 import api from '../services/axiosConfig';
 import { useToast } from '../components/ui/ToastProvider';
+import { extractErrorMessage } from '../utils/errorMessage';
 
 const TABS = [
     { key: 'courses', label: 'Kursi' },
@@ -55,7 +56,7 @@ function ArchivedCourses() {
             showToast('Kurss atjaunots');
             loadCourses();
         } catch (e) {
-            showToast(e.response?.data || 'Neizdevās atjaunot kursu', 'error');
+            showToast(extractErrorMessage(e, 'Neizdevās atjaunot kursu'), 'error');
         }
     };
 
@@ -66,7 +67,7 @@ function ArchivedCourses() {
             showToast('Versija atjaunota');
             loadVersions();
         } catch (e) {
-            showToast(e.response?.data || 'Neizdevās atjaunot versiju', 'error');
+            showToast(extractErrorMessage(e, 'Neizdevās atjaunot versiju'), 'error');
         }
     };
 
@@ -93,7 +94,7 @@ function ArchivedCourses() {
             if (permanentTarget.type === 'course') loadCourses();
             else loadVersions();
         } catch (e) {
-            showToast(e.response?.data || 'Neizdevās dzēst neatgriezeniski', 'error');
+            showToast(extractErrorMessage(e, 'Neizdevās dzēst neatgriezeniski'), 'error');
         } finally {
             setDeleting(false);
         }

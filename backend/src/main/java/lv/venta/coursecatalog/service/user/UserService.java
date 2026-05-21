@@ -39,6 +39,15 @@ public class UserService {
     }
 
     public User save(User user) {
+        // Pārbauda e-pasta unikalitāti pirms saglabāšanas, lai izvairītos no DB constraint kļūdas,
+        // kas atgrieztos kā HTTP 500 ar SQL detaļām UI lietotājam.
+        if (user.getEmail() != null && !user.getEmail().isBlank()) {
+            repository.findByEmail(user.getEmail()).ifPresent(existing -> {
+                if (existing.getId() != user.getId()) {
+                    throw new IllegalArgumentException("Lietotājs ar šo e-pastu jau eksistē.");
+                }
+            });
+        }
         return repository.save(user);
     }
 
@@ -65,6 +74,11 @@ public class UserService {
                 throw new IllegalArgumentException(policyError);
             }
         }
+
+        // E-pasta unikalitāte pārbaudāma proaktīvi — DB constraint kļūda lietotājam neko nepasaka.
+        repository.findByEmail(req.email()).ifPresent(existing -> {
+            throw new IllegalArgumentException("Lietotājs ar šo e-pastu jau eksistē.");
+        });
 
         UserRole role = roleRepository.findById(req.roleId())
                 .orElseThrow(() -> new IllegalArgumentException("Loma nav atrasta."));

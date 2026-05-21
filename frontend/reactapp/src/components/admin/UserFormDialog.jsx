@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, UserPlus } from 'lucide-react';
 import PasswordInput from '../ui/PasswordInput';
 import PasswordHints from '../ui/PasswordHints';
+import { extractErrorMessage } from '../../utils/errorMessage';
 
 const EMPTY = {
     name: '', surname: '', email: '', academicDegree: '',
@@ -56,7 +57,7 @@ function UserFormDialog({ open, roles, onClose, onSubmit }) {
                 active: form.active,
             });
         } catch (err) {
-            setError(err?.response?.data || 'Saglabāšana neizdevās.');
+            setError(extractErrorMessage(err, 'Saglabāšana neizdevās.'));
         } finally {
             setSubmitting(false);
         }
