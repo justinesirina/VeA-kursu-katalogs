@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import PasswordInput from '../components/ui/PasswordInput';
 import veaLogo from '../assets/vea-logo.svg';
 
 // F14 prasība - autorizācijas lapa kursu katalogā ar e-pastu un paroli.
@@ -75,14 +76,12 @@ function LoginPage() {
                         <label htmlFor="password" className="block text-sm font-medium text-vea-neutral mb-1">
                             Parole
                         </label>
-                        <input
+                        <PasswordInput
                             id="password"
-                            type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             autoComplete="current-password"
                             disabled={submitting}
-                            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vea-green"
                         />
                     </div>
 

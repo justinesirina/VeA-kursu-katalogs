@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { Edit2, Trash2, Check, X } from 'lucide-react';
+import { Edit2, Trash2, Check, X, KeyRound } from 'lucide-react';
 import api from '../../services/axiosConfig';
+import UserFormDialog from './UserFormDialog';
+import ResetPasswordDialog from './ResetPasswordDialog';
 
 const EMPTY = { name: '', surname: '', email: '', academicDegree: '', position: '', roleId: '', active: true };
 
@@ -14,6 +16,8 @@ const UserSection = forwardRef(function UserSection(props, ref) {
     const [draft, setDraft] = useState(EMPTY);
     const [saving, setSaving] = useState(false);
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+    const [createOpen, setCreateOpen] = useState(false);
+    const [resetTarget, setResetTarget] = useState(null);
 
     const loadAll = () => {
         setLoading(true);
@@ -53,11 +57,11 @@ const UserSection = forwardRef(function UserSection(props, ref) {
         setConfirmDeleteId(null);
     };
 
+    // Lietotāja izveides skats, tostarp ar paroles uzstādīšanu.
     const startAdd = useCallback(() => {
-        setEditingId('new');
-        setDraft({ ...EMPTY, roleId: roles[0]?.id?.toString() ?? '' });
+        setCreateOpen(true);
         setConfirmDeleteId(null);
-    }, [roles]);
+    }, []);
 
     useImperativeHandle(ref, () => ({ startAdd }), [startAdd]);
 
@@ -65,18 +69,18 @@ const UserSection = forwardRef(function UserSection(props, ref) {
 
     const validate = () => {
         if (!draft.name.trim() || !draft.surname.trim()) {
-            setError('Vārds un uzvārds ir obligāti.');
+            setError('Vārds un uzvārds ir obligāti lauki.');
             return false;
         }
         if (!draft.roleId) {
-            setError('Loma ir obligāta.');
+            setError('Loma ir obligāts lauks.');
             return false;
         }
         setError(null);
         return true;
     };
 
-    const buildPayload = () => ({
+    const buildUpdatePayload = () => ({
         name: draft.name.trim(),
         surname: draft.surname.trim(),
         email: draft.email.trim() || null,
@@ -90,13 +94,8 @@ const UserSection = forwardRef(function UserSection(props, ref) {
         if (!validate()) return;
         setSaving(true);
         try {
-            if (editingId === 'new') {
-                await api.post('/users', buildPayload());
-                showSuccess('Lietotājs pievienots.');
-            } else {
-                await api.put(`/users/${editingId}`, buildPayload());
-                showSuccess('Lietotājs saglabāts.');
-            }
+            await api.put(`/users/${editingId}`, buildUpdatePayload());
+            showSuccess('Lietotājs saglabāts.');
             setEditingId(null);
             setDraft(EMPTY);
             loadAll();
@@ -105,6 +104,19 @@ const UserSection = forwardRef(function UserSection(props, ref) {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleCreate = async (payload) => {
+        await api.post('/users', payload);
+        showSuccess('Lietotājs pievienots.');
+        setCreateOpen(false);
+        loadAll();
+    };
+
+    const handleResetPassword = async (userId, newPassword) => {
+        await api.post(`/users/${userId}/reset-password`, { newPassword });
+        showSuccess('Parole atiestatīta.');
+        setResetTarget(null);
     };
 
     const handleDelete = async (id) => {
@@ -118,7 +130,6 @@ const UserSection = forwardRef(function UserSection(props, ref) {
         }
     };
 
-    // Plain function (not a React component) — avoids re-mount on every setDraft call
     const inputCell = (field, placeholder) => (
         <td key={field} className="vea-td-edit">
             <input
@@ -141,6 +152,9 @@ const UserSection = forwardRef(function UserSection(props, ref) {
             <div className="flex gap-1">
                 <button onClick={() => startEdit(item)} disabled={editingId !== null} aria-label="Rediģēt lietotāju" className="p-2.5 text-vea-green hover:bg-vea-green-light rounded disabled:opacity-40">
                     <Edit2 className="w-4 h-4" aria-hidden="true" />
+                </button>
+                <button onClick={() => setResetTarget(item)} disabled={editingId !== null} aria-label="Atiestatīt paroli" title="Atiestatīt paroli" className="p-2.5 text-vea-orange hover:bg-vea-orange-light rounded disabled:opacity-40">
+                    <KeyRound className="w-4 h-4" aria-hidden="true" />
                 </button>
                 <button onClick={() => setConfirmDeleteId(item.id)} disabled={editingId !== null} aria-label="Dzēst lietotāju" className="p-2.5 text-red-500 hover:bg-red-50 rounded disabled:opacity-40">
                     <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -167,44 +181,11 @@ const UserSection = forwardRef(function UserSection(props, ref) {
                             <th scope="col">Amats</th>
                             <th scope="col">Loma</th>
                             <th scope="col" className="text-center">Aktīvs</th>
-                            <th scope="col" className="w-24">Darbības</th>
+                            <th scope="col" className="w-32">Darbības</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {editingId === 'new' && (
-                            <tr className="bg-vea-orange-light">
-                                {inputCell('name', 'Vārds')}
-                                {inputCell('surname', 'Uzvārds')}
-                                {inputCell('email', 'E-pasts')}
-                                {inputCell('academicDegree', 'Zin. grāds')}
-                                {inputCell('position', 'Amats')}
-                                <td className="vea-td-edit">
-                                    <select
-                                        className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                                        value={draft.roleId}
-                                        onChange={e => setDraft(p => ({ ...p, roleId: e.target.value }))}
-                                    >
-                                        <option value="">— izvēlies —</option>
-                                        {roles.map(r => <option key={r.id} value={r.id}>{r.roleName}</option>)}
-                                    </select>
-                                </td>
-                                <td className="vea-td-edit text-center">
-                                    <input type="checkbox" checked={draft.active}
-                                        onChange={e => setDraft(p => ({ ...p, active: e.target.checked }))} className="w-4 h-4" />
-                                </td>
-                                <td className="vea-td-edit">
-                                    <div className="flex gap-1">
-                                        <button onClick={handleSave} disabled={saving} aria-label="Saglabāt" className="p-1.5 text-green-700 hover:bg-green-100 rounded">
-                                            <Check className="w-4 h-4" aria-hidden="true" />
-                                        </button>
-                                        <button onClick={cancelEdit} aria-label="Atcelt" className="p-1.5 text-gray-500 hover:bg-gray-100 rounded">
-                                            <X className="w-4 h-4" aria-hidden="true" />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        )}
-                        {items.length === 0 && editingId !== 'new' && (
+                        {items.length === 0 && (
                             <tr><td colSpan={8} className="vea-td text-center text-gray-400">Nav ierakstu</td></tr>
                         )}
                         {items.map(item => (
@@ -262,6 +243,20 @@ const UserSection = forwardRef(function UserSection(props, ref) {
                     </tbody>
                 </table>
             </div>
+
+            <UserFormDialog
+                open={createOpen}
+                roles={roles}
+                onClose={() => setCreateOpen(false)}
+                onSubmit={handleCreate}
+            />
+
+            <ResetPasswordDialog
+                open={!!resetTarget}
+                user={resetTarget}
+                onClose={() => setResetTarget(null)}
+                onSubmit={handleResetPassword}
+            />
         </div>
     );
 });
