@@ -1002,7 +1002,7 @@ INSERT INTO public.course_result_assessments (id, is_used, component_id, course_
 INSERT INTO public.self_study_activities (id, description, name) VALUES (1, NULL, 'Studentu individuālais/patstāvīgais darbs') ON CONFLICT DO NOTHING;
 INSERT INTO public.self_study_activities (id, description, name) VALUES (2, NULL, 'Patstāvīga praktiskā darba izstrāde') ON CONFLICT DO NOTHING;
 INSERT INTO public.self_study_activities (id, description, name) VALUES (3, NULL, 'Regulāra studiju kursa vielas apgūšana, izmantojot lekciju materiālus, mācību literatūru, interneta resursus u.c.') ON CONFLICT DO NOTHING;
-INSERT INTO public.self_study_activities (id, description, name) VALUES (4, NULL, 'Mājas darbu izpilde') ON CONFLICT DO NOTHING;
+INSERT INTO public.self_study_activities (id, description, name) VALUES (4, NULL, 'Mājasdarbu izpilde') ON CONFLICT DO NOTHING;
 INSERT INTO public.self_study_activities (id, description, name) VALUES (5, NULL, 'Gatavošanās pārbaudes darbiem') ON CONFLICT DO NOTHING;
 INSERT INTO public.self_study_activities (id, description, name) VALUES (6, NULL, 'Studiju darba izstrāde') ON CONFLICT DO NOTHING;
 INSERT INTO public.self_study_activities (id, description, name) VALUES (7, NULL, 'Studiju darba izstrāde') ON CONFLICT DO NOTHING;
