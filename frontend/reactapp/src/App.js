@@ -11,7 +11,6 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminPrograms from "./pages/AdminPrograms";
 import AdminCourseActivityLog from "./pages/AdminCourseActivityLog";
 import ArchivedCourses from "./pages/ArchivedCourses";
-import DesignPreview from "./pages/DesignPreview";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 import { ToastProvider } from './components/ui/ToastProvider';
@@ -162,7 +161,6 @@ function AppLayout() {
                     <Route path="/admin/programs" element={<ProtectedRoute requireRole="ADMIN"><AdminPrograms /></ProtectedRoute>} />
                     <Route path="/admin/activity-log" element={<ProtectedRoute requireRole="PROGRAM_DIRECTOR"><AdminCourseActivityLog /></ProtectedRoute>} />
                     <Route path="/admin/archive" element={<ProtectedRoute requireRole="ADMIN"><ArchivedCourses /></ProtectedRoute>} />
-                    <Route path="/design-preview" element={<DesignPreview />} />
                     {/* Catch-all 404: neatpazīts URL. Aizsargāts ar autentifikāciju,
                         lai neautorizēts lietotājs vispirms tiek novirzīts uz /login. */}
                     <Route path="*" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
