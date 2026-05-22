@@ -1,0 +1,15 @@
+$kind: http-request
+name: "F3: GET kursa detalas (derigs ID)"
+url: "{{base_url}}/api/course-info/details/{{course_id}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));
+      const json = pm.response.json();
+      pm.test('Atbilde satur kursa pamata laukus', () => {
+          pm.expect(json).to.have.property('courseCode');
+          pm.expect(json).to.have.property('titleLv');
+      });
+    language: text/javascript
+order: 4000

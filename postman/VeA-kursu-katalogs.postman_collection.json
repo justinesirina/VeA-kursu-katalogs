@@ -1,0 +1,283 @@
+{
+  "info": {
+    "_postman_id": "0a8b1c2d-3e4f-5678-9abc-def012345678",
+    "name": "VeA kursu kataloga API testi",
+    "description": "API līmeņa testi VeA studiju kursu kataloga sistēmai. Pārbauda autentifikāciju (F14), publisko piekļuvi (F3, F5), kursu pārvaldību (F1, F2), eksportu (F11) un autorizācijas tiesības (NF2).\n\nKolekcijas testi jāizpilda secīgi (no augšas uz leju), jo daudzi pieprasījumi izmanto sesijas cookie, ko iestata pirmais 'Login' tests. Postman 'Runner' to dara automātiski.\n\nMainīgie (Variables cilne):\n- base_url — backend pamata URL (noklusētais: http://localhost:8080)\n- course_id — kurss ar aktīvu apstiprinātu versiju (no V11 seed datiem)\n- version_id — apstiprinātas versijas UUID (no V11 seed datiem)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "F14: Login (sysadmin success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('Atbilde satur lietotaja datus', () => {",
+              "    pm.expect(json).to.have.property('email', 'sysadmin@venta.lv');",
+              "    pm.expect(json).to.have.property('roleKey', 'SYSTEM_ADMIN');",
+              "});",
+              "pm.test('effectiveRoles ietver visas pakapenes (kumulativas tiesibas)', () => {",
+              "    pm.expect(json.effectiveRoles).to.include.members(['STUDENT', 'TEACHER', 'PROGRAM_DIRECTOR', 'ADMIN', 'SYSTEM_ADMIN']);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"sysadmin@venta.lv\",\n    \"password\": \"parole123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "F14: GET /me (current user)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('Sesija atpazist tiesi to lietotaju, kurs ielogojies', () => {",
+              "    pm.expect(json.email).to.eql('sysadmin@venta.lv');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/auth/me",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "me"]
+        }
+      }
+    },
+    {
+      "name": "F2: GET visu kursu sarakstu",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('Atbilde ir masivs ar vismaz vienu kursu', () => {",
+              "    pm.expect(json).to.be.an('array');",
+              "    pm.expect(json.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/courses",
+          "host": ["{{base_url}}"],
+          "path": ["api", "courses"]
+        }
+      }
+    },
+    {
+      "name": "F3: GET kursa detalas (derigs ID)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('Atbilde satur kursa pamata laukus', () => {",
+              "    pm.expect(json).to.have.property('courseCode');",
+              "    pm.expect(json).to.have.property('titleLv');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/course-info/details/{{course_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "course-info", "details", "{{course_id}}"]
+        }
+      }
+    },
+    {
+      "name": "F3: GET kursa detalas (neeksistejosa ID -> 404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 404 Not Found', () => pm.response.to.have.status(404));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/course-info/details/00000000-0000-0000-0000-000000000000",
+          "host": ["{{base_url}}"],
+          "path": ["api", "course-info", "details", "00000000-0000-0000-0000-000000000000"]
+        }
+      }
+    },
+    {
+      "name": "F5: GET macibspeku saraksts (bez e-pastiem)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('Atbilde ir masivs', () => pm.expect(json).to.be.an('array'));",
+              "pm.test('F5 prasiba: e-pasts NETIEK atklats publiskaja saskarne', () => {",
+              "    json.forEach((staff) => pm.expect(staff).to.not.have.property('email'));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/users/staff",
+          "host": ["{{base_url}}"],
+          "path": ["api", "users", "staff"]
+        }
+      }
+    },
+    {
+      "name": "NF2: GET visu lietotaju saraksts (TEACHER+ tiesibas)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 200 OK (sysadmin ir TEACHER+)', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('Atbilde ir masivs ar lietotajiem', () => {",
+              "    pm.expect(json).to.be.an('array');",
+              "    pm.expect(json.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/users",
+          "host": ["{{base_url}}"],
+          "path": ["api", "users"]
+        }
+      }
+    },
+    {
+      "name": "F11: GET versijas eksports PDF formata",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('Content-Type ir application/pdf', () => {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');",
+              "});",
+              "pm.test('Atbildes kermenis nav tuks (PDF binarie dati)', () => {",
+              "    pm.expect(pm.response.responseSize).to.be.above(1000);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/course-versions/{{version_id}}/export/pdf",
+          "host": ["{{base_url}}"],
+          "path": ["api", "course-versions", "{{version_id}}", "export", "pdf"]
+        }
+      }
+    },
+    {
+      "name": "F14: Logout (sesijas beigas)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 204 No Content', () => pm.response.to.have.status(204));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{base_url}}/api/auth/logout",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "logout"]
+        }
+      }
+    },
+    {
+      "name": "F14: Login neizdodas ar nepareizu paroli (-> 401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HTTP 401 Unauthorized', () => pm.response.to.have.status(401));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"sysadmin@venta.lv\",\n    \"password\": \"wrong-password\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "login"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8080"},
+    {"key": "course_id", "value": "e3a130bc-54bf-428c-89a9-31805ef5803d"},
+    {"key": "version_id", "value": "501f14d9-0c38-4dc9-8ecc-bb02e6e73e64"}
+  ]
+}

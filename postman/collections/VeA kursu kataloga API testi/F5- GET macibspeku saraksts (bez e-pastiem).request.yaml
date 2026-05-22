@@ -1,0 +1,15 @@
+$kind: http-request
+name: "F5: GET macibspeku saraksts (bez e-pastiem)"
+url: "{{base_url}}/api/users/staff"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));
+      const json = pm.response.json();
+      pm.test('Atbilde ir masivs', () => pm.expect(json).to.be.an('array'));
+      pm.test('F5 prasiba: e-pasts NETIEK atklats publiskaja saskarne', () => {
+          json.forEach((staff) => pm.expect(staff).to.not.have.property('email'));
+      });
+    language: text/javascript
+order: 6000

@@ -30,6 +30,9 @@ Thumbs.db
 # Environment / config
 .env
 
+# Postman lokālā workspace konfigurācija (komplekti un environments paliek postman/ mapē)
+.postman/
+
 # Database
 postgres_data/
 backup-*.sql

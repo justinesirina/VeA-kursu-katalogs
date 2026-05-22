@@ -1,0 +1,14 @@
+$kind: http-request
+name: "F14: GET /me (current user)"
+url: "{{base_url}}/api/auth/me"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));
+      const json = pm.response.json();
+      pm.test('Sesija atpazist tiesi to lietotaju, kurs ielogojies', () => {
+          pm.expect(json.email).to.eql('sysadmin@venta.lv');
+      });
+    language: text/javascript
+order: 2000

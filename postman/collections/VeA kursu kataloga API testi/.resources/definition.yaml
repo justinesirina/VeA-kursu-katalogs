@@ -1,0 +1,14 @@
+$kind: collection
+description: |-
+  API līmeņa testi VeA studiju kursu kataloga sistēmai. Pārbauda autentifikāciju (F14), publisko piekļuvi (F3, F5), kursu pārvaldību (F1, F2), eksportu (F11) un autorizācijas tiesības (NF2).
+
+  Kolekcijas testi jāizpilda secīgi (no augšas uz leju), jo daudzi pieprasījumi izmanto sesijas cookie, ko iestata pirmais 'Login' tests. Postman 'Runner' to dara automātiski.
+
+  Mainīgie (Variables cilne):
+  - base_url — backend pamata URL (noklusētais: http://localhost:8080)
+  - course_id — kurss ar aktīvu apstiprinātu versiju (no V11 seed datiem)
+  - version_id — apstiprinātas versijas UUID (no V11 seed datiem)
+variables:
+  base_url: http://localhost:8080
+  course_id: e3a130bc-54bf-428c-89a9-31805ef5803d
+  version_id: 501f14d9-0c38-4dc9-8ecc-bb02e6e73e64

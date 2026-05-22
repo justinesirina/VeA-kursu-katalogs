@@ -1,0 +1,9 @@
+$kind: http-request
+name: "F3: GET kursa detalas (neeksistejosa ID -> 404)"
+url: "{{base_url}}/api/course-info/details/00000000-0000-0000-0000-000000000000"
+method: GET
+scripts:
+  - type: afterResponse
+    code: pm.test('HTTP 404 Not Found', () => pm.response.to.have.status(404));
+    language: text/javascript
+order: 5000

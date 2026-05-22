@@ -1,0 +1,27 @@
+$kind: http-request
+name: "F14: Login (sysadmin success)"
+url: "{{base_url}}/api/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+        "email": "sysadmin@venta.lv",
+        "password": "parole123"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));
+      const json = pm.response.json();
+      pm.test('Atbilde satur lietotaja datus', () => {
+          pm.expect(json).to.have.property('email', 'sysadmin@venta.lv');
+          pm.expect(json).to.have.property('roleKey', 'SYSTEM_ADMIN');
+      });
+      pm.test('effectiveRoles ietver visas pakapenes (kumulativas tiesibas)', () => {
+          pm.expect(json.effectiveRoles).to.include.members(['STUDENT', 'TEACHER', 'PROGRAM_DIRECTOR', 'ADMIN', 'SYSTEM_ADMIN']);
+      });
+    language: text/javascript
+order: 1000
