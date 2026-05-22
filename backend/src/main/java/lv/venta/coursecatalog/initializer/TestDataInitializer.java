@@ -29,7 +29,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-@Component
+// @Component — atspējots. Demo seed dati nāk no V11__seed_demo_data.sql Flyway migrācijas.
+// Lai pārieslēgtu uz Java seed (piem., izstrādes laikā jauniem entītiju laukiem),
+// jāatkomentē @Component anotāciju zemāk.
 @RequiredArgsConstructor
 public class TestDataInitializer {
 
