@@ -1,0 +1,29 @@
+# Atsevišķs SonarQube stack koda kvalitātes analīzei.
+# Nav saistīts ar galveno docker-compose.yml — palaiž tikai pēc vajadzības.
+#
+# Lietošana:
+#   docker compose -f docker-compose.sonar.yml up -d        # startēt
+#   docker compose -f docker-compose.sonar.yml down         # apturēt (dati paliek)
+#   docker compose -f docker-compose.sonar.yml down -v      # apturēt + dzēst datus
+#
+# Pēc startēšanas: http://localhost:9000 (admin / admin pirmoreiz, jāmaina parole).
+
+services:
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      # H2 iebūvētā datubāze — vienīgi izstrādei un demonstrēšanai.
+      # Produkcijas instalācijai būtu jāizmanto atsevišķa PostgreSQL.
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

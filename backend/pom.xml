@@ -141,6 +141,14 @@
         <java.version>17</java.version>
         <!-- Lombok 1.18.34 — nepieciešams Java 21 + NetBeans LS saderībai -->
         <lombok.version>1.18.34</lombok.version>
+
+        <!-- SonarQube konfigurācija (lokāls Docker scan). Tokens tiek padots
+             caur CLI: `mvn sonar:sonar -Dsonar.token=...`
+             Pārklājuma dati nāk no JaCoCo (skat. jacoco-maven-plugin zemāk). -->
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        <sonar.projectKey>vea-kursu-katalogs</sonar.projectKey>
+        <sonar.projectName>VeA Kursu Katalogs</sonar.projectName>
+        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <build>
