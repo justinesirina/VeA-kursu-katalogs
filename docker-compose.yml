@@ -11,6 +11,13 @@ services:
       - "5432:5432"
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
+    # Healthcheck nodrošina, ka backend gaida, līdz Postgres ir gatava pieņemt savienojumus,
+    # nevis tikai līdz konteiners ir startēts. pg_isready ir bundled Postgres rīks.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d course_catalog"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - course_catalog_network
 
@@ -19,12 +26,13 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     container_name: backend-app
+    # condition: service_healthy nozīmē "gaidi līdz postgres healthcheck atgriež OK",
+    # nevis tikai "gaidi līdz konteiners startēts"
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy
     ports:
       - "8080:8080"
-    volumes:
-      - ./backend:/app
     environment:
       - DB_URL=jdbc:postgresql://postgres-db:5432/course_catalog
       - DB_USERNAME=user
@@ -47,14 +55,14 @@ services:
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
-      - REACT_APP_API_URL=http://backend-app:8080/api
+      # REACT_APP_* env mainīgie tiek iestrādāti JS bundlē, kuru izpilda BROWSER uz host.
+      # Browser nevar atrisināt Docker iekšējo hostname `backend-app` — jāizmanto localhost,
+      # jo backend ports 8080 ir publicēts uz host (`ports: "8080:8080"`).
+      - REACT_APP_API_URL=http://localhost:8080/api
     stdin_open: true
     tty: true
     networks:
       - course_catalog_network
-
-volumes:
-  postgres_data:
 
 networks:
   course_catalog_network:

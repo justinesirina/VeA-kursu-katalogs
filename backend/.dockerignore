@@ -1,0 +1,22 @@
+# Docker build konteksts — failu saraksts, ko NEsūtīt Docker daemon.
+# Bez šī faila `docker build` augšupielādētu visu backend/ mapi kā konteksta tar arhīvu,
+# pat ja Docker tos faktiski neizmanto. Tas palēnina build un palielina cache invalidāciju.
+
+# Maven build artefakti — pārbūvēsim Docker iekšienē
+target/
+
+# IDE faili
+.idea/
+.vscode/
+*.iml
+
+# Git
+.git/
+.gitignore
+
+# OS faili
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

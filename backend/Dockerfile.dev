@@ -1,11 +1,27 @@
-# Izmanto oficiālu OpenJDK attēlu
-FROM openjdk:17-jdk-slim
+# Multi-stage Docker build priekš Spring Boot aplikācijas.
+# Stage 1 ("build"): satur Maven + JDK, izveido fat jar (~1 GB image).
+# Stage 2 ("runtime"): satur tikai JRE + gatavu jar (~250 MB image) priekš palaišanas.
+# Šī pieeja ļauj `docker-compose up --build` darboties uz fresh klona bez `mvn package` manuāli.
 
-# Mainīgais, kas norāda JAR faila nosaukumu
-ARG JAR_FILE=target/course-catalog-1.0-SNAPSHOT.jar
+# --- Stage 1: build ---
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /build
 
-# Iekopē būvēto JAR failu konteinerī
-COPY ${JAR_FILE} app.jar
+# Pirmā kopija ir tikai pom.xml — Docker cache atkarību lejupielādi,
+# kamēr pom.xml nemainās. Tas paātrina secīgus build, kad mainās tikai source.
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-# Palaid aplikāciju
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# Tagad kopējam source — šo soli pārbūvē tikai kad src mainās
+COPY src ./src
+RUN mvn clean package -DskipTests -B
+
+# --- Stage 2: runtime ---
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+
+# Pārkopē tikai gatavo jar no build stage; Maven, JDK, source kods netiek iekļauti
+COPY --from=build /build/target/course-catalog-1.0-SNAPSHOT.jar app.jar
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
