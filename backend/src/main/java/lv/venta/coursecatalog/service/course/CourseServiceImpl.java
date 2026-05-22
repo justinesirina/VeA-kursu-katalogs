@@ -91,6 +91,7 @@ public class CourseServiceImpl implements ICourseService {
      * @param course kursa objekts
      */
     @Override
+    @Transactional
     public Course createNewCourse(Course course) {
         return createNewCourse(course, null);
     }
@@ -129,6 +130,7 @@ public class CourseServiceImpl implements ICourseService {
      * @throws Exception ja kurss nav atrasts
      */
     @Override
+    @Transactional
     public void deleteCourseById(UUID id) throws Exception {
         deleteCourseById(id, null);
     }
