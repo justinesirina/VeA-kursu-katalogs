@@ -2,10 +2,8 @@
 .idea/
 *.iml
 
-# VS Code — launch.json bieži satur lokālas DB credentials un debug paths,
-# settings.json un extensions.json paliek tracked (kopīga komandas konfigurācija)
-.vscode/launch.json
-.vscode/*.local.json
+# VS Code — personīgie IDE iestatījumi netiek tracked
+.vscode/
 
 # Java / Maven
 backend/target/
