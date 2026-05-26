@@ -40,7 +40,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // CSRF nav vajadzīgs, JSON API ar cookie sesiju (SPA pieeja).
+            // CSRF marķieru mehānisms nav aktivizēts. CSRF aizsardzību nodrošina trīs slāņu kombinācija:
+            // 1) CORS allowedOrigins ar konkrētu izstrādes hostu (skat. CorsConfig.java),
+            // 2) JSON content-type izraisītais CORS preflight uz POST/PUT/DELETE,
+            // 3) SameSite=Lax cookie atribūts (skat. application.properties).
             .csrf(csrf -> csrf.disable())
             // CORS pārvalda esošā CorsConfig caur WebMvcConfigurer.
             .cors(Customizer.withDefaults())
