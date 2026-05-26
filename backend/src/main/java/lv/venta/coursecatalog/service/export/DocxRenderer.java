@@ -117,7 +117,9 @@ public class DocxRenderer {
             doc.write(out);
             return out.toByteArray();
         } catch (Exception e) {
-            throw new IllegalStateException("Neizdevās ģenerēt DOCX: " + e.getMessage(), e);
+            // RuntimeException -> GlobalExceptionHandler atgriež 500 (sistēmas kļūda),
+            // nevis 400, kas ir rezervēts biznesa loģikas pārkāpumiem (F8 statusu pārejas).
+            throw new RuntimeException("Neizdevās ģenerēt DOCX: " + e.getMessage(), e);
         }
     }
 

@@ -64,6 +64,27 @@ public class PdfRenderer {
             Pattern.compile("<colgroup\\b([^>]*)>", Pattern.CASE_INSENSITIVE);
 
     /**
+     * HTML named entities, ko openhtmltopdf XML/SAX parser neatpazīst un kuras
+     * tāpēc jāpārvērš numeric formā pirms padošanas renderim. Visbiežāk parādās
+     * {@code &nbsp;}, kad Tiptap satura ievade ielīmēta no Word vai Excel.
+     */
+    private static final Map<String, String> HTML_TO_XML_ENTITIES = Map.ofEntries(
+            Map.entry("&nbsp;",   "&#160;"),
+            Map.entry("&ndash;",  "&#8211;"),
+            Map.entry("&mdash;",  "&#8212;"),
+            Map.entry("&lsquo;",  "&#8216;"),
+            Map.entry("&rsquo;",  "&#8217;"),
+            Map.entry("&ldquo;",  "&#8220;"),
+            Map.entry("&rdquo;",  "&#8221;"),
+            Map.entry("&hellip;", "&#8230;"),
+            Map.entry("&laquo;",  "&#171;"),
+            Map.entry("&raquo;",  "&#187;"),
+            Map.entry("&copy;",   "&#169;"),
+            Map.entry("&reg;",    "&#174;"),
+            Map.entry("&trade;",  "&#8482;")
+    );
+
+    /**
      * Konstruktors. Izveido atsevišķu Thymeleaf engine ar XHTML template mode,
      * lai output ir XML-valid (openhtmltopdf SAX parser to prasa). Output vēl
      * tiek pēc-processēts ar {@link #COL_VOID_PATTERN}, jo Thymeleaf izvada
@@ -125,7 +146,9 @@ public class PdfRenderer {
             builder.run();
             return out.toByteArray();
         } catch (Exception e) {
-            throw new IllegalStateException("Neizdevās ģenerēt PDF: " + e.getMessage(), e);
+            // RuntimeException -> GlobalExceptionHandler atgriež 500 (sistēmas kļūda),
+            // nevis 400, kas ir rezervēts biznesa loģikas pārkāpumiem (F8 statusu pārejas).
+            throw new RuntimeException("Neizdevās ģenerēt PDF: " + e.getMessage(), e);
         }
     }
 
@@ -140,8 +163,14 @@ public class PdfRenderer {
      * {@code </table>}.
      */
     private static String ensureXhtmlWellFormed(String html) {
+        // 0. HTML named entities -> numeric form (XML/SAX parser neatpazīst nbsp u.c.)
+        String fixed = html;
+        for (Map.Entry<String, String> e : HTML_TO_XML_ENTITIES.entrySet()) {
+            fixed = fixed.replace(e.getKey(), e.getValue());
+        }
+
         // 1. col elementu pārveide
-        String fixed = COL_VOID_PATTERN.matcher(html).replaceAll("<col$1></col>");
+        fixed = COL_VOID_PATTERN.matcher(fixed).replaceAll("<col$1></col>");
 
         // 2. colgroup noslēgšana ar StringBuilder (lambda izvairīšanai)
         StringBuilder sb = new StringBuilder(fixed.length() + 64);

@@ -35,6 +35,12 @@ function DownloadDropdown({ versionId }) {
         };
     }, [open]);
 
+    useEffect(() => {
+        if (!error) return undefined;
+        const timer = setTimeout(() => setError(null), 4000);
+        return () => clearTimeout(timer);
+    }, [error]);
+
     const download = async (format) => {
         if (!versionId) {
             setError('Nav norādīta versija eksportam');
